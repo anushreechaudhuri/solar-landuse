@@ -1,0 +1,9 @@
+earthengine-api
+geemap
+rasterio
+pillow
+numpy
+label-studio
+boto3
+python-dotenv
+
