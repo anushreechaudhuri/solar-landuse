@@ -51,13 +51,6 @@ python scripts/convert_to_png.py
 # Choose resolution option when prompted (option 1 for full resolution)
 ```
 
-### Sync to S3
-
-```bash
-# Upload local files to S3
-python scripts/sync_to_s3.py
-```
-
 ### Label Studio
 
 ```bash
@@ -114,6 +107,31 @@ Coordinates: 22°34'25.0"N 89°34'10.4"E
 
 All files are backed up to S3 at `s3://anuc-satellite-analysis/data/`
 
+### Change Log
+
+**Initial commit (Oct 2025)**
+- Set up project structure with download and conversion scripts
+- Added Google Earth Engine integration for Sentinel-2 and Landsat 8 data
+- Created scripts for downloading imagery at multiple buffer sizes (1km, 5km, 10km)
+- Implemented PNG conversion with lossless option for Label Studio
+- Downloaded test dataset: 2019 and 2023 images at 1km and 5km buffers (10m resolution)
+- Also downloaded 10km buffer images at 20m resolution for years 2014, 2016-2017, 2019-2023
+
+**S3 integration (Oct 2025)**
+- Added AWS S3 utilities (`s3_utils.py`) for file storage and retrieval
+- Created `sync_to_s3.py` script to upload local files to S3 bucket
+- Added `--upload-s3` flag to download script for automatic backup
+- All existing files uploaded to `s3://anuc-satellite-analysis/data/`
+- Added `local.env` template file for environment variable setup
+- Configured `.gitignore` to exclude large files (`.tif`, `.png`) and `.env` file
+
+**Documentation updates (Oct 2025)**
+- Consolidated all high-level documentation into README.md
+- Removed emojis and promotional language from documentation
+- Added change log section to track project evolution
+- Created `DATA_SOURCES.md` in `data/raw_images/` documenting data sources and processing details
+- Updated documentation style to be developer-focused and functional
+
 ## Environment Variables
 
 Copy `local.env` to `.env` and fill in your credentials:
@@ -128,17 +146,54 @@ The `.env` file is git-ignored. Never commit it.
 
 ## S3 Integration
 
-Files are stored in S3 for backup and team sharing. Download from S3:
+Files are stored in S3 for backup and team sharing. The bucket structure mirrors the local `data/` directory structure.
+
+### Upload to S3
 
 ```bash
-aws s3 sync s3://anuc-satellite-analysis/data/ ./data/
-```
-
-Upload new files:
-
-```bash
+# Upload all local files to S3
 python scripts/sync_to_s3.py
 ```
+
+This uploads all files in `data/raw_images/` and `data/for_labeling/` to S3.
+
+### Download from S3
+
+```bash
+# Using AWS CLI - syncs entire data directory
+aws s3 sync s3://anuc-satellite-analysis/data/ ./data/
+
+# Or download specific files
+aws s3 cp s3://anuc-satellite-analysis/data/raw_images/mongla_1km_2019.tif ./data/raw_images/
+```
+
+### S3 Bucket Structure
+
+```
+s3://anuc-satellite-analysis/
+├── data/
+│   ├── raw_images/          # GeoTIFF files
+│   └── for_labeling/         # PNG files for Label Studio
+```
+
+### Using with Download Scripts
+
+The download script can automatically upload to S3:
+
+```bash
+python scripts/download_satellite_images.py --upload-s3
+```
+
+### S3 Troubleshooting
+
+**Could not connect to S3**
+Check your `.env` file exists and has correct credentials.
+
+**Access Denied**
+Verify your AWS credentials have access to `anuc-satellite-analysis` bucket.
+
+**Large files not uploading**
+S3 has a 5GB limit per file. Current files are under 10MB each.
 
 ## Common Issues
 
