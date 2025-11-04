@@ -1,176 +1,148 @@
 # Solar Land Use Change Detection - Bangladesh
 
-This project downloads high-resolution multi-year satellite imagery for solar project sites in Bangladesh and prepares them for land use change detection labeling using semantic segmentation.
+Downloads satellite imagery for solar project sites in Bangladesh and converts it for labeling. Uses Google Earth Engine for data download and Label Studio for annotation.
 
-## 🚀 Quick Start
+## Setup
 
-### 1. Setup Environment
+### Environment
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/anushreechaudhuri/solar-landuse.git
 cd solar-landuse
 
-# Create and activate conda environment
+# Create conda environment
 conda create -n solar-landuse python=3.10 -y
 conda activate solar-landuse
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Authenticate with Google Earth Engine (one-time setup)
+# Set up environment variables
+cp local.env .env
+# Edit .env and add your AWS credentials and Google Earth Engine project name
+
+# Authenticate with Google Earth Engine (one-time)
 python
 >>> import ee
 >>> ee.Authenticate()
 >>> ee.Initialize(project="bangladesh-solar")
 ```
 
-### 2. Download High-Resolution Satellite Imagery
+## Usage
 
-```bash
-# Download 1km and 5km buffer images for specific years
-python scripts/download_satellite_images.py --years 2019 2023
-
-# With automatic S3 backup
-python scripts/download_satellite_images.py --years 2019 2023 --upload-s3
-```
-
-### 3. Convert to PNG for Labeling
-
-```bash
-# Convert to high-quality PNG (lossless)
-python scripts/convert_to_png.py
-# Press Enter for full resolution (recommended)
-```
-
-### 4. Start Labeling in Label Studio
-
-```bash
-label-studio start
-# Access at http://localhost:8080
-```
-
-## 📁 Project Structure
-
-```
-solar-landuse/
-├── data/
-│   ├── raw_images/           # GeoTIFF files (synced to S3)
-│   ├── for_labeling/         # PNG files for Label Studio
-│   ├── labels/               # Exported annotations
-│   └── processed/masks/      # Segmentation masks
-├── scripts/
-│   ├── download_satellite_images.py  # Download imagery
-│   ├── convert_to_png.py             # Convert to PNG
-│   ├── s3_utils.py                    # AWS S3 utilities
-│   └── sync_to_s3.py                  # Sync to S3
-├── models/                    # Model weights
-├── notebooks/                 # Analysis notebooks
-└── results/                   # Outputs
-```
-
-## 🌍 Current Dataset
-
-### Test Site: Mongla Solar Project, Bangladesh
-
-- **Coordinates**: 22°34'25.0"N 89°34'10.4"E
-- **Buffer Sizes**: 1km, 5km, 10km
-- **Resolution**: 10m per pixel (Sentinel-2 native)
-- **Years**: 2014-2024 (with some gaps)
-
-### Available Images
-
-**High-Resolution (10m/pixel)**:
-- 1km buffer: 217×201 pixels (~128 KB PNG)
-- 5km buffer: 1079×1003 pixels (~3.1 MB PNG)
-
-**Standard Resolution (20m/pixel)**:
-- 10km buffer: ~2000×2000 pixels (~2.4 MB PNG)
-
-## 📊 Data Download
-
-### Download Scripts
-
-#### Download Satellite Imagery
+### Download Satellite Imagery
 
 ```bash
 # Download specific years with multiple buffer sizes
 python scripts/download_satellite_images.py --years 2019 2023
 
 # Upload to S3 after download
-python scripts/download_satellite_images.py --upload-s3
-
-# All options
-python scripts/download_satellite_images.py \
-  --years 2019 2020 2023 \
-  --upload-s3
+python scripts/download_satellite_images.py --years 2019 2023 --upload-s3
 ```
 
-**Features**:
-- ✅ High-resolution (10m/pixel for Sentinel-2)
-- ✅ Multiple buffer sizes (1km, 5km, 10km)
-- ✅ Automatic S3 backup option
-- ✅ Skips existing files
-- ✅ Fallback to 20m if 10m fails
+The script downloads at 10m resolution for Sentinel-2 data. If downloads fail due to size limits, it falls back to 20m resolution.
 
-#### Convert to PNG
+### Convert to PNG
 
 ```bash
-# Convert GeoTIFF to PNG with full resolution
+# Convert GeoTIFF to PNG
 python scripts/convert_to_png.py
-
-# Or limit to specific size
-python scripts/convert_to_png.py  # Then choose option 2, 3, or 4
+# Choose resolution option when prompted (option 1 for full resolution)
 ```
 
-## ☁️ AWS S3 Integration
-
-All imagery is automatically backed up to S3 for team collaboration and version control.
-
-### Upload to S3
+### Sync to S3
 
 ```bash
-# Sync all local files to S3
+# Upload local files to S3
 python scripts/sync_to_s3.py
 ```
 
-### Download from S3
+### Label Studio
 
 ```bash
-# Using AWS CLI
-aws s3 sync s3://anuc-satellite-analysis/data/ ./data/
-
-# Or manually download specific files
-aws s3 cp s3://anuc-satellite-analysis/data/raw_images/mongla_1km_2019.tif ./data/raw_images/
+label-studio start
+# Access at http://localhost:8080
 ```
 
-**S3 Bucket**: `s3://anuc-satellite-analysis/data/`
+Import images from `data/for_labeling/` and create a semantic segmentation project.
 
-## 🎨 Label Studio Setup
+## Project Structure
 
-### Create Project
+```
+solar-landuse/
+├── data/
+│   ├── raw_images/           # GeoTIFF files
+│   ├── for_labeling/         # PNG files for Label Studio
+│   ├── labels/               # Exported annotations
+│   └── processed/masks/      # Segmentation masks
+├── scripts/
+│   ├── download_satellite_images.py  # Download imagery
+│   ├── convert_to_png.py            # Convert to PNG
+│   ├── s3_utils.py                   # AWS S3 utilities
+│   └── sync_to_s3.py                 # Sync to S3
+├── local.env                 # Template for .env (copy to .env)
+├── .env                      # Your credentials (not in git)
+└── requirements.txt
+```
 
-1. Open http://localhost:8080
-2. Create new project: "Bangladesh Solar Land Use"
-3. Choose: "Semantic Segmentation with Polygons"
+## Current State
 
-### Import Images
+### Site: Mongla Solar Project, Bangladesh
 
-4. Import from: `data/for_labeling/`
-5. Start with 1km images for detailed labeling
+Coordinates: 22°34'25.0"N 89°34'10.4"E
 
-### Suggested Labels
+### Available Data
 
-- Agriculture
-- Forest  
-- Water
-- Urban
-- Solar_Panels
-- Bare_Land
+**1km buffer images (10m resolution, 217×201 pixels)**:
+- `mongla_1km_2019.tif` / `.png` - Pre-development
+- `mongla_1km_2023.tif` / `.png` - Post-development
 
-## 🔧 Common Issues
+**5km buffer images (10m resolution, 1079×1003 pixels)**:
+- `mongla_5km_2019.tif` / `.png` - Pre-development
+- `mongla_5km_2023.tif` / `.png` - Post-development
 
-### "Earth Engine not initialized"
+**10km buffer images (20m resolution, ~2000×2000 pixels)**:
+- `mongla_2014.tif` / `.png` through `mongla_2023.tif` / `.png`
+- Years: 2014, 2016-2017, 2019-2023 (some years missing due to data availability)
+
+### Files
+
+- 13 GeoTIFF files in `data/raw_images/`
+- 14 PNG files in `data/for_labeling/`
+- Documentation: `data/raw_images/DATA_SOURCES.md` (describes each file's data source, bands, resolution, etc.)
+
+All files are backed up to S3 at `s3://anuc-satellite-analysis/data/`
+
+## Environment Variables
+
+Copy `local.env` to `.env` and fill in your credentials:
+
+```bash
+AWS_DEFAULT_REGION="us-east-1"
+AWS_ACCESS_KEY_ID="your-key-here"
+AWS_SECRET_ACCESS_KEY="your-secret-here"
+```
+
+The `.env` file is git-ignored. Never commit it.
+
+## S3 Integration
+
+Files are stored in S3 for backup and team sharing. Download from S3:
+
+```bash
+aws s3 sync s3://anuc-satellite-analysis/data/ ./data/
+```
+
+Upload new files:
+
+```bash
+python scripts/sync_to_s3.py
+```
+
+## Common Issues
+
+**Earth Engine not initialized**
 ```bash
 python
 >>> import ee
@@ -178,49 +150,23 @@ python
 >>> ee.Initialize(project="bangladesh-solar")
 ```
 
-### "No images found for year XXXX"
-- Normal if data not available for that year/location
-- Try different years or adjust cloud filter
+**No images found for year**
+Normal if data not available for that year/location. Try different years.
 
-### Large files won't upload
-- Use `--upload-s3` for automatic AWS S3 backup
-- Or use `python scripts/sync_to_s3.py`
+**Large files won't upload**
+Scripts skip existing files. Use `--upload-s3` flag or `sync_to_s3.py` for S3 backup.
 
-## 📚 Data Sources
+## Data Sources
 
-### Satellite Data
-
-- **Sentinel-2 MSI**: 10m resolution RGB+NIR bands
+- Sentinel-2 MSI: 10m resolution RGB+NIR bands
   - Dataset: `COPERNICUS/S2_SR_HARMONIZED`
   - Years: 2015-2024
-- **Landsat 8 OLI**: 30m resolution
+- Landsat 8 OLI: 30m resolution (fallback for earlier years)
   - Dataset: `LANDSAT/LC08/C02/T1_L2`
-  - Years: 2013-2024 (fallback for earlier years)
+  - Years: 2013-2024
 
-### Reference Documentation
+## Notes
 
-- [Google Earth Engine](https://earthengine.google.com/)
-- [Sentinel-2 Dataset](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2_SR_HARMONIZED)
-- [Label Studio](https://labelstud.io/guide/)
-- [DINOv3](https://ai.meta.com/dinov3/)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Download data from S3: `aws s3 sync s3://anuc-satellite-analysis/data/ ./data/`
-4. Make your changes
-5. Sync data back: `python scripts/sync_to_s3.py`
-6. Submit a pull request
-
-**Note**: Large files (`.tif`, `.png`) are git-ignored. They are stored in S3 and should be downloaded separately.
-
-## 📝 License
-
-[Add your license here]
-
-## 🙏 Acknowledgments
-
-- Google Earth Engine for satellite data
-- ESA Copernicus for Sentinel-2 imagery
-- Label Studio for annotation tools
+- Large files (`.tif`, `.png`) are git-ignored. Download from S3 instead.
+- Label Studio needs local files - keep them even with S3 sync.
+- Start with 1km images for detailed labeling, they're smaller and easier to work with.
