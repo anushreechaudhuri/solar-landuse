@@ -65,3 +65,6 @@ models/*.ckpt
 !data/raw_images/*.md
 !data/for_labeling/*.md
 
+# Memory file for chat reference
+memory.md
+

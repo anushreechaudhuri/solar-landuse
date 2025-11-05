@@ -60,6 +60,8 @@ label-studio start
 
 Import images from `data/for_labeling/` and create a semantic segmentation project.
 
+See `data/for_labeling/LABEL_STUDIO_IMPORT.md` for detailed import instructions.
+
 ## Training Segmentation Model
 
 ### Prepare Training Data
@@ -116,6 +118,7 @@ solar-landuse/
 ├── models/                    # Trained model weights
 ├── results/
 │   └── land_cover_maps/      # Generated land cover predictions
+├── LOG.md                     # Detailed change log
 ├── local.env                 # Template for .env (copy to .env)
 ├── .env                      # Your credentials (not in git)
 └── requirements.txt
