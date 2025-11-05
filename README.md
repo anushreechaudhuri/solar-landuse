@@ -60,6 +60,39 @@ label-studio start
 
 Import images from `data/for_labeling/` and create a semantic segmentation project.
 
+## Training Segmentation Model
+
+### Prepare Training Data
+
+1. Export masks from Label Studio as PNG files
+2. Place images in `data/training_dataset/images/`
+3. Place masks in `data/training_dataset/masks/`
+4. Ensure mask filenames match: `{image_stem}_mask.png`
+
+Example:
+- Image: `mongla_5km_2019.tif`
+- Mask: `mongla_5km_2019_mask.png`
+
+### Train Model
+
+```bash
+python scripts/train_segmentation.py
+```
+
+This trains a segmentation head on frozen DINOv3 features. First run downloads the DINOv3 model (~1.2GB). Training on M2 Mac takes ~1-2 hours depending on dataset size.
+
+Model saves to `models/segmentation_head.pth`.
+
+### Apply Model to Images
+
+```bash
+python scripts/apply_segmentation.py
+```
+
+Generates land cover maps for all images in `data/for_labeling/`. Outputs:
+- `results/land_cover_maps/{image_stem}_landcover.png` - Colored visualization
+- `results/land_cover_maps/{image_stem}_prediction.npy` - Raw class IDs array
+
 ## Project Structure
 
 ```
@@ -67,13 +100,22 @@ solar-landuse/
 ├── data/
 │   ├── raw_images/           # GeoTIFF files
 │   ├── for_labeling/         # PNG files for Label Studio
+│   ├── training_dataset/     # Labeled images and masks for training
+│   │   ├── images/          # Input GeoTIFF files
+│   │   ├── masks/           # PNG masks (pixel values = class IDs)
+│   │   └── classes.json     # Class name to ID mapping
 │   ├── labels/               # Exported annotations
 │   └── processed/masks/      # Segmentation masks
 ├── scripts/
 │   ├── download_satellite_images.py  # Download imagery
 │   ├── convert_to_png.py            # Convert to PNG
+│   ├── train_segmentation.py        # Train segmentation model
+│   ├── apply_segmentation.py        # Apply model to generate maps
 │   ├── s3_utils.py                   # AWS S3 utilities
 │   └── sync_to_s3.py                 # Sync to S3
+├── models/                    # Trained model weights
+├── results/
+│   └── land_cover_maps/      # Generated land cover predictions
 ├── local.env                 # Template for .env (copy to .env)
 ├── .env                      # Your credentials (not in git)
 └── requirements.txt
@@ -131,6 +173,15 @@ All files are backed up to S3 at `s3://anuc-satellite-analysis/data/`
 - Added change log section to track project evolution
 - Created `DATA_SOURCES.md` in `data/raw_images/` documenting data sources and processing details
 - Updated documentation style to be developer-focused and functional
+
+**Training pipeline (Oct 2025)**
+- Added DINOv3-based segmentation training pipeline
+- Created `train_segmentation.py` - trains segmentation head on frozen DINOv3 features
+- Created `apply_segmentation.py` - applies trained model to generate land cover maps
+- Set up training dataset structure with `data/training_dataset/` directory
+- Added `classes.json` for class ID mapping
+- Model uses DINOv3 satellite model (facebook/dinov3-vitl16-pretrain-sat493m) as frozen backbone
+- Only segmentation decoder head is trained (fast training, ~1-2 hours on M2 Mac)
 
 ## Environment Variables
 

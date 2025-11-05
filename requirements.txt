@@ -6,4 +6,8 @@ numpy
 label-studio
 boto3
 python-dotenv
+torch
+torchvision
+transformers
+tqdm
 

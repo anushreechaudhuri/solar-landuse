@@ -1,0 +1,10 @@
+{
+  "background": 0,
+  "agriculture": 1,
+  "forest": 2,
+  "water": 3,
+  "urban": 4,
+  "solar_panels": 5,
+  "bare_land": 6
+}
+
