@@ -1,8 +1,8 @@
 """Merge Dynamic World and VLM masks into final training masks.
 
-Dynamic World provides baseline land cover at 10m native resolution.
-VLM provides solar panel detection (which DW cannot distinguish from urban).
-The merge uses DW as base and overlays VLM solar panel classifications.
+VLM (Gemini) is the primary classification source — it classifies all 7 land
+cover classes.  Dynamic World fills in only where VLM reports background
+(class 0 — clouds / shadows / unidentifiable).
 
 Also exports colored visualizations and copies images to training directory.
 
@@ -42,52 +42,43 @@ CLASS_NAMES = {v: k for k, v in CLASSES.items()}
 
 
 def parse_filename(name):
-    """Parse period (pre/post) from filename."""
-    match = re.match(r'(.+?)_1km_(\d{4})_(\d{2})_(pre|post)\.png', name)
+    """Parse period (pre/post) from filename like 'manikganj_5km_2017_02_pre.png'"""
+    match = re.match(r'(.+?)_(\d+)km_(\d{4})_(\d{2})_(pre|post)\.png', name)
     if match:
-        return match.group(4)
+        return match.group(5)
     return None
 
 
 def merge(dw_mask, vlm_mask, is_post):
-    """Merge Dynamic World and VLM masks.
+    """Merge VLM (primary) and Dynamic World (gap-fill) masks.
 
     Strategy:
-    - Start with DW as base (higher spatial detail from 10m native resolution)
-    - VLM overrides DW where it identifies solar panels (class 5)
-    - For pre-construction: never allow solar panels
+    - VLM is the primary classification (all 7 classes)
+    - DW fills in only where VLM says background (class 0 — clouds/shadows)
+    - For pre-construction: never allow solar panels (class 5 → 4)
     - Where only one source exists, use that source
     """
-    if dw_mask is not None and vlm_mask is not None:
-        # Both available: DW base + VLM solar override
-        merged = dw_mask.copy()
+    if vlm_mask is not None and dw_mask is not None:
+        # Both available: VLM primary, DW fills background gaps
+        merged = vlm_mask.copy()
+        bg_mask = vlm_mask == 0
+        merged[bg_mask] = dw_mask[bg_mask]
 
-        if is_post:
-            # VLM solar panel detections override DW
-            solar_mask = vlm_mask == 5
-            merged[solar_mask] = 5
-
-            # Where DW says urban but VLM says bare_land near solar areas,
-            # trust VLM (construction-related bare land)
-            bare_mask = vlm_mask == 6
-            urban_mask = dw_mask == 4
-            merged[bare_mask & urban_mask] = 6
-        else:
-            # Pre-construction: ensure no solar panels
-            merged[merged == 5] = 4  # remap any accidental solar to urban
+        if not is_post:
+            merged[merged == 5] = 4  # no solar in pre-construction
 
         return merged
 
-    elif dw_mask is not None:
-        # DW only (no VLM)
-        merged = dw_mask.copy()
+    elif vlm_mask is not None:
+        # VLM only
+        merged = vlm_mask.copy()
         if not is_post:
             merged[merged == 5] = 4
         return merged
 
-    elif vlm_mask is not None:
-        # VLM only (no DW, e.g. missing coordinates)
-        merged = vlm_mask.copy()
+    elif dw_mask is not None:
+        # DW only (fallback)
+        merged = dw_mask.copy()
         if not is_post:
             merged[merged == 5] = 4
         return merged
@@ -121,8 +112,8 @@ def main():
     print("Merge Dynamic World + VLM Masks")
     print("=" * 60)
 
-    # Find all 1km PNG images
-    png_files = sorted(LABEL_DIR.glob('*_1km_*_*.png'))
+    # Find all PNG images (1km and 5km)
+    png_files = sorted(LABEL_DIR.glob('*_*km_*_*.png'))
     print(f"Found {len(png_files)} images to process\n")
 
     success = 0

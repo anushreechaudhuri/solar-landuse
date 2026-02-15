@@ -54,20 +54,21 @@ SITES = {
 
 
 def parse_filename(name):
-    """Parse site, year, month, period from filename like 'manikganj_1km_2017_02_pre.png'"""
-    match = re.match(r'(.+?)_1km_(\d{4})_(\d{2})_(pre|post)\.png', name)
+    """Parse site, buffer_km, year, month, period from filename like 'manikganj_5km_2017_02_pre.png'"""
+    match = re.match(r'(.+?)_(\d+)km_(\d{4})_(\d{2})_(pre|post)\.png', name)
     if match:
-        return match.group(1), int(match.group(2)), int(match.group(3)), match.group(4)
-    return None, None, None, None
+        return match.group(1), int(match.group(2)), int(match.group(3)), int(match.group(4)), match.group(5)
+    return None, None, None, None, None
 
 
-def build_prompt(site_key, year, month, period):
+def build_prompt(site_key, year, month, period, buffer_km=1):
     """Build the VLM classification prompt."""
     site = SITES.get(site_key, {})
     site_name = site.get("name", site_key)
     lat = site.get("lat", 0)
     lon = site.get("lon", 0)
     mw = site.get("mw", 0)
+    area_km = buffer_km * 2  # diameter of the AOI
 
     period_hint = ""
     if period == "post":
@@ -87,7 +88,7 @@ def build_prompt(site_key, year, month, period):
 Site: {site_name}
 Coordinates: {lat:.4f}N, {lon:.4f}E
 Period: {"POST" if period == "post" else "PRE"}-construction ({year}/{month:02d})
-Image covers approximately 2x2 km area.
+Image covers approximately {area_km}x{area_km} km area.
 
 Mentally divide this image into a {GRID_SIZE}x{GRID_SIZE} grid ({GRID_SIZE} rows, {GRID_SIZE} columns).
 Classify each grid cell into exactly one of these land cover classes:
@@ -142,10 +143,10 @@ def fix_grid(grid):
     return grid
 
 
-def classify_image(model, img_path, site_key, year, month, period):
+def classify_image(model, img_path, site_key, year, month, period, buffer_km=1):
     """Send image to Gemini and get grid classification."""
     img = Image.open(img_path)
-    prompt = build_prompt(site_key, year, month, period)
+    prompt = build_prompt(site_key, year, month, period, buffer_km=buffer_km)
 
     for attempt in range(MAX_RETRIES):
         try:
@@ -195,7 +196,7 @@ def main():
     print("VLM Grid Classification (Gemini)")
     print("=" * 60)
 
-    png_files = sorted(LABEL_DIR.glob('*_1km_*_*.png'))
+    png_files = sorted(LABEL_DIR.glob('*_*km_*_*.png'))
     print(f"Found {len(png_files)} images to process")
     print(f"Grid size: {GRID_SIZE}x{GRID_SIZE}")
     print(f"Rate limit delay: {DELAY_BETWEEN_CALLS}s between calls\n")
@@ -205,7 +206,7 @@ def main():
     failed = 0
 
     for i, png_path in enumerate(png_files):
-        site, year, month, period = parse_filename(png_path.name)
+        site, buffer_km, year, month, period = parse_filename(png_path.name)
         if site is None:
             print(f"  Skip: can't parse {png_path.name}")
             skipped += 1
@@ -225,7 +226,7 @@ def main():
         print(f"  [{i+1}/{len(png_files)}] {png_path.name} ({w}x{h}px) ...", end=" ", flush=True)
 
         try:
-            grid = classify_image(model, png_path, site, year, month, period)
+            grid = classify_image(model, png_path, site, year, month, period, buffer_km=buffer_km)
 
             # Save raw JSON response
             with open(json_path, 'w') as f:

@@ -47,7 +47,7 @@ SITES = {
     "lalmonirhat": {"lat": 25.912, "lon": 89.445},  # approximate
 }
 
-BUFFER_KM = 1
+BUFFER_KM_DEFAULT = 1  # fallback; actual buffer read from filename
 
 # Dynamic World class -> our class mapping
 # DW: 0=water, 1=trees, 2=grass, 3=flooded_veg, 4=crops, 5=shrub, 6=built, 7=bare, 8=snow
@@ -57,11 +57,11 @@ DW_REMAP_TO = [3, 2, 1, 1, 1, 2, 4, 6, 0]
 
 
 def parse_filename(name):
-    """Parse site, year, month, period from filename like 'manikganj_1km_2017_02_pre.png'"""
-    match = re.match(r'(.+?)_1km_(\d{4})_(\d{2})_(pre|post)\.png', name)
+    """Parse site, buffer_km, year, month, period from filename like 'manikganj_5km_2017_02_pre.png'"""
+    match = re.match(r'(.+?)_(\d+)km_(\d{4})_(\d{2})_(pre|post)\.png', name)
     if match:
-        return match.group(1), int(match.group(2)), int(match.group(3)), match.group(4)
-    return None, None, None, None
+        return match.group(1), int(match.group(2)), int(match.group(3)), int(match.group(4)), match.group(5)
+    return None, None, None, None, None
 
 
 def make_region(lat, lon, buffer_km):
@@ -103,9 +103,9 @@ def download_ee_image(image, region, scale=10):
             return src.read(1)
 
 
-def get_dw_mask(lat, lon, year, month, target_h, target_w):
+def get_dw_mask(lat, lon, year, month, target_h, target_w, buffer_km=BUFFER_KM_DEFAULT):
     """Query Dynamic World and return remapped mask at target resolution."""
-    region = make_region(lat, lon, BUFFER_KM)
+    region = make_region(lat, lon, buffer_km)
 
     # Date range: target month +/- 2 months for composite
     from datetime import date, timedelta
@@ -147,8 +147,8 @@ def main():
     print("Generate Dynamic World Baseline Masks")
     print("=" * 60)
 
-    # Find all 1km PNG images
-    png_files = sorted(LABEL_DIR.glob('*_1km_*_*.png'))
+    # Find all PNG images (1km and 5km)
+    png_files = sorted(LABEL_DIR.glob('*_*km_*_*.png'))
     print(f"Found {len(png_files)} images to process\n")
 
     success = 0
@@ -156,7 +156,7 @@ def main():
     failed = 0
 
     for png_path in png_files:
-        site, year, month, period = parse_filename(png_path.name)
+        site, buffer_km, year, month, period = parse_filename(png_path.name)
         if site is None:
             print(f"  Skip: can't parse {png_path.name}")
             skipped += 1
@@ -181,7 +181,7 @@ def main():
         print(f"  {png_path.name} ({w}x{h}px) ...", end=" ", flush=True)
 
         try:
-            mask = get_dw_mask(coords["lat"], coords["lon"], year, month, h, w)
+            mask = get_dw_mask(coords["lat"], coords["lon"], year, month, h, w, buffer_km=buffer_km)
             if mask is not None:
                 Image.fromarray(mask.astype(np.uint8)).save(str(out_path))
                 unique, counts = np.unique(mask, return_counts=True)

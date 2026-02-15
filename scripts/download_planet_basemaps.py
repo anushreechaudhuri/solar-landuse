@@ -63,6 +63,16 @@ SITES = {
             "post": ["2025_11", "2026_01"],  # right after construction
         },
     },
+    "teesta": {
+        "name": "Teesta (Gaibandha/Beximco) 200 MW Solar",
+        "lat": 25.629209,
+        "lon": 89.544870,
+        "built": "Jan 2023",
+        "periods": {
+            "pre":  ["2019_01"],             # ~4 years before
+            "post": ["2024_01"],             # ~1 year after
+        },
+    },
 }
 
 BUFFER_KM = 5  # 5 km buffer → 10×10 km AOI
@@ -281,7 +291,7 @@ def main():
     parser = argparse.ArgumentParser(description="Download Planet basemap mosaics")
     parser.add_argument("--search-only", action="store_true",
                         help="List available mosaics without downloading")
-    parser.add_argument("--site", choices=list(SITES.keys()),
+    parser.add_argument("--site", choices=sorted(SITES.keys()),
                         help="Process only this site")
     parser.add_argument("--period", choices=["pre", "post"],
                         help="Only pre or post construction")
