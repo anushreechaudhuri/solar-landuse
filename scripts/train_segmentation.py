@@ -40,8 +40,8 @@ LEARNING_RATE = 0.001
 # Device selection
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-# DINOv3 model configuration
-DINOV3_MODEL = "facebook/dinov3-vitl16-pretrain-sat493m"
+# DINOv2 model configuration (freely available, 1024-dim features)
+DINO_MODEL = "facebook/dinov2-large"
 FEATURE_DIM = 1024
 
 print(f"Device: {DEVICE}")
@@ -65,8 +65,10 @@ class LandCoverDataset(Dataset):
         self.images_dir = Path(images_dir)
         self.masks_dir = Path(masks_dir)
         
-        # Find all image files
-        image_files = list(self.images_dir.glob('*.tif')) + list(self.images_dir.glob('*.tiff'))
+        # Find all image files (GeoTIFF and PNG)
+        image_files = (list(self.images_dir.glob('*.tif'))
+                       + list(self.images_dir.glob('*.tiff'))
+                       + list(self.images_dir.glob('*.png')))
         
         # Filter to only images with corresponding masks
         self.samples = []
@@ -85,13 +87,16 @@ class LandCoverDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.samples[idx]
         
-        # Load image (GeoTIFF)
-        with rasterio.open(sample['image']) as src:
-            image = src.read()  # (C, H, W)
-            # Use RGB bands only if more than 3 bands
-            if image.shape[0] > 3:
-                image = image[:3]
-            image = torch.from_numpy(image).float()
+        # Load image (GeoTIFF or PNG)
+        if sample['image'].suffix in ('.tif', '.tiff'):
+            with rasterio.open(sample['image']) as src:
+                image = src.read()  # (C, H, W)
+                if image.shape[0] > 3:
+                    image = image[:3]
+        else:
+            img = Image.open(sample['image']).convert('RGB')
+            image = np.array(img).transpose(2, 0, 1)  # HWC -> CHW
+        image = torch.from_numpy(image).float()
         
         # Load mask (PNG)
         mask = np.array(Image.open(sample['mask']))
@@ -107,30 +112,30 @@ class LandCoverDataset(Dataset):
         }
 
 
-class DINOv3FeatureExtractor(nn.Module):
+class DINOFeatureExtractor(nn.Module):
     """
-    Extract features from DINOv3 satellite model
-    
+    Extract features from DINOv2-large model.
+
     Model is frozen during training. Only the segmentation head is trained.
-    Downloads automatically on first instantiation.
+    Downloads automatically on first instantiation (~1.2GB).
     """
-    
-    def __init__(self, model_name=DINOV3_MODEL):
+
+    def __init__(self, model_name=DINO_MODEL):
         super().__init__()
-        
-        print(f"Loading DINOv3 model: {model_name}")
+
+        print(f"Loading DINOv2 model: {model_name}")
         print("(First run will download ~1.2GB model)")
-        
+
         self.processor = AutoImageProcessor.from_pretrained(model_name)
         self.backbone = AutoModel.from_pretrained(model_name)
-        
+
         # Freeze backbone
         self.backbone.eval()
         for param in self.backbone.parameters():
             param.requires_grad = False
-        
-        print("DINOv3 loaded and frozen")
-    
+
+        print("DINOv2 loaded and frozen")
+
     def forward(self, images):
         """
         Args:
@@ -138,26 +143,26 @@ class DINOv3FeatureExtractor(nn.Module):
         Returns:
             features: (B, num_patches, feature_dim) tensor
         """
-        # Normalize to 0-255 range for DINOv3
         if images.max() <= 1.0:
             images = images * 255
-        
+
         # Convert to PIL for processor
         batch_size = images.shape[0]
         pil_images = []
         for i in range(batch_size):
             img_np = images[i].cpu().numpy().transpose(1, 2, 0).astype(np.uint8)
             pil_images.append(Image.fromarray(img_np))
-        
+
         # Process
         inputs = self.processor(images=pil_images, return_tensors="pt")
         inputs = {k: v.to(images.device) for k, v in inputs.items()}
-        
+
         # Extract features
         with torch.no_grad():
             outputs = self.backbone(**inputs)
-            features = outputs.last_hidden_state  # (B, num_patches, feature_dim)
-        
+            # DINOv2 includes CLS token at position 0 — remove it
+            features = outputs.last_hidden_state[:, 1:, :]  # (B, num_patches, feature_dim)
+
         return features
 
 
@@ -280,7 +285,7 @@ if __name__ == '__main__':
     train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     
     # Initialize models
-    feature_extractor = DINOv3FeatureExtractor()
+    feature_extractor = DINOFeatureExtractor()
     seg_head = SegmentationHead(feature_dim=FEATURE_DIM, num_classes=NUM_CLASSES)
     
     # Train

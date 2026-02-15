@@ -32,8 +32,8 @@ NUM_CLASSES = len(CLASSES)
 # Device
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-# DINOv3 model
-DINOV3_MODEL = "facebook/dinov3-vitl16-pretrain-sat493m"
+# DINOv2 model
+DINO_MODEL = "facebook/dinov2-large"
 FEATURE_DIM = 1024
 
 # Color mapping for visualization
@@ -48,34 +48,34 @@ CLASS_COLORS = {
 }
 
 
-class DINOv3FeatureExtractor(nn.Module):
-    """DINOv3 feature extractor (same as training)"""
-    
-    def __init__(self, model_name=DINOV3_MODEL):
+class DINOFeatureExtractor(nn.Module):
+    """DINOv2 feature extractor (same as training)"""
+
+    def __init__(self, model_name=DINO_MODEL):
         super().__init__()
         self.processor = AutoImageProcessor.from_pretrained(model_name)
         self.backbone = AutoModel.from_pretrained(model_name)
         self.backbone.eval()
         for param in self.backbone.parameters():
             param.requires_grad = False
-    
+
     def forward(self, images):
         if images.max() <= 1.0:
             images = images * 255
-        
+
         batch_size = images.shape[0]
         pil_images = []
         for i in range(batch_size):
             img_np = images[i].cpu().numpy().transpose(1, 2, 0).astype(np.uint8)
             pil_images.append(Image.fromarray(img_np))
-        
+
         inputs = self.processor(images=pil_images, return_tensors="pt")
         inputs = {k: v.to(images.device) for k, v in inputs.items()}
-        
+
         with torch.no_grad():
             outputs = self.backbone(**inputs)
-            features = outputs.last_hidden_state
-        
+            features = outputs.last_hidden_state[:, 1:, :]  # Remove CLS token
+
         return features
 
 
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     print("Loading models...")
     
     # Load models
-    feature_extractor = DINOv3FeatureExtractor(DINOV3_MODEL)
+    feature_extractor = DINOFeatureExtractor(DINO_MODEL)
     seg_head = SegmentationHead(FEATURE_DIM, NUM_CLASSES)
     seg_head.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     

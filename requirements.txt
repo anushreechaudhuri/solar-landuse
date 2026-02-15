@@ -10,4 +10,7 @@ torch
 torchvision
 transformers
 tqdm
+requests
+google-generativeai
+shapely
 

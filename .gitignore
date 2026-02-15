@@ -47,23 +47,20 @@ wheels/
 ehthumbs.db
 Thumbs.db
 
-# Large data files - but keep .md documentation
-data/raw_images/*.tif
-data/raw_images/*.tiff
-data/for_labeling/*.png
-data/for_labeling/*.jpg
-data/for_labeling/*.jpeg
-data/labels/*.json
-data/labels/*.xml
-data/processed/masks/*.tif
-data/processed/masks/*.png
+# Large data files
+data/raw_images/
+data/for_labeling/
+data/labels/
+data/processed/
+data/training_dataset/images/
+data/training_dataset/masks/
+data/training_dataset/vlm_responses/
 models/*.pth
 models/*.h5
 models/*.ckpt
 
-# Keep documentation and directory structure
-!data/raw_images/*.md
-!data/for_labeling/*.md
+# Results (large prediction arrays and images)
+results/
 
 # Memory file for chat reference
 memory.md
