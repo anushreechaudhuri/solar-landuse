@@ -35,11 +35,11 @@ DELAY_BETWEEN_CALLS = 4  # seconds, for 15 RPM rate limit
 
 # Site metadata for prompt context
 SITES = {
-    "teesta": {"name": "Teesta (Gaibandha/Beximco) 200 MW", "lat": 25.629209, "lon": 89.544870, "mw": 200},
+    "teesta": {"name": "Teesta (Gaibandha/Beximco) 200 MW", "lat": 25.628342, "lon": 89.541082, "mw": 200},
     "feni": {"name": "Feni/Sonagazi 75 MW", "lat": 22.787567, "lon": 91.367187, "mw": 75},
     "manikganj": {"name": "Manikganj (Spectra) 35 MW", "lat": 23.780834, "lon": 89.824775, "mw": 35},
     "moulvibazar": {"name": "Moulvibazar 10 MW", "lat": 24.493896, "lon": 91.633043, "mw": 10},
-    "pabna": {"name": "Pabna 100 MW", "lat": 23.826372, "lon": 89.606831, "mw": 100},
+    "pabna": {"name": "Pabna 64 MW", "lat": 23.961375, "lon": 89.159720, "mw": 64},
     "mymensingh": {"name": "Mymensingh (HDFC) 50 MW", "lat": 24.702233, "lon": 90.461730, "mw": 50},
     "tetulia": {"name": "Tetulia/Panchagarh (Sympa) 8 MW", "lat": 26.482817, "lon": 88.410139, "mw": 8},
     "mongla": {"name": "Mongla 100 MW", "lat": 22.574239, "lon": 89.570388, "mw": 100},
@@ -49,7 +49,7 @@ SITES = {
     "kaptai": {"name": "Kaptai 7.4 MW", "lat": 22.491471, "lon": 92.226588, "mw": 7.4},
     "sharishabari": {"name": "Sharishabari 3 MW", "lat": 24.772287, "lon": 89.842629, "mw": 3},
     "barishal": {"name": "Barishal 1 MW", "lat": 22.657015, "lon": 90.339194, "mw": 1},
-    "lalmonirhat": {"name": "Lalmonirhat Rangpur (Intraco) 30 MW", "lat": 25.912, "lon": 89.445, "mw": 30},
+    "lalmonirhat": {"name": "Lalmonirhat Rangpur (Intraco) 30 MW", "lat": 25.997873, "lon": 89.154467, "mw": 30},
 }
 
 

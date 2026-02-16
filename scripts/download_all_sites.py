@@ -38,7 +38,7 @@ BUFFER_KM = 1  # 1 km buffer → 2×2 km AOI
 SITES = {
     "teesta": {
         "name": "Teesta (Gaibandha/Beximco) 200 MW",
-        "lat": 25.629209, "lon": 89.544870,
+        "lat": 25.628342, "lon": 89.541082,
         "completed": "2023-01-08", "mw": 200,
         "pre": ["2019_01"], "post": ["2024_01"],
     },
@@ -61,9 +61,9 @@ SITES = {
         "pre": ["2022_01"], "post": ["2026_01"],
     },
     "pabna": {
-        "name": "Pabna 100 MW",
-        "lat": 23.826372, "lon": 89.606831,
-        "completed": "2024-10-23", "mw": 100,
+        "name": "Pabna 64 MW",
+        "lat": 23.961375, "lon": 89.159720,
+        "completed": "2024-10-23", "mw": 64,
         "pre": ["2021_01"], "post": ["2026_01"],
     },
     "mymensingh": {
@@ -78,13 +78,12 @@ SITES = {
         "completed": "2019-05-13", "mw": 8,
         "pre": ["2016_01"], "post": ["2021_01"],
     },
-    # Lalmonirhat coordinates missing from paste - add when available
-    # "lalmonirhat": {
-    #     "name": "Lalmonirhat Rangpur (Intraco) 30 MW",
-    #     "lat": ???, "lon": ???,
-    #     "completed": "2022-08-28", "mw": 30,
-    #     "pre": ["2019_01"], "post": ["2024_01"],
-    # },
+    "lalmonirhat": {
+        "name": "Lalmonirhat Rangpur (Intraco) 30 MW",
+        "lat": 25.997873, "lon": 89.154467,
+        "completed": "2022-08-28", "mw": 30,
+        "pre": ["2019_01"], "post": ["2024_01"],
+    },
     "mongla": {
         "name": "Mongla 100 MW",
         "lat": 22.574239, "lon": 89.570388,

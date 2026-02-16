@@ -30,11 +30,11 @@ MASK_DIR.mkdir(parents=True, exist_ok=True)
 
 # Site coordinates (from download_all_sites.py)
 SITES = {
-    "teesta": {"lat": 25.629209, "lon": 89.544870},
+    "teesta": {"lat": 25.628342, "lon": 89.541082},
     "feni": {"lat": 22.787567, "lon": 91.367187},
     "manikganj": {"lat": 23.780834, "lon": 89.824775},
     "moulvibazar": {"lat": 24.493896, "lon": 91.633043},
-    "pabna": {"lat": 23.826372, "lon": 89.606831},
+    "pabna": {"lat": 23.961375, "lon": 89.159720},
     "mymensingh": {"lat": 24.702233, "lon": 90.461730},
     "tetulia": {"lat": 26.482817, "lon": 88.410139},
     "mongla": {"lat": 22.574239, "lon": 89.570388},
@@ -44,7 +44,7 @@ SITES = {
     "kaptai": {"lat": 22.491471, "lon": 92.226588},
     "sharishabari": {"lat": 24.772287, "lon": 89.842629},
     "barishal": {"lat": 22.657015, "lon": 90.339194},
-    "lalmonirhat": {"lat": 25.912, "lon": 89.445},  # approximate
+    "lalmonirhat": {"lat": 25.997873, "lon": 89.154467},
 }
 
 BUFFER_KM_DEFAULT = 1  # fallback; actual buffer read from filename

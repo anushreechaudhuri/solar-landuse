@@ -1,8 +1,14 @@
-"""Merge Dynamic World and VLM masks into final training masks.
+"""Merge masks into final training labels (V3: DW base + GRW/VLM solar overlay).
 
-VLM (Gemini) is the primary classification source — it classifies all 7 land
-cover classes.  Dynamic World fills in only where VLM reports background
-(class 0 — clouds / shadows / unidentifiable).
+Strategy:
+  1. Start with Dynamic World mask as base (non-solar land cover at 10m detail)
+  2. If GRW mask exists → overlay solar (class 5) pixels from GRW (pixel-perfect polygons)
+  3. Else if VLM mask exists → overlay solar (class 5) pixels from VLM (blocky grid fallback)
+  4. Pre-construction images: never allow class 5 (solar → bare_land/urban)
+
+This replaces V2 (VLM-primary for all classes, DW gap-fill) with a cleaner split:
+DW provides spatially detailed non-solar context, GRW provides precise solar boundaries
+from actual polygon data. VLM is only used for solar on sites not covered by GRW.
 
 Also exports colored visualizations and copies images to training directory.
 
@@ -49,41 +55,43 @@ def parse_filename(name):
     return None
 
 
-def merge(dw_mask, vlm_mask, is_post):
-    """Merge VLM (primary) and Dynamic World (gap-fill) masks.
+def merge(dw_mask, grw_mask, vlm_mask, is_post):
+    """Merge masks: DW base + GRW/VLM solar overlay (V3).
 
     Strategy:
-    - VLM is the primary classification (all 7 classes)
-    - DW fills in only where VLM says background (class 0 — clouds/shadows)
-    - For pre-construction: never allow solar panels (class 5 → 4)
-    - Where only one source exists, use that source
+    - DW provides the base (non-solar land cover classes)
+    - GRW provides pixel-perfect solar polygons (preferred)
+    - VLM provides blocky solar grid (fallback if no GRW)
+    - Pre-construction: never allow class 5
     """
-    if vlm_mask is not None and dw_mask is not None:
-        # Both available: VLM primary, DW fills background gaps
-        merged = vlm_mask.copy()
-        bg_mask = vlm_mask == 0
-        merged[bg_mask] = dw_mask[bg_mask]
-
-        if not is_post:
-            merged[merged == 5] = 4  # no solar in pre-construction
-
-        return merged
-
-    elif vlm_mask is not None:
-        # VLM only
-        merged = vlm_mask.copy()
-        if not is_post:
-            merged[merged == 5] = 4
-        return merged
-
-    elif dw_mask is not None:
-        # DW only (fallback)
+    # Determine base mask (DW preferred, fall back to VLM for non-solar)
+    if dw_mask is not None:
         merged = dw_mask.copy()
-        if not is_post:
-            merged[merged == 5] = 4
-        return merged
+        # Remove any solar from DW (DW doesn't map solar, but just in case)
+        merged[merged == 5] = 0
+    elif vlm_mask is not None:
+        # No DW available — use VLM as base but strip solar (will re-add below)
+        merged = vlm_mask.copy()
+        merged[merged == 5] = 0
+    else:
+        return None
 
-    return None
+    # Overlay solar from best available source
+    if is_post:
+        if grw_mask is not None:
+            # GRW: pixel-perfect polygon boundaries
+            solar_pixels = grw_mask == 5
+            merged[solar_pixels] = 5
+        elif vlm_mask is not None:
+            # VLM fallback: blocky 20x20 grid solar
+            solar_pixels = vlm_mask == 5
+            merged[solar_pixels] = 5
+
+    # Pre-construction enforcement: no solar allowed
+    if not is_post:
+        merged[merged == 5] = 4  # solar → urban (nearest built class)
+
+    return merged
 
 
 def create_colored_mask(mask):
@@ -107,9 +115,18 @@ def print_class_distribution(mask, prefix=""):
     print(f"{prefix}{', '.join(parts)}")
 
 
+def resize_mask(mask, target_w, target_h, name, stem):
+    """Resize mask to target dimensions if needed."""
+    if mask.shape != (target_h, target_w):
+        print(f"  {stem}: {name} mask size {mask.shape} != image size ({target_h},{target_w}), resizing")
+        m_img = Image.fromarray(mask.astype(np.uint8))
+        return np.array(m_img.resize((target_w, target_h), Image.NEAREST))
+    return mask
+
+
 def main():
     print("=" * 60)
-    print("Merge Dynamic World + VLM Masks")
+    print("Merge Masks V3: DW base + GRW/VLM solar overlay")
     print("=" * 60)
 
     # Find all PNG images (1km and 5km)
@@ -119,30 +136,28 @@ def main():
     success = 0
     skipped = 0
     failed = 0
+    grw_count = 0
+    vlm_count = 0
 
     for png_path in png_files:
         stem = png_path.stem
         period = parse_filename(png_path.name)
         is_post = period == "post"
 
-        # Check for existing final mask
         final_mask_path = MASK_DIR / f"{stem}_mask.png"
         colored_path = MASK_DIR / f"{stem}_mask_colored.png"
 
         # Load available masks
         dw_path = MASK_DIR / f"{stem}_dw_mask.png"
         vlm_path = MASK_DIR / f"{stem}_vlm_mask.png"
+        grw_path = MASK_DIR / f"{stem}_grw_mask.png"
 
-        dw_mask = None
-        vlm_mask = None
-
-        if dw_path.exists():
-            dw_mask = np.array(Image.open(dw_path))
-        if vlm_path.exists():
-            vlm_mask = np.array(Image.open(vlm_path))
+        dw_mask = np.array(Image.open(dw_path)) if dw_path.exists() else None
+        vlm_mask = np.array(Image.open(vlm_path)) if vlm_path.exists() else None
+        grw_mask = np.array(Image.open(grw_path)) if grw_path.exists() else None
 
         if dw_mask is None and vlm_mask is None:
-            print(f"  {stem}: no masks available, skipping")
+            print(f"  {stem}: no base masks available, skipping")
             failed += 1
             continue
 
@@ -150,19 +165,16 @@ def main():
         img = Image.open(png_path)
         w, h = img.size
 
-        # Validate mask dimensions match image
-        for name, m in [("DW", dw_mask), ("VLM", vlm_mask)]:
-            if m is not None and m.shape != (h, w):
-                print(f"  {stem}: {name} mask size {m.shape} != image size ({h},{w}), resizing")
-                m_img = Image.fromarray(m.astype(np.uint8))
-                m_resized = m_img.resize((w, h), Image.NEAREST)
-                if name == "DW":
-                    dw_mask = np.array(m_resized)
-                else:
-                    vlm_mask = np.array(m_resized)
+        # Validate/resize mask dimensions
+        if dw_mask is not None:
+            dw_mask = resize_mask(dw_mask, w, h, "DW", stem)
+        if vlm_mask is not None:
+            vlm_mask = resize_mask(vlm_mask, w, h, "VLM", stem)
+        if grw_mask is not None:
+            grw_mask = resize_mask(grw_mask, w, h, "GRW", stem)
 
         # Merge
-        merged = merge(dw_mask, vlm_mask, is_post)
+        merged = merge(dw_mask, grw_mask, vlm_mask, is_post)
         if merged is None:
             print(f"  {stem}: merge failed")
             failed += 1
@@ -180,13 +192,20 @@ def main():
         if not dest_img.exists():
             shutil.copy2(str(png_path), str(dest_img))
 
-        # Print summary
+        # Determine solar source for logging
         sources = []
         if dw_mask is not None:
             sources.append("DW")
-        if vlm_mask is not None:
-            sources.append("VLM")
-        source_str = "+".join(sources)
+        solar_source = "none"
+        if is_post:
+            if grw_mask is not None and np.any(grw_mask == 5):
+                solar_source = "GRW"
+                grw_count += 1
+            elif vlm_mask is not None and np.any(vlm_mask == 5):
+                solar_source = "VLM"
+                vlm_count += 1
+        sources.append(f"solar:{solar_source}")
+        source_str = ", ".join(sources)
 
         print(f"  {stem} ({source_str}, {'post' if is_post else 'pre'}): ", end="")
         print_class_distribution(merged)
@@ -195,6 +214,7 @@ def main():
 
     print(f"\n{'=' * 60}")
     print(f"Done: {success} merged, {skipped} skipped, {failed} failed")
+    print(f"Solar sources: {grw_count} GRW (polygon), {vlm_count} VLM (grid fallback)")
     print(f"Final masks: {MASK_DIR}/*_mask.png")
     print(f"Visualizations: {MASK_DIR}/*_mask_colored.png")
     print(f"Training images: {IMAGES_DIR}/")

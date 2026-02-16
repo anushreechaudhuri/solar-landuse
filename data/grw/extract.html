@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><title>Extract Polygons</title></head>
+<body style="font-family: sans-serif; padding: 20px;">
+<h2>Extract Drawn Polygons from localStorage</h2>
+<p>Your drawn polygons are stored in this browser's localStorage. Click the button to display them.</p>
+<button onclick="extract()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Extract Polygons</button>
+<p id="status"></p>
+<textarea id="output" style="width: 100%; height: 400px; font-family: monospace; font-size: 12px; display: none;"></textarea>
+<script>
+function extract() {
+    const raw = localStorage.getItem('drawn_polygons');
+    if (!raw) {
+        document.getElementById('status').innerHTML = '<b style="color:red">No drawn_polygons found in localStorage!</b><br>Make sure you open this file from the same browser where you drew the polygons.';
+        return;
+    }
+    const polygons = JSON.parse(raw);
+    const count = Object.keys(polygons).length;
+
+    // Build confirmed_matches.json format
+    const result = {};
+    const siteNames = {
+        teesta: "Teesta (Gaibandha/Beximco) 200 MW",
+        feni: "Feni/Sonagazi 75 MW",
+        manikganj: "Manikganj (Spectra) 35 MW",
+        moulvibazar: "Moulvibazar 10 MW",
+        pabna: "Pabna 64 MW",
+        mymensingh: "Mymensingh (HDFC) 50 MW",
+        tetulia: "Tetulia/Panchagarh (Sympa) 8 MW",
+        lalmonirhat: "Lalmonirhat Rangpur (Intraco) 30 MW",
+        mongla: "Mongla 100 MW",
+        sirajganj68: "Sirajganj 68 MW",
+        teknaf: "Teknaf (Joules) 20 MW",
+        sirajganj6: "Sirajganj 6 MW",
+        kaptai: "Kaptai 7.4 MW",
+        sharishabari: "Sharishabari 3 MW",
+        barishal: "Barishal 1 MW"
+    };
+
+    Object.keys(polygons).forEach(key => {
+        result[key] = {
+            name: siteNames[key] || key,
+            polygons: polygons[key],
+            total_area_m2: 0,
+            construction_dates: []
+        };
+    });
+
+    const jsonStr = JSON.stringify(result, null, 2);
+
+    const ta = document.getElementById('output');
+    ta.style.display = 'block';
+    ta.value = jsonStr;
+    ta.select();
+
+    document.getElementById('status').innerHTML =
+        '<b style="color:green">Found ' + count + ' sites with polygons!</b><br>' +
+        'The JSON is shown below. Select all (Cmd+A in the textarea), copy (Cmd+C), then:<br>' +
+        '<code>pbpaste > data/grw/confirmed_matches.json</code><br>' +
+        'Or just tell Claude to read it from the textarea.';
+}
+</script>
+</body>
+</html>

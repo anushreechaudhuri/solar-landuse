@@ -52,9 +52,11 @@ data/raw_images/
 data/for_labeling/
 data/labels/
 data/processed/
-data/training_dataset/images/
-data/training_dataset/masks/
-data/training_dataset/vlm_responses/
+data/training_dataset/
+data/lulc_raw_cache/
+data/lulc_comparison/
+data/vlm_v2_responses/
+data/*.csv
 models/*.pth
 models/*.h5
 models/*.ckpt

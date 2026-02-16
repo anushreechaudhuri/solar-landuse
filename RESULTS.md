@@ -370,3 +370,141 @@ The V2 model converges to a significantly lower loss (0.048) than V1 (0.29), sug
 - Add more 5km buffer sites for regional context analysis
 - Cross-validate VLM classifications against high-res Google Earth imagery
 - Fine-tune VLM prompt with Bangladesh-specific land cover examples
+
+---
+
+## V3: Multi-Dataset LULC Comparison (10-Class Scheme)
+
+### Methodology
+
+Four global LULC datasets compared using a unified 10-class scheme, plus VLM (Gemini 2.0 Flash) at the percentage level. All datasets are remapped to a common scheme to preserve each dataset's native granularity.
+
+| ID | Class | Dynamic World | WorldCover | ESRI | GLAD |
+|:--:|-------|:------------:|:----------:|:----:|:----:|
+| 0 | No Data/Cloud | — | — | 1 (nodata), 9 (cloud) | 0 |
+| 1 | Cropland | 4 (crops) | 40 | 5 (crops) | 244-249 |
+| 2 | Trees/Forest | 1 (trees) | 10 | 3 (trees) | 49-96 |
+| 3 | Shrub/Scrub | 5 (shrub) | 20 | — | 25-48 |
+| 4 | Grassland | 2 (grass) | 30 | 10 (rangeland) | — |
+| 5 | Flooded Veg | 3 | 90, 95 (mangrove) | 4 | 100-196 |
+| 6 | Built-up | 6 (built) | 50 | 6 (built) | 209-211, 250-253 |
+| 7 | Bare Ground | 7 (bare) | 60, 100 (lichen) | 7 (bare) | 1-24 |
+| 8 | Water | 0 (water) | 80 | 2 (water) | 200-207 |
+| 9 | Snow/Ice | 8 (snow) | 70 | 8 (snow) | 208 |
+
+VLM V2 (Gemini 2.0 Flash): Direct 10-class percentage estimation. For post-construction images, solar polygon boundaries are drawn on the image and Gemini classifies only the non-solar area. Solar percentage is computed from polygon geometry. All 10 classes available.
+
+**Temporal coverage of each dataset:**
+
+| Dataset | Temporal | Resolution | Notes |
+|---------|----------|------------|-------|
+| Dynamic World | Per-date composite (+/- 2 months) | 10m | Only dataset with true pre/post temporal coverage |
+| WorldCover | Single snapshot (2021) | 10m | Static -- pre/post values identical |
+| ESRI LULC | Annual (2017-2024, with fallback) | 10m | Closest available year used; high no_data (30-77%) at some sites |
+| GLAD GLCLUC | Single snapshot (2020) | 30m | Static -- pre/post values identical |
+| VLM V2 (Gemini) | Per-image (matches satellite date) | Percentage-level | Temporal, 10-class, polygon-aware for post images |
+
+Only Dynamic World and VLM provide temporally-matched classifications for detecting pre→post change. WorldCover and GLAD are single-date products, so they cannot show change. ESRI provides annual maps but uses fallback years when the target year is unavailable.
+
+### Average Class Distribution (Pre-Construction, 1km AOI)
+
+![Average Class Distribution](docs/figures/v3_avg_class_distribution.png)
+
+| Class | DW | WC | ESRI | GLAD | VLM |
+|-------|:---:|:---:|:---:|:---:|:---:|
+| cropland | 22.8% | 40.5% | 35.2% | 41.4% | 44.7% |
+| trees | 26.9% | 24.7% | 0.0% | 0.0% | 18.9% |
+| shrub | 3.9% | 0.0% | 0.0% | 5.8% | 4.3% |
+| grassland | 0.4% | 9.3% | 0.0% | 0.0% | 7.3% |
+| flooded_veg | 3.2% | 0.6% | 0.6% | 12.9% | 5.7% |
+| built | 9.1% | 2.7% | 0.0% | 16.1% | 7.2% |
+| bare | 11.5% | 6.1% | 16.7% | 4.8% | 7.5% |
+| water | 22.1% | 16.2% | 9.4% | 18.6% | 4.3% |
+| snow | 0.0% | 0.0% | 4.5% | 0.0% | 0.0% |
+
+### Pre-Construction Land Cover Within Solar Polygons
+
+![Within Polygon LULC](docs/figures/v3_within_polygon_lulc.png)
+
+Per-site breakdown (average of 4 GEE datasets):
+
+| Site | cropland | trees | shrub | grassland | flooded_veg | built | bare | water | snow |
+|------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| barishal | 5.0% | 35.8% | 0.0% | 7.9% | 0.0% | 25.0% | 23.6% | 1.2% | 0.0% |
+| feni | 56.9% | 0.0% | 7.3% | 11.0% | 6.9% | 0.1% | 3.6% | 4.7% | 0.0% |
+| kaptai | 22.1% | 15.2% | 10.3% | 22.2% | 0.7% | 26.1% | 2.6% | 0.1% | 0.0% |
+| lalmonirhat | 82.1% | 1.9% | 0.0% | 1.9% | 1.2% | 2.1% | 6.8% | 1.6% | 1.6% |
+| manikganj | 43.8% | 20.3% | 0.7% | 1.1% | 0.0% | 1.3% | 27.2% | 3.5% | 0.0% |
+| mongla | 27.9% | 0.1% | 0.1% | 5.2% | 11.8% | 0.8% | 14.4% | 18.9% | 4.1% |
+| moulvibazar | 93.7% | 3.5% | 0.1% | 0.7% | 1.9% | 0.0% | 0.0% | 0.0% | 0.0% |
+| mymensingh | 37.1% | 14.3% | 4.2% | 22.9% | 1.9% | 0.8% | 6.0% | 8.5% | 0.0% |
+| pabna | 81.0% | 9.3% | 0.0% | 2.8% | 0.8% | 0.5% | 3.8% | 0.7% | 0.0% |
+| sharishabari | 0.0% | 4.4% | 0.0% | 16.9% | 0.0% | 35.7% | 35.5% | 7.5% | 0.0% |
+| sirajganj6 | 30.8% | 6.3% | 0.5% | 12.8% | 0.5% | 8.3% | 14.8% | 10.5% | 0.8% |
+| sirajganj68 | 67.3% | 12.6% | 0.8% | 1.6% | 1.1% | 1.2% | 4.4% | 7.4% | 0.4% |
+| teesta | 56.4% | 2.8% | 0.5% | 4.0% | 0.8% | 8.1% | 6.9% | 0.1% | 0.0% |
+| teknaf | 28.6% | 0.0% | 0.6% | 8.3% | 1.5% | 36.9% | 18.6% | 5.5% | 0.0% |
+| tetulia | 36.4% | 7.9% | 0.0% | 8.1% | 0.0% | 45.1% | 2.4% | 0.1% | 0.0% |
+
+Key finding: Solar farms in Bangladesh primarily replaced **cropland (45%)**, **built (13%)**, **bare (11%)**.
+
+### Pre vs Post Construction Change (Dynamic World only)
+
+![Pre vs Post Change](docs/figures/v3_pre_vs_post_change.png)
+
+Since only Dynamic World has true temporal coverage matching our pre/post image dates, the DW change signal is the most meaningful. WorldCover and GLAD are static snapshots (0.0 pp change expected). ESRI provides some temporal signal but is confounded by fallback year selection and high no_data.
+
+**Dynamic World pre→post change (1km AOI, 15 sites):**
+
+| Class | DW Δ | Interpretation |
+|-------|:---:|--------------|
+| cropland | **-7.8 pp** | Primary land converted to solar |
+| trees | **-4.8 pp** | Secondary loss, likely clearing for infrastructure |
+| shrub | +2.0 pp | Post-construction regrowth or reclassification |
+| grassland | +0.3 pp | Minor |
+| flooded_veg | +0.4 pp | Minor |
+| built | **+5.0 pp** | Solar panels, substations, roads classified as built |
+| bare | **+4.5 pp** | Construction activity, cleared land |
+| water | -0.6 pp | Minor |
+| snow | +1.0 pp | Likely reflective solar panel surfaces misclassified |
+
+### Cross-Dataset Agreement
+
+![Dataset Agreement](docs/figures/v3_dataset_agreement.png)
+
+The agreement analysis examines how often the 4 GEE datasets agree on the dominant land cover class for each image. Higher agreement suggests more confidence in the classification.
+
+### Example Site Comparisons
+
+![Example Comparisons](docs/figures/v3_example_comparisons.png)
+
+Representative side-by-side comparisons showing the source satellite image alongside the 4 GEE dataset classifications using the 10-class color scheme.
+
+### VLM V2 vs GEE Dataset Comparison
+
+![VLM vs GEE](docs/figures/v3_vlm_vs_gee.png)
+
+VLM V2 uses Gemini 2.0 Flash with the 10-class scheme and polygon-awareness for post-construction images. For post images, solar polygon boundaries are drawn on the image and Gemini classifies only the non-solar area. Solar percentage is computed from polygon geometry.
+
+**VLM V2 vs Dynamic World (pre-construction, 1km):**
+
+| Class | VLM V2 | DW | Difference |
+|-------|:------:|:--:|:----------:|
+| cropland | 44.7% | 22.8% | +21.9 pp |
+| trees | 18.9% | 26.9% | -8.0 pp |
+| shrub | 4.3% | 3.9% | +0.4 pp |
+| grassland | 7.3% | 0.4% | +7.0 pp |
+| flooded_veg | 5.7% | 3.2% | +2.5 pp |
+| built | 7.2% | 9.1% | -1.9 pp |
+| bare | 7.5% | 11.5% | -4.1 pp |
+| water | 4.3% | 22.1% | -17.8 pp |
+| snow | 0.0% | 0.0% | -0.0 pp |
+
+### Key Findings
+
+1. **Cropland is the primary pre-solar land cover.** Both GEE datasets and VLM V2 consistently identify cropland as the dominant class within solar polygon areas.
+2. **Only Dynamic World and VLM V2 provide true change detection.** WC and GLAD are static snapshots, ESRI has high no_data and fallback year contamination.
+3. **DW detects cropland-to-built conversion.** DW has no solar class, so panels appear as built/bare/snow.
+4. **VLM V2 provides polygon-aware classification.** For post-construction images, VLM knows the solar percentage from polygon geometry and classifies only the remaining area, avoiding the solar-as-built misclassification issue.
+5. **Cross-dataset agreement is moderate.** Cropland is the most consistently identified dominant class, but other classes vary widely between datasets.
+6. **ESRI and GLAD have systematic issues for Bangladesh.** ESRI has high no_data and misclassifies bright surfaces. Both datasets' built percentages in pre-construction polygons may be inflated by temporal mismatch.
