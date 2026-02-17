@@ -4,6 +4,8 @@ Analyzes land use change at solar energy project sites in South Asia using satel
 
 Includes a **polygon verification web app** for labelers to confirm/edit solar installation boundaries across ~5,000 South Asian projects, browse 628 unmatched GRW solar detections, and merge them with GEM projects.
 
+Also includes a **LULC labeling studio** (`/label`) for hand-labeling satellite images with 10 land use classes using polygon annotation tools, with pre-loaded solar installation boundaries for post-construction images.
+
 ## Current Scope
 
 - **5,093 utility-scale solar phases** across 6 South Asian countries (India, Bangladesh, Pakistan, Nepal, Sri Lanka, Bhutan)
@@ -47,6 +49,31 @@ A Next.js web app for labelers to verify and edit solar installation polygons ma
 - **GRW feature editing**: Add name, capacity, status, notes to unmatched satellite detections
 - **Coordinates**: click-to-copy in decimal degrees and DMS format
 - **Reviewer tracking**: name persisted in localStorage, append-only review log in Postgres
+
+## LULC Labeling Studio
+
+A Leaflet-based annotation interface at `/label` for hand-labeling satellite images with 10 LULC classes.
+
+### Features
+
+- **51 satellite images** across 15 Bangladesh solar sites (pre/post construction, 1km and 5km buffers)
+- **10 LULC classes**: Cropland, Trees, Shrub, Grassland, Flooded Veg, Built, Bare, Water, Snow/Ice, No Data
+- **Polygon annotation** with Leaflet.Draw: draw, edit, delete polygons
+- **Solar polygon overlay**: Pre-loaded GRW solar installation boundaries shown as dashed red outlines on post-construction images
+- **Class assignment**: Select class, draw polygon; click existing polygon to reassign class
+- **Keyboard shortcuts**: 1-9, 0 for class selection; Ctrl+S to save
+- **Per-annotator persistence**: One annotation set per task per annotator, auto-loaded on revisit
+- **Export endpoint**: `GET /api/labeling/export` returns all annotations as JSON for ML training
+- **Images served from S3**: 51 PNGs stored in S3, served via presigned URLs (no data files in repo)
+
+### Labeling Setup
+
+```bash
+# Upload images to S3 and seed labeling tasks
+python3 scripts/seed_labeling.py
+# Uploads 51 PNGs to S3, creates labeling_tasks + labeling_annotations tables
+# Requires POSTGRES_URL and AWS credentials in .env
+```
 
 ### Pre-processing Pipeline
 
@@ -107,6 +134,7 @@ npm run dev
 | `scripts/query_grw_south_asia.py` | Query GRW solar polygons from GEE (3,957 features) |
 | `scripts/match_gspt_grw.py` | Spatial matching of GSPT coords to GRW polygons |
 | `scripts/seed_database.py` | Seed Vercel Postgres from matched data |
+| `scripts/seed_labeling.py` | Upload images to S3 + seed labeling tasks |
 
 ### Classification & Analysis
 
@@ -164,11 +192,12 @@ solar-landuse/
 │   ├── vlm_v2_responses/          # Cached Gemini classification results
 │   ├── lulc_raw_cache/            # Cached GEE dataset values (.npz)
 │   └── lulc_comparison/           # Per-image LULC visualizations
-├── webapp/                        # Next.js polygon verification app
+├── webapp/                        # Next.js web app (polygon verification + LULC labeling)
 │   ├── app/                       # App Router pages & API routes
-│   │   └── api/                   # projects, grw-features, merge, nearby, overview, stats
-│   ├── components/                # React components (Map, ProjectList, GrwFeatureList, MergeDialog, etc.)
-│   ├── lib/                       # Database queries & TypeScript types
+│   │   ├── api/                   # projects, grw-features, merge, nearby, overview, stats, labeling
+│   │   └── label/                 # LULC labeling studio page
+│   ├── components/                # React components (Map, ProjectList, LabelingApp, etc.)
+│   ├── lib/                       # Database queries, TypeScript types, S3 helpers
 │   └── package.json
 ├── scripts/
 │   ├── extract_gspt_south_asia.py # GSPT extraction for South Asia

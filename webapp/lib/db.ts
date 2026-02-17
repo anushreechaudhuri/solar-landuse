@@ -474,3 +474,87 @@ export async function findNearbyGrwFeatures(lat: number, lon: number, radiusKm: 
   );
   return result.rows;
 }
+
+// --- Labeling ---
+
+export async function getLabelingTasks() {
+  const result = await sql.query(`
+    SELECT t.*,
+      (SELECT COUNT(*) FROM labeling_annotations WHERE task_id = t.id) as annotation_count
+    FROM labeling_tasks t
+    ORDER BY t.site_name, t.buffer_km, t.year, t.period
+  `);
+  return result.rows.map((row) => ({
+    ...row,
+    solar_polygon_pixels:
+      typeof row.solar_polygon_pixels === "string"
+        ? JSON.parse(row.solar_polygon_pixels)
+        : row.solar_polygon_pixels,
+  }));
+}
+
+export async function getLabelingTask(id: number) {
+  const result = await sql`
+    SELECT * FROM labeling_tasks WHERE id = ${id}
+  `;
+  if (result.rows.length === 0) return null;
+
+  const row = result.rows[0];
+  const annotations = await sql`
+    SELECT * FROM labeling_annotations WHERE task_id = ${id} ORDER BY updated_at DESC
+  `;
+
+  return {
+    ...row,
+    solar_polygon_pixels:
+      typeof row.solar_polygon_pixels === "string"
+        ? JSON.parse(row.solar_polygon_pixels)
+        : row.solar_polygon_pixels,
+    annotations: annotations.rows.map((a) => ({
+      ...a,
+      regions: typeof a.regions === "string" ? JSON.parse(a.regions) : a.regions,
+    })),
+  };
+}
+
+export async function saveAnnotation(
+  taskId: number,
+  annotator: string,
+  regions: unknown[]
+) {
+  // Upsert: one annotation per task per annotator
+  const existing = await sql.query(
+    `SELECT id FROM labeling_annotations WHERE task_id = $1 AND annotator = $2`,
+    [taskId, annotator]
+  );
+
+  if (existing.rows.length > 0) {
+    await sql.query(
+      `UPDATE labeling_annotations SET regions = $1, updated_at = NOW() WHERE id = $2`,
+      [JSON.stringify(regions), existing.rows[0].id]
+    );
+    return existing.rows[0].id;
+  } else {
+    const result = await sql.query(
+      `INSERT INTO labeling_annotations (task_id, annotator, regions)
+       VALUES ($1, $2, $3) RETURNING id`,
+      [taskId, annotator, JSON.stringify(regions)]
+    );
+    return result.rows[0].id;
+  }
+}
+
+export async function getAllAnnotations() {
+  const result = await sql.query(`
+    SELECT a.*, t.site_name, t.buffer_km, t.year, t.month, t.period,
+           t.image_filename, t.image_width, t.image_height,
+           t.bbox_west, t.bbox_south, t.bbox_east, t.bbox_north
+    FROM labeling_annotations a
+    JOIN labeling_tasks t ON a.task_id = t.id
+    ORDER BY t.site_name, t.year
+  `);
+  return result.rows.map((row) => ({
+    ...row,
+    regions: typeof row.regions === "string" ? JSON.parse(row.regions) : row.regions,
+  }));
+}

@@ -107,3 +107,54 @@ export interface MergeHistoryEntry {
   notes: string | null;
   created_at: string;
 }
+
+// --- Labeling ---
+
+export interface LabelingTask {
+  id: number;
+  site_name: string;
+  site_display_name: string | null;
+  buffer_km: number;
+  year: number;
+  month: number | null;
+  period: string;
+  image_filename: string;
+  s3_key: string;
+  image_width: number;
+  image_height: number;
+  bbox_west: number | null;
+  bbox_south: number | null;
+  bbox_east: number | null;
+  bbox_north: number | null;
+  solar_polygon_pixels: number[][][] | null;
+  annotation_count?: number;
+  created_at: string;
+}
+
+export interface AnnotationRegion {
+  id: string;
+  class_name: string;
+  points: [number, number][];
+}
+
+export interface LabelingAnnotation {
+  id: number;
+  task_id: number;
+  annotator: string;
+  regions: AnnotationRegion[];
+  created_at: string;
+  updated_at: string;
+}
+
+export const LULC_CLASSES = [
+  { name: "cropland", label: "Cropland", color: "#DDCC77" },
+  { name: "trees", label: "Trees", color: "#117733" },
+  { name: "shrub", label: "Shrub", color: "#999933" },
+  { name: "grassland", label: "Grassland", color: "#44AA99" },
+  { name: "flooded_veg", label: "Flooded Veg", color: "#332288" },
+  { name: "built", label: "Built", color: "#CC6677" },
+  { name: "bare", label: "Bare", color: "#882255" },
+  { name: "water", label: "Water", color: "#88CCEE" },
+  { name: "snow", label: "Snow/Ice", color: "#BBBBBB" },
+  { name: "no_data", label: "No Data", color: "#DDDDDD" },
+] as const;
