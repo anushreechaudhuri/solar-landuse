@@ -24,6 +24,7 @@ import ee
 import io
 import json
 import math
+import sys
 import numpy as np
 import rasterio
 import re
@@ -37,6 +38,14 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from figure_style import (
+    apply_style, save_fig, LULC_COLORS, LULC_COLORS_RGB, CLASS_LABELS,
+    CLASS_ORDER, DATASET_COLORS, DATASET_LABELS, CHANGE_COLORS,
+    get_lulc_color_list, get_class_label_list, FULL_WIDTH, HALF_WIDTH,
+    DPI, title_case, make_lulc_legend, SOLAR_STYLE,
+)
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 
@@ -92,21 +101,9 @@ CLASS_NAMES = {
     9: 'snow',
 }
 
-CLASS_COLORS = {
-    0: [0, 0, 0],           # no_data - black
-    1: [255, 255, 0],       # cropland - yellow
-    2: [0, 128, 0],         # trees - green
-    3: [170, 210, 120],     # shrub - light green
-    4: [144, 238, 144],     # grassland - pale green
-    5: [0, 180, 180],       # flooded_veg - teal
-    6: [255, 0, 0],         # built - red
-    7: [165, 42, 42],       # bare - brown
-    8: [0, 0, 255],         # water - blue
-    9: [255, 255, 255],     # snow - white
-}
-
-# Colors for matplotlib (0-1 scale)
-CLASS_COLORS_MPL = {k: [c / 255.0 for c in v] for k, v in CLASS_COLORS.items()}
+def _class_colors_by_id():
+    """Map class ID → RGB tuple (0-255) using figure_style palette."""
+    return {i: LULC_COLORS_RGB[CLASS_ORDER[i]] for i in range(NUM_CLASSES)}
 
 DATASET_NAMES = ['Dynamic World', 'WorldCover', 'ESRI LULC', 'GLAD', 'VLM']
 DATASET_KEYS = ['dw', 'worldcover', 'esri', 'glad', 'vlm']
@@ -289,9 +286,10 @@ def class_percentages(mask, exclude_classes=None):
 
 def colorize(mask):
     """Convert single-channel class mask to RGB."""
+    colors_by_id = _class_colors_by_id()
     h, w = mask.shape
     rgb = np.zeros((h, w, 3), dtype=np.uint8)
-    for cid, color in CLASS_COLORS.items():
+    for cid, color in colors_by_id.items():
         rgb[mask == cid] = color
     return rgb
 
@@ -582,17 +580,18 @@ def make_visualization(source_img, masks, stem):
         draw.text((x_offset + 4, 8), label, fill=(0, 0, 0), font=font)
 
     # Legend rows at bottom (2 rows of 5 classes)
+    colors_by_id = _class_colors_by_id()
     legend_y = header_h + viz_h + 4
     for row_idx, class_ids in enumerate([[1, 2, 3, 4, 5], [6, 7, 8, 9, 0]]):
         x_cursor = 4
         y = legend_y + row_idx * 18
         for cid in class_ids:
-            color = tuple(CLASS_COLORS[cid])
-            name = CLASS_NAMES[cid]
+            color = tuple(colors_by_id[cid])
+            label = CLASS_LABELS[CLASS_ORDER[cid]]
             draw.rectangle([x_cursor, y, x_cursor + 12, y + 12],
                            fill=color, outline=(0, 0, 0))
-            draw.text((x_cursor + 15, y), name, fill=(0, 0, 0), font=font_small)
-            x_cursor += 15 + len(name) * 7 + 10
+            draw.text((x_cursor + 15, y), label, fill=(0, 0, 0), font=font_small)
+            x_cursor += 15 + len(label) * 7 + 10
 
     return img
 
@@ -756,20 +755,32 @@ def _class_labels():
     return [CLASS_NAMES[i] for i in range(1, NUM_CLASSES)]
 
 
+def _class_display_labels():
+    """Return ordered display labels for plotting (skip no_data)."""
+    return get_class_label_list(skip_nodata=True)
+
+
 def _class_colors_list():
-    """Return ordered colors for plotting (skip no_data)."""
-    return [CLASS_COLORS_MPL[i] for i in range(1, NUM_CLASSES)]
+    """Return ordered hex colors for plotting (skip no_data)."""
+    return get_lulc_color_list(skip_nodata=True)
 
 
 def generate_figures(rows, polygon_rows):
-    """Generate 5 summary matplotlib figures."""
+    """Generate 6 summary matplotlib figures."""
     print("\n" + "=" * 70)
     print("Generating Summary Figures")
     print("=" * 70)
 
-    class_labels = _class_labels()
+    apply_style()
+
+    class_labels = _class_labels()          # snake_case keys for CSV lookup
+    display_labels = _class_display_labels() # title-case for axis labels
     class_colors = _class_colors_list()
     n_classes = len(class_labels)
+
+    ds_keys_ordered = DATASET_KEYS
+    ds_label_list = [DATASET_LABELS.get(k, k) for k in ds_keys_ordered]
+    ds_color_list = [DATASET_COLORS.get(k, '#999999') for k in ds_keys_ordered]
 
     # Filter to 1km images only for aggregate stats
     rows_1km = [r for r in rows if r['buffer_km'] == 1]
@@ -778,30 +789,28 @@ def generate_figures(rows, polygon_rows):
 
     # ── Figure 1: Average class distribution across datasets ──
     print("  Figure 1: Average class distribution...")
-    fig, ax = plt.subplots(figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(FULL_WIDTH, 3.5))
     x = np.arange(n_classes)
     bar_width = 0.15
-    ds_labels = ['DW', 'WC', 'ESRI', 'GLAD', 'VLM']
-    ds_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
 
-    for i, ds_key in enumerate(DATASET_KEYS):
+    for i, ds_key in enumerate(ds_keys_ordered):
         means = []
         for cname in class_labels:
             col = f'{ds_key}_{cname}'
             vals = [r[col] for r in pre_rows if r.get(col, -1) >= 0]
             means.append(np.mean(vals) if vals else 0)
         ax.bar(x + i * bar_width, means, bar_width,
-               label=ds_labels[i], color=ds_colors[i])
+               label=ds_label_list[i], color=ds_color_list[i])
 
     ax.set_xlabel('Land Cover Class')
-    ax.set_ylabel('Mean % (pre-construction, 1km)')
+    ax.set_ylabel('Mean % (Pre-Construction, 1 km)')
     ax.set_title('Average Class Distribution by Dataset (Pre-Construction)')
     ax.set_xticks(x + bar_width * 2)
-    ax.set_xticklabels(class_labels, rotation=45, ha='right')
+    ax.set_xticklabels(display_labels, rotation=45, ha='right')
     ax.legend()
     ax.set_ylim(0, 100)
     plt.tight_layout()
-    fig.savefig(str(FIG_DIR / 'v3_avg_class_distribution.png'), dpi=150)
+    save_fig(fig, FIG_DIR / 'v3_avg_class_distribution.png')
     plt.close(fig)
     print("    Saved v3_avg_class_distribution.png")
 
@@ -821,7 +830,7 @@ def generate_figures(rows, polygon_rows):
                         site_avg[site][cn].append(pr[col])
 
         sites_sorted = sorted(site_avg.keys())
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=(FULL_WIDTH, 3.5))
         x = np.arange(len(sites_sorted))
         bottom = np.zeros(len(sites_sorted))
 
@@ -831,18 +840,20 @@ def generate_figures(rows, polygon_rows):
                 v = site_avg[s][cn]
                 vals.append(np.mean(v) if v else 0)
             vals = np.array(vals)
-            ax.bar(x, vals, bottom=bottom, label=cn, color=class_colors[ci])
+            ax.bar(x, vals, bottom=bottom, label=display_labels[ci],
+                   color=class_colors[ci])
             bottom += vals
 
         ax.set_xlabel('Site')
         ax.set_ylabel('% of Polygon Area')
         ax.set_title('Pre-Construction Land Cover Within Solar Polygons\n(Average of DW, WC, ESRI, GLAD)')
         ax.set_xticks(x)
-        ax.set_xticklabels(sites_sorted, rotation=45, ha='right')
-        ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=8)
+        ax.set_xticklabels([title_case(s) for s in sites_sorted],
+                           rotation=45, ha='right')
+        ax.legend(bbox_to_anchor=(1.02, 1), loc='upper left')
         ax.set_ylim(0, 105)
         plt.tight_layout()
-        fig.savefig(str(FIG_DIR / 'v3_within_polygon_lulc.png'), dpi=150)
+        save_fig(fig, FIG_DIR / 'v3_within_polygon_lulc.png')
         plt.close(fig)
         print("    Saved v3_within_polygon_lulc.png")
     else:
@@ -850,12 +861,12 @@ def generate_figures(rows, polygon_rows):
 
     # ── Figure 3: Pre vs Post change ──
     print("  Figure 3: Pre vs Post change...")
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(FULL_WIDTH, 5.0))
     axes = axes.flatten()
 
     for idx, ds_key in enumerate(GEE_DATASET_KEYS):
         ax = axes[idx]
-        ds_label = ['Dynamic World', 'WorldCover', 'ESRI LULC', 'GLAD'][idx]
+        ds_label = DATASET_LABELS[ds_key]
 
         pre_means = []
         post_means = []
@@ -867,19 +878,19 @@ def generate_figures(rows, polygon_rows):
             post_means.append(np.mean(post_vals) if post_vals else 0)
 
         changes = [post - pre for pre, post in zip(pre_means, post_means)]
-        colors = ['#2ca02c' if c >= 0 else '#d62728' for c in changes]
+        colors = [CHANGE_COLORS['increase'] if c >= 0
+                  else CHANGE_COLORS['decrease'] for c in changes]
         ax.barh(np.arange(n_classes), changes, color=colors)
         ax.set_yticks(np.arange(n_classes))
-        ax.set_yticklabels(class_labels, fontsize=9)
+        ax.set_yticklabels(display_labels)
         ax.set_xlabel('Change (pp)')
         ax.set_title(ds_label)
         ax.axvline(0, color='black', linewidth=0.5)
 
-    plt.suptitle('Pre → Post Construction Change by Dataset (1km AOI)',
-                 fontsize=13, y=1.01)
+    fig.suptitle('Pre \u2192 Post Construction Change by Dataset (1 km AOI)',
+                 fontsize=10, y=1.01)
     plt.tight_layout()
-    fig.savefig(str(FIG_DIR / 'v3_pre_vs_post_change.png'), dpi=150,
-                bbox_inches='tight')
+    save_fig(fig, FIG_DIR / 'v3_pre_vs_post_change.png')
     plt.close(fig)
     print("    Saved v3_pre_vs_post_change.png")
 
@@ -908,7 +919,7 @@ def generate_figures(rows, polygon_rows):
             })
 
     if agreement_data:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_WIDTH, 3.0))
 
         # Left: histogram of agreement levels
         agree_counts = [0, 0, 0]  # 2-agree, 3-agree, 4-agree
@@ -919,8 +930,10 @@ def generate_figures(rows, polygon_rows):
                 agree_counts[1] += 1
             elif ad['n_agree'] == 4:
                 agree_counts[2] += 1
+        agree_colors = [CHANGE_COLORS['decrease'], LULC_COLORS['cropland'],
+                        CHANGE_COLORS['increase']]
         ax1.bar(['2 of 4', '3 of 4', '4 of 4'], agree_counts,
-                color=['#d62728', '#ff7f0e', '#2ca02c'])
+                color=agree_colors)
         ax1.set_xlabel('Datasets Agreeing on Dominant Class')
         ax1.set_ylabel('Number of Images')
         ax1.set_title('Cross-Dataset Agreement\n(Dominant Class, Pre-Construction)')
@@ -945,17 +958,18 @@ def generate_figures(rows, polygon_rows):
         bottom = np.zeros(4)
         for ci, cn in enumerate(class_labels):
             vals = [ds_class_counts[dk].get(cn, 0) for dk in GEE_DATASET_KEYS]
-            ax2.bar(x, vals, bottom=bottom, label=cn, color=class_colors[ci])
+            ax2.bar(x, vals, bottom=bottom, label=display_labels[ci],
+                    color=class_colors[ci])
             bottom += np.array(vals)
         ax2.set_xticks(x)
-        ax2.set_xticklabels(['DW', 'WC', 'ESRI', 'GLAD'])
+        ax2.set_xticklabels([DATASET_LABELS[dk] for dk in GEE_DATASET_KEYS],
+                            rotation=20, ha='right')
         ax2.set_ylabel('Number of Images')
         ax2.set_title('Dominant Class per Dataset\n(Pre-Construction)')
-        ax2.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=8)
+        ax2.legend(bbox_to_anchor=(1.02, 1), loc='upper left')
 
         plt.tight_layout()
-        fig.savefig(str(FIG_DIR / 'v3_dataset_agreement.png'), dpi=150,
-                    bbox_inches='tight')
+        save_fig(fig, FIG_DIR / 'v3_dataset_agreement.png')
         plt.close(fig)
         print("    Saved v3_dataset_agreement.png")
     else:
@@ -978,19 +992,20 @@ def generate_figures(rows, polygon_rows):
 
     if example_imgs:
         n = len(example_imgs)
-        # Stack vertically
+        # Stack vertically, cap width at FULL_WIDTH
         max_w = max(img.size[0] for _, img in example_imgs)
         total_h = sum(img.size[1] + 30 for _, img in example_imgs)
-        fig, axes = plt.subplots(n, 1, figsize=(max_w / 80, total_h / 80))
+        fig_w = min(max_w / 80, FULL_WIDTH)
+        fig_h = total_h / 80 * (fig_w / (max_w / 80))
+        fig, axes = plt.subplots(n, 1, figsize=(fig_w, fig_h))
         if n == 1:
             axes = [axes]
         for i, (label, img) in enumerate(example_imgs):
             axes[i].imshow(img)
-            axes[i].set_title(label.replace('_', ' '), fontsize=10)
+            axes[i].set_title(title_case(label))
             axes[i].axis('off')
         plt.tight_layout()
-        fig.savefig(str(FIG_DIR / 'v3_example_comparisons.png'), dpi=150,
-                    bbox_inches='tight')
+        save_fig(fig, FIG_DIR / 'v3_example_comparisons.png')
         plt.close(fig)
         print("    Saved v3_example_comparisons.png")
     else:
@@ -1001,7 +1016,7 @@ def generate_figures(rows, polygon_rows):
     # Check if VLM data exists
     has_vlm = any(r.get('vlm_cropland', -1) >= 0 for r in pre_rows)
     if has_vlm:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_WIDTH, 3.5))
 
         # Left: pre-construction class distribution (VLM vs DW)
         vlm_means_pre = []
@@ -1016,13 +1031,15 @@ def generate_figures(rows, polygon_rows):
 
         x = np.arange(n_classes)
         bar_w = 0.35
-        ax1.bar(x - bar_w/2, dw_means_pre, bar_w, label='Dynamic World', color='#1f77b4')
-        ax1.bar(x + bar_w/2, vlm_means_pre, bar_w, label='VLM V2 (Gemini)', color='#9467bd')
+        ax1.bar(x - bar_w/2, dw_means_pre, bar_w,
+                label=DATASET_LABELS['dw'], color=DATASET_COLORS['dw'])
+        ax1.bar(x + bar_w/2, vlm_means_pre, bar_w,
+                label=DATASET_LABELS['vlm'], color=DATASET_COLORS['vlm'])
         ax1.set_xlabel('Land Cover Class')
         ax1.set_ylabel('Mean %')
         ax1.set_title('Pre-Construction: VLM V2 vs Dynamic World')
         ax1.set_xticks(x)
-        ax1.set_xticklabels(class_labels, rotation=45, ha='right')
+        ax1.set_xticklabels(display_labels, rotation=45, ha='right')
         ax1.legend()
         ax1.set_ylim(0, 70)
 
@@ -1048,19 +1065,20 @@ def generate_figures(rows, polygon_rows):
                            for s in common_sites]
                 vlm_changes.append(np.mean(changes))
 
-            colors = ['#2ca02c' if c >= 0 else '#d62728' for c in vlm_changes]
+            colors = [CHANGE_COLORS['increase'] if c >= 0
+                      else CHANGE_COLORS['decrease'] for c in vlm_changes]
             ax2.barh(np.arange(n_classes), vlm_changes, color=colors)
             ax2.set_yticks(np.arange(n_classes))
-            ax2.set_yticklabels(class_labels, fontsize=9)
+            ax2.set_yticklabels(display_labels)
             ax2.set_xlabel('Change (pp)')
-            ax2.set_title(f'VLM V2 Pre→Post Change ({len(common_sites)} sites)')
+            ax2.set_title(f'VLM V2 Pre \u2192 Post Change ({len(common_sites)} Sites)')
             ax2.axvline(0, color='black', linewidth=0.5)
         else:
             ax2.text(0.5, 0.5, 'No common pre/post sites', transform=ax2.transAxes,
                      ha='center', va='center')
 
         plt.tight_layout()
-        fig.savefig(str(FIG_DIR / 'v3_vlm_vs_gee.png'), dpi=150, bbox_inches='tight')
+        save_fig(fig, FIG_DIR / 'v3_vlm_vs_gee.png')
         plt.close(fig)
         print("    Saved v3_vlm_vs_gee.png")
     else:

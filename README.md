@@ -1,281 +1,138 @@
-# Solar Land Use Change Detection - Bangladesh
+# Solar Land Use Change Detection
 
-Downloads satellite imagery for solar project sites in Bangladesh and converts it for labeling. Uses Google Earth Engine for data download and Label Studio for annotation.
+Analyzes land use change at solar energy project sites in South Asia using satellite imagery, multiple global LULC datasets, and VLM-based classification. Uses Planet Basemaps (4.77m), Google Earth Engine datasets (10m), and Gemini 2.0 Flash for classification.
+
+## Current Scope
+
+- **15 solar project sites** across Bangladesh (utility-scale, 1MW+)
+- **Pre/post construction** imagery comparison (2016-2026)
+- **5 classification sources**: Dynamic World, ESA WorldCover, ESRI LULC, GLAD GLCLUC, VLM V2 (Gemini)
+- **10-class unified scheme**: cropland, trees, shrub, grassland, flooded veg, built, bare, water, snow, no data
+- **GRW polygon matching**: confirmed solar footprint polygons from Global Renewables Watch
 
 ## Setup
 
 ### Environment
 
 ```bash
-# Clone the repository
 git clone https://github.com/anushreechaudhuri/solar-landuse.git
 cd solar-landuse
 
-# Create conda environment
-conda create -n solar-landuse python=3.10 -y
-conda activate solar-landuse
-
-# Install dependencies
-pip install -r requirements.txt
+# System Python 3.9 works; install dependencies
+pip3 install -r requirements.txt
 
 # Set up environment variables
 cp local.env .env
-# Edit .env and add your AWS credentials and Google Earth Engine project name
+# Edit .env: PLANET_API_KEY, GOOGLE_AI_API_KEY, AWS credentials
 
 # Authenticate with Google Earth Engine (one-time)
-python
->>> import ee
->>> ee.Authenticate()
->>> ee.Initialize(project="bangladesh-solar")
+python3 -c "import ee; ee.Authenticate(); ee.Initialize(project='bangladesh-solar')"
 ```
 
-## Usage
+## Key Scripts
 
-### Download Satellite Imagery
+### Data Download
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/download_planet_basemaps.py` | Download Planet monthly basemap quads (4.77m) for all sites |
+| `scripts/download_satellite_images.py` | Download Sentinel-2 imagery via GEE (10m) |
+
+### Classification & Analysis
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/compare_lulc_datasets.py` | Multi-dataset LULC comparison (main analysis pipeline) |
+| `scripts/vlm_classify_v2.py` | VLM classification using Gemini 2.0 Flash (10-class, polygon-aware) |
+| `scripts/figure_style.py` | Publication-quality figure styling (Paul Tol colorblind-safe palette) |
+
+### Training
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/train_segmentation.py` | DINOv2-based segmentation head training |
+| `scripts/apply_segmentation.py` | Apply trained model to generate land cover maps |
+
+## Multi-Dataset LULC Comparison (V3)
+
+The main analysis (`scripts/compare_lulc_datasets.py`) runs in two phases:
 
 ```bash
-# Download specific years with multiple buffer sizes
-python scripts/download_satellite_images.py --years 2019 2023
+# Full run: query GEE + analyze
+python3 scripts/compare_lulc_datasets.py
 
-# Upload to S3 after download
-python scripts/download_satellite_images.py --years 2019 2023 --upload-s3
+# Re-analyze from cache (no GEE queries)
+python3 scripts/compare_lulc_datasets.py --skip-gee
 ```
 
-The script downloads at 10m resolution for Sentinel-2 data. If downloads fail due to size limits, it falls back to 20m resolution.
+**Phase 1**: Queries 4 GEE datasets (Dynamic World, WorldCover, ESRI, GLAD) for each site, caches raw values as `.npz` files.
 
-### Convert to PNG
+**Phase 2**: Remaps to unified 10-class scheme, loads VLM V2 percentages, computes within-polygon stats, generates 6 publication figures and RESULTS.md.
 
-```bash
-# Convert GeoTIFF to PNG
-python scripts/convert_to_png.py
-# Choose resolution option when prompted (option 1 for full resolution)
-```
+### Outputs
 
-### Label Studio
-
-```bash
-label-studio start
-# Access at http://localhost:8080
-```
-
-Import images from `data/for_labeling/` and create a semantic segmentation project.
-
-See `data/for_labeling/LABEL_STUDIO_IMPORT.md` for detailed import instructions.
-
-## Training Segmentation Model
-
-### Prepare Training Data
-
-1. Export masks from Label Studio as PNG files
-2. Place images in `data/training_dataset/images/`
-3. Place masks in `data/training_dataset/masks/`
-4. Ensure mask filenames match: `{image_stem}_mask.png`
-
-Example:
-- Image: `mongla_5km_2019.tif`
-- Mask: `mongla_5km_2019_mask.png`
-
-### Train Model
-
-```bash
-python scripts/train_segmentation.py
-```
-
-This trains a segmentation head on frozen DINOv3 features. First run downloads the DINOv3 model (~1.2GB). Training on M2 Mac takes ~1-2 hours depending on dataset size.
-
-Model saves to `models/segmentation_head.pth`.
-
-### Apply Model to Images
-
-```bash
-python scripts/apply_segmentation.py
-```
-
-Generates land cover maps for all images in `data/for_labeling/`. Outputs:
-- `results/land_cover_maps/{image_stem}_landcover.png` - Colored visualization
-- `results/land_cover_maps/{image_stem}_prediction.npy` - Raw class IDs array
+- `data/lulc_comparison_v3.csv` — Full-AOI percentages (all datasets x all images)
+- `data/lulc_polygon_v3.csv` — Within-polygon percentages (pre-construction only)
+- `docs/figures/v3_*.png` — 6 summary figures (300 DPI, colorblind-safe)
+- `data/lulc_comparison/` — Per-image side-by-side visualizations
+- `RESULTS.md` — Full analysis writeup with tables and figures
 
 ## Project Structure
 
 ```
 solar-landuse/
 ├── data/
-│   ├── raw_images/           # GeoTIFF files
-│   ├── for_labeling/         # PNG files for Label Studio
-│   ├── training_dataset/     # Labeled images and masks for training
-│   │   ├── images/          # Input GeoTIFF files
-│   │   ├── masks/           # PNG masks (pixel values = class IDs)
-│   │   └── classes.json     # Class name to ID mapping
-│   ├── labels/               # Exported annotations
-│   └── processed/masks/      # Segmentation masks
+│   ├── raw_images/              # GeoTIFF files (Planet basemaps)
+│   ├── for_labeling/            # PNG files for labeling
+│   ├── training_dataset/        # DINOv2 training images and masks
+│   ├── vlm_v2_responses/        # Cached Gemini classification results
+│   ├── lulc_raw_cache/          # Cached GEE dataset values (.npz)
+│   ├── lulc_comparison/         # Per-image LULC visualizations
+│   ├── grw/                     # Global Renewables Watch polygon matches
+│   ├── lulc_comparison_v3.csv   # Full-AOI comparison results
+│   └── lulc_polygon_v3.csv     # Within-polygon results
 ├── scripts/
-│   ├── download_satellite_images.py  # Download imagery
-│   ├── convert_to_png.py            # Convert to PNG
-│   ├── train_segmentation.py        # Train segmentation model
-│   ├── apply_segmentation.py        # Apply model to generate maps
-│   ├── s3_utils.py                   # AWS S3 utilities
-│   └── sync_to_s3.py                 # Sync to S3
-├── models/                    # Trained model weights
-├── results/
-│   └── land_cover_maps/      # Generated land cover predictions
-├── LOG.md                     # Detailed change log
-├── local.env                 # Template for .env (copy to .env)
-├── .env                      # Your credentials (not in git)
+│   ├── compare_lulc_datasets.py # Main V3 analysis pipeline
+│   ├── figure_style.py          # Publication figure styling module
+│   ├── vlm_classify_v2.py       # Gemini 2.0 Flash classifier
+│   ├── download_planet_basemaps.py
+│   ├── train_segmentation.py
+│   └── apply_segmentation.py
+├── models/                      # Trained model weights
+├── docs/figures/                # Publication-quality figures
+├── RESULTS.md                   # Analysis results and findings
+├── LOG.md                       # Detailed change log
 └── requirements.txt
 ```
 
-## Current State
+## Key Findings
 
-### Site: Mongla Solar Project, Bangladesh
-
-Coordinates: 22°34'25.0"N 89°34'10.4"E
-
-### Available Data
-
-**1km buffer images (10m resolution, 217×201 pixels)**:
-- `mongla_1km_2019.tif` / `.png` - Pre-development
-- `mongla_1km_2023.tif` / `.png` - Post-development
-
-**5km buffer images (10m resolution, 1079×1003 pixels)**:
-- `mongla_5km_2019.tif` / `.png` - Pre-development
-- `mongla_5km_2023.tif` / `.png` - Post-development
-
-**10km buffer images (20m resolution, ~2000×2000 pixels)**:
-- `mongla_2014.tif` / `.png` through `mongla_2023.tif` / `.png`
-- Years: 2014, 2016-2017, 2019-2023 (some years missing due to data availability)
-
-### Files
-
-- 13 GeoTIFF files in `data/raw_images/`
-- 14 PNG files in `data/for_labeling/`
-- Documentation: `data/raw_images/DATA_SOURCES.md` (describes each file's data source, bands, resolution, etc.)
-
-All files are backed up to S3 at `s3://anuc-satellite-analysis/data/`
-
-### Change Log
-
-**Initial commit (Oct 2025)**
-- Set up project structure with download and conversion scripts
-- Added Google Earth Engine integration for Sentinel-2 and Landsat 8 data
-- Created scripts for downloading imagery at multiple buffer sizes (1km, 5km, 10km)
-- Implemented PNG conversion with lossless option for Label Studio
-- Downloaded test dataset: 2019 and 2023 images at 1km and 5km buffers (10m resolution)
-- Also downloaded 10km buffer images at 20m resolution for years 2014, 2016-2017, 2019-2023
-
-**S3 integration (Oct 2025)**
-- Added AWS S3 utilities (`s3_utils.py`) for file storage and retrieval
-- Created `sync_to_s3.py` script to upload local files to S3 bucket
-- Added `--upload-s3` flag to download script for automatic backup
-- All existing files uploaded to `s3://anuc-satellite-analysis/data/`
-- Added `local.env` template file for environment variable setup
-- Configured `.gitignore` to exclude large files (`.tif`, `.png`) and `.env` file
-
-**Documentation updates (Oct 2025)**
-- Consolidated all high-level documentation into README.md
-- Removed emojis and promotional language from documentation
-- Added change log section to track project evolution
-- Created `DATA_SOURCES.md` in `data/raw_images/` documenting data sources and processing details
-- Updated documentation style to be developer-focused and functional
-
-**Training pipeline (Oct 2025)**
-- Added DINOv3-based segmentation training pipeline
-- Created `train_segmentation.py` - trains segmentation head on frozen DINOv3 features
-- Created `apply_segmentation.py` - applies trained model to generate land cover maps
-- Set up training dataset structure with `data/training_dataset/` directory
-- Added `classes.json` for class ID mapping
-- Model uses DINOv3 satellite model (facebook/dinov3-vitl16-pretrain-sat493m) as frozen backbone
-- Only segmentation decoder head is trained (fast training, ~1-2 hours on M2 Mac)
-
-## Environment Variables
-
-Copy `local.env` to `.env` and fill in your credentials:
-
-```bash
-AWS_DEFAULT_REGION="us-east-1"
-AWS_ACCESS_KEY_ID="your-key-here"
-AWS_SECRET_ACCESS_KEY="your-secret-here"
-```
-
-The `.env` file is git-ignored. Never commit it.
-
-## S3 Integration
-
-Files are stored in S3 for backup and team sharing. The bucket structure mirrors the local `data/` directory structure.
-
-### Upload to S3
-
-```bash
-# Upload all local files to S3
-python scripts/sync_to_s3.py
-```
-
-This uploads all files in `data/raw_images/` and `data/for_labeling/` to S3.
-
-### Download from S3
-
-```bash
-# Using AWS CLI - syncs entire data directory
-aws s3 sync s3://anuc-satellite-analysis/data/ ./data/
-
-# Or download specific files
-aws s3 cp s3://anuc-satellite-analysis/data/raw_images/mongla_1km_2019.tif ./data/raw_images/
-```
-
-### S3 Bucket Structure
-
-```
-s3://anuc-satellite-analysis/
-├── data/
-│   ├── raw_images/          # GeoTIFF files
-│   └── for_labeling/         # PNG files for Label Studio
-```
-
-### Using with Download Scripts
-
-The download script can automatically upload to S3:
-
-```bash
-python scripts/download_satellite_images.py --upload-s3
-```
-
-### S3 Troubleshooting
-
-**Could not connect to S3**
-Check your `.env` file exists and has correct credentials.
-
-**Access Denied**
-Verify your AWS credentials have access to `anuc-satellite-analysis` bucket.
-
-**Large files not uploading**
-S3 has a 5GB limit per file. Current files are under 10MB each.
-
-## Common Issues
-
-**Earth Engine not initialized**
-```bash
-python
->>> import ee
->>> ee.Authenticate()
->>> ee.Initialize(project="bangladesh-solar")
-```
-
-**No images found for year**
-Normal if data not available for that year/location. Try different years.
-
-**Large files won't upload**
-Scripts skip existing files. Use `--upload-s3` flag or `sync_to_s3.py` for S3 backup.
+1. **Cropland is the primary pre-solar land cover** across all datasets and VLM
+2. **Only Dynamic World and VLM V2** provide true temporal change detection (WC/GLAD are static snapshots)
+3. **DW detects cropland-to-built conversion** at solar sites (no solar class, so panels appear as built/bare/snow)
+4. **VLM V2 is polygon-aware** for post-construction images, avoiding the solar-as-built misclassification
+5. **Cross-dataset agreement is moderate** — cropland is most consistently identified, other classes vary
 
 ## Data Sources
 
-- Sentinel-2 MSI: 10m resolution RGB+NIR bands
-  - Dataset: `COPERNICUS/S2_SR_HARMONIZED`
-  - Years: 2015-2024
-- Landsat 8 OLI: 30m resolution (fallback for earlier years)
-  - Dataset: `LANDSAT/LC08/C02/T1_L2`
-  - Years: 2013-2024
+- **Planet Basemaps**: 4.77m monthly mosaics (Jan 2016 - Jan 2026) via Basemaps API
+- **Dynamic World**: 10m per-date composite via GEE
+- **ESA WorldCover**: 10m single snapshot (2021) via GEE
+- **ESRI LULC**: 10m annual (2017-2024) via GEE (sat-io)
+- **GLAD GLCLUC**: 30m single snapshot (2020) via GEE
+- **VLM V2**: Gemini 2.0 Flash percentage-based classification per image
+- **GRW**: Global Renewables Watch solar farm polygons
 
-## Notes
+## Environment Variables
 
-- Large files (`.tif`, `.png`) are git-ignored. Download from S3 instead.
-- Label Studio needs local files - keep them even with S3 sync.
-- Start with 1km images for detailed labeling, they're smaller and easier to work with.
+Copy `local.env` to `.env` and fill in credentials:
+
+```
+PLANET_API_KEY=...
+GOOGLE_AI_API_KEY=...
+AWS_DEFAULT_REGION=us-east-1
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+```
+
+The `.env` file is git-ignored. Never commit it.
