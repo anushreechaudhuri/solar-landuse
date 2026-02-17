@@ -1,4 +1,26 @@
-import { sql } from "@vercel/postgres";
+import { createPool, type VercelPool, type QueryResultRow } from "@vercel/postgres";
+
+let _pool: VercelPool | null = null;
+
+function getPool(): VercelPool {
+  if (!_pool) {
+    _pool = createPool({
+      connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+    });
+  }
+  return _pool;
+}
+
+// Tagged template for simple queries: sql`SELECT ...`
+function sql(strings: TemplateStringsArray, ...values: Primitive[]) {
+  return getPool().sql(strings, ...values);
+}
+
+type Primitive = string | number | boolean | undefined | null;
+
+// Also support sql.query(text, values) for dynamic queries
+sql.query = <R extends QueryResultRow = QueryResultRow>(text: string, values?: unknown[]) =>
+  getPool().query<R>(text, values);
 
 export { sql };
 
