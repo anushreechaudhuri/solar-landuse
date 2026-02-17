@@ -23,6 +23,7 @@ load_dotenv()
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MERGED_FILE = DATA_DIR / "projects_merged.json"
+UNMATCHED_FILE = DATA_DIR / "grw_unmatched.geojson"
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS projects (
@@ -64,6 +65,43 @@ CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id, created_at
 CREATE INDEX IF NOT EXISTS idx_projects_capacity ON projects(capacity_mw DESC);
 CREATE INDEX IF NOT EXISTS idx_projects_country ON projects(country);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
+
+CREATE TABLE IF NOT EXISTS grw_features (
+    id SERIAL PRIMARY KEY,
+    fid INTEGER,
+    country TEXT,
+    centroid_lat REAL NOT NULL,
+    centroid_lon REAL NOT NULL,
+    area_m2 REAL,
+    construction_year INTEGER,
+    construction_quarter INTEGER,
+    landcover TEXT,
+    polygon JSONB NOT NULL,
+    user_name TEXT,
+    user_capacity_mw REAL,
+    user_status TEXT,
+    user_notes TEXT,
+    linked_project_id TEXT REFERENCES projects(id),
+    linked_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_grw_features_country ON grw_features(country);
+CREATE INDEX IF NOT EXISTS idx_grw_features_linked ON grw_features(linked_project_id);
+CREATE INDEX IF NOT EXISTS idx_grw_features_coords ON grw_features(centroid_lat, centroid_lon);
+
+CREATE TABLE IF NOT EXISTS merge_history (
+    id SERIAL PRIMARY KEY,
+    grw_feature_id INTEGER REFERENCES grw_features(id),
+    project_id TEXT REFERENCES projects(id),
+    action TEXT NOT NULL,
+    performed_by TEXT,
+    previous_project_polygon JSONB,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_merge_history_grw ON merge_history(grw_feature_id);
+CREATE INDEX IF NOT EXISTS idx_merge_history_project ON merge_history(project_id);
 """
 
 
@@ -163,6 +201,54 @@ def seed_projects(conn):
     print(f"Inserted {inserted} projects, skipped {skipped}")
 
 
+def seed_grw_features(conn):
+    """Insert unmatched GRW features from geojson."""
+    if not UNMATCHED_FILE.exists():
+        print(f"  {UNMATCHED_FILE} not found, skipping GRW features")
+        return
+
+    print(f"Loading {UNMATCHED_FILE}...")
+    with open(UNMATCHED_FILE) as f:
+        data = json.load(f)
+    features = data.get("features", [])
+    print(f"  {len(features)} unmatched GRW features to insert")
+
+    inserted = 0
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM merge_history")
+        cur.execute("DELETE FROM grw_features")
+
+        for feat in features:
+            props = feat.get("properties", {})
+            geometry = feat.get("geometry")
+            if not geometry:
+                continue
+
+            cur.execute(
+                """
+                INSERT INTO grw_features (
+                    fid, country, centroid_lat, centroid_lon, area_m2,
+                    construction_year, construction_quarter, landcover, polygon
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    props.get("fid"),
+                    props.get("COUNTRY"),
+                    props.get("centroid_lat"),
+                    props.get("centroid_lon"),
+                    props.get("area"),
+                    props.get("construction_year"),
+                    props.get("construction_quarter"),
+                    props.get("landcover_in_2018"),
+                    json.dumps({"type": "Feature", "geometry": geometry, "properties": {}}),
+                ),
+            )
+            inserted += 1
+
+    conn.commit()
+    print(f"Inserted {inserted} GRW features")
+
+
 def upload_to_s3():
     """Upload merged data to S3."""
     try:
@@ -195,6 +281,7 @@ def main():
         create_schema(conn)
         if not args.schema_only:
             seed_projects(conn)
+            seed_grw_features(conn)
     finally:
         conn.close()
 

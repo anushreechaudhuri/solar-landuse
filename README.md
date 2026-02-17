@@ -2,7 +2,7 @@
 
 Analyzes land use change at solar energy project sites in South Asia using satellite imagery, multiple global LULC datasets, and VLM-based classification. Uses Planet Basemaps (4.77m), Google Earth Engine datasets (10m), and Gemini 2.0 Flash for classification.
 
-Includes a **polygon verification web app** for labelers to confirm/edit solar installation boundaries across ~5,000 South Asian projects.
+Includes a **polygon verification web app** for labelers to confirm/edit solar installation boundaries across ~5,000 South Asian projects, browse 628 unmatched GRW solar detections, and merge them with GEM projects.
 
 ## Current Scope
 
@@ -38,10 +38,13 @@ A Next.js web app for labelers to verify and edit solar installation polygons ma
 
 ### Features
 
-- **Two-tab interface**: Active Projects (operating/construction) and Proposed/Other (pre-construction, announced, etc.)
+- **Three-tab interface**: Active Projects, Proposed/Other, and GRW Unmatched (628 satellite-detected solar features with no GEM match)
+- **Overview map**: Toggle to see all 5,721 points color-coded (green=matched, orange=GEM-only, purple=GRW-only) with canvas rendering
 - **Google Satellite map** with Leaflet polygon overlay and Leaflet.Draw for editing/drawing
 - **Search & filter**: by name, ID, capacity, country, confidence level, review status
 - **Review actions**: confirm polygon, mark no match, edit polygon, draw new polygon, feasibility assessment
+- **Merge workflow**: Link unmatched GRW polygons to GEM projects (or vice versa) with nearby-search, undo support via merge history
+- **GRW feature editing**: Add name, capacity, status, notes to unmatched satellite detections
 - **Coordinates**: click-to-copy in decimal degrees and DMS format
 - **Reviewer tracking**: name persisted in localStorage, append-only review log in Postgres
 
@@ -61,10 +64,12 @@ python3 scripts/query_grw_south_asia.py
 # 3. Match GSPT projects with GRW polygons
 python3 scripts/match_gspt_grw.py
 # Output: data/projects_merged.json (5,093 matched records)
+# Output: data/grw_unmatched.geojson (628 unmatched GRW features)
 
-# 4. Seed Vercel Postgres database
-python3 scripts/seed_database.py
+# 4. Seed Vercel Postgres database (projects + GRW features)
+python3 scripts/seed_database.py --skip-s3
 # Requires POSTGRES_URL env var
+# Creates: projects (5,093), grw_features (628), reviews, merge_history tables
 ```
 
 ### Web App Local Development
@@ -151,6 +156,7 @@ solar-landuse/
 │   ├── gspt_south_asia.json       # Extracted South Asia projects (gitignored)
 │   ├── grw_south_asia.geojson     # GRW polygons from GEE (gitignored)
 │   ├── projects_merged.json       # Matched GSPT+GRW data (gitignored)
+│   ├── grw_unmatched.geojson     # Unmatched GRW features (gitignored)
 │   ├── grw/                       # Bangladesh GRW polygon matches + HTML tools
 │   ├── raw_images/                # GeoTIFF files (Planet basemaps)
 │   ├── for_labeling/              # PNG files for labeling
@@ -160,7 +166,8 @@ solar-landuse/
 │   └── lulc_comparison/           # Per-image LULC visualizations
 ├── webapp/                        # Next.js polygon verification app
 │   ├── app/                       # App Router pages & API routes
-│   ├── components/                # React components (Map, ProjectList, etc.)
+│   │   └── api/                   # projects, grw-features, merge, nearby, overview, stats
+│   ├── components/                # React components (Map, ProjectList, GrwFeatureList, MergeDialog, etc.)
 │   ├── lib/                       # Database queries & TypeScript types
 │   └── package.json
 ├── scripts/

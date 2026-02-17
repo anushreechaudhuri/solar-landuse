@@ -1,0 +1,14 @@
+data
+models
+scripts
+figures
+*.geojson
+*.npz
+*.tif
+*.png
+*.pth
+*.pyc
+__pycache__
+.git
+node_modules
+.next

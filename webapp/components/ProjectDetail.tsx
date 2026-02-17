@@ -7,6 +7,7 @@ interface ProjectDetailProps {
   project: Project;
   reviews: Review[];
   onClose: () => void;
+  onMergeClick?: () => void;
 }
 
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -43,6 +44,7 @@ export default function ProjectDetail({
   project,
   reviews,
   onClose,
+  onMergeClick,
 }: ProjectDetailProps) {
   const coordStr = `${project.latitude}, ${project.longitude}`;
   const dmsStr = `${toDMS(project.latitude, true)} ${toDMS(project.longitude, false)}`;
@@ -157,6 +159,16 @@ export default function ProjectDetail({
               )}
             </div>
           </div>
+        )}
+
+        {/* Find GRW polygon button (shown when no match) */}
+        {onMergeClick && (
+          <button
+            onClick={onMergeClick}
+            className="w-full px-3 py-2 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700"
+          >
+            Find GRW Polygon
+          </button>
         )}
 
         {/* Wiki link */}

@@ -16,6 +16,7 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 GSPT_FILE = DATA_DIR / "gspt_south_asia.json"
 GRW_FILE = DATA_DIR / "grw_south_asia.geojson"
 OUTPUT_FILE = DATA_DIR / "projects_merged.json"
+UNMATCHED_FILE = DATA_DIR / "grw_unmatched.geojson"
 
 # Search radii in km
 EXACT_RADIUS_KM = 5
@@ -160,6 +161,7 @@ def match_projects():
     print("Matching projects...")
     results = []
     stats = {"high": 0, "medium": 0, "low": 0, "none": 0, "no_coords": 0}
+    claimed_indices = set()  # Track which GRW features get matched
 
     for i, gspt in enumerate(gspt_projects):
         if (i + 1) % 500 == 0:
@@ -207,11 +209,13 @@ def match_projects():
 
         # Precise distance filter
         nearby = []
+        nearby_idx_list = []
         min_dist = float("inf")
         for idx in nearby_indices:
             dist = haversine_km(lat, lon, grw_lats[idx], grw_lons[idx])
             if dist <= radius_km:
                 nearby.append(grw_features[idx])
+                nearby_idx_list.append(int(idx))
                 min_dist = min(min_dist, dist)
 
         if not nearby:
@@ -254,6 +258,9 @@ def match_projects():
         record["grw_construction_date"] = ", ".join(all_dates) if all_dates else None
         record["needs_review"] = confidence != "high"
 
+        # Mark these GRW features as claimed
+        claimed_indices.update(nearby_idx_list)
+
         stats[confidence] += 1
         results.append(record)
 
@@ -266,12 +273,38 @@ def match_projects():
     print(f"  No coordinates:    {stats['no_coords']}")
     print(f"  Total:             {len(results)}")
 
-    # Save
+    # Save matched results
     print(f"\nSaving to {OUTPUT_FILE}...")
     with open(OUTPUT_FILE, "w") as f:
         json.dump(results, f)
     size_mb = OUTPUT_FILE.stat().st_size / (1024 * 1024)
     print(f"Saved {len(results)} records ({size_mb:.1f} MB)")
+
+    # Save unmatched GRW features
+    print(f"\nClaimed {len(claimed_indices)} GRW features across all matches")
+    unmatched_features = []
+    for idx, feat in enumerate(grw_features):
+        if idx not in claimed_indices and grw_centroids[idx][0] is not None:
+            props = feat.get("properties", {})
+            unmatched_features.append({
+                "type": "Feature",
+                "geometry": feat["geometry"],
+                "properties": {
+                    **props,
+                    "centroid_lat": grw_centroids[idx][0],
+                    "centroid_lon": grw_centroids[idx][1],
+                },
+            })
+
+    unmatched_geojson = {
+        "type": "FeatureCollection",
+        "features": unmatched_features,
+    }
+    print(f"Saving {len(unmatched_features)} unmatched GRW features to {UNMATCHED_FILE}...")
+    with open(UNMATCHED_FILE, "w") as f:
+        json.dump(unmatched_geojson, f)
+    um_size = UNMATCHED_FILE.stat().st_size / (1024 * 1024)
+    print(f"Saved ({um_size:.1f} MB)")
 
     return results
 

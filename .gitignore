@@ -61,6 +61,7 @@ data/*.xlsx
 data/gspt_south_asia.json
 data/grw_south_asia.geojson
 data/projects_merged.json
+data/grw_unmatched.geojson
 models/*.pth
 models/*.h5
 models/*.ckpt
