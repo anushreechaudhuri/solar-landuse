@@ -13,8 +13,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -57,9 +57,18 @@ data/lulc_raw_cache/
 data/lulc_comparison/
 data/vlm_v2_responses/
 data/*.csv
+data/*.xlsx
+data/gspt_south_asia.json
+data/grw_south_asia.geojson
+data/projects_merged.json
 models/*.pth
 models/*.h5
 models/*.ckpt
+
+# Webapp build
+webapp/node_modules/
+webapp/.next/
+webapp/.vercel/
 
 # Results (large prediction arrays and images)
 results/

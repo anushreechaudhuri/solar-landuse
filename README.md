@@ -2,13 +2,16 @@
 
 Analyzes land use change at solar energy project sites in South Asia using satellite imagery, multiple global LULC datasets, and VLM-based classification. Uses Planet Basemaps (4.77m), Google Earth Engine datasets (10m), and Gemini 2.0 Flash for classification.
 
+Includes a **polygon verification web app** for labelers to confirm/edit solar installation boundaries across ~5,000 South Asian projects.
+
 ## Current Scope
 
-- **15 solar project sites** across Bangladesh (utility-scale, 1MW+)
-- **Pre/post construction** imagery comparison (2016-2026)
+- **5,093 utility-scale solar phases** across 6 South Asian countries (India, Bangladesh, Pakistan, Nepal, Sri Lanka, Bhutan)
+- **3,957 GRW solar installation polygons** matched against GSPT project coordinates
+- **Match results**: 1,829 high confidence / 1,132 medium / 269 low / 1,863 unmatched
+- **Pre/post construction** imagery comparison (2016-2026) for 15 Bangladesh test sites
 - **5 classification sources**: Dynamic World, ESA WorldCover, ESRI LULC, GLAD GLCLUC, VLM V2 (Gemini)
 - **10-class unified scheme**: cropland, trees, shrub, grassland, flooded veg, built, bare, water, snow, no data
-- **GRW polygon matching**: confirmed solar footprint polygons from Global Renewables Watch
 
 ## Setup
 
@@ -29,6 +32,59 @@ cp local.env .env
 python3 -c "import ee; ee.Authenticate(); ee.Initialize(project='bangladesh-solar')"
 ```
 
+## Polygon Verification Web App
+
+A Next.js web app for labelers to verify and edit solar installation polygons matched from GSPT and GRW datasets.
+
+### Features
+
+- **Two-tab interface**: Active Projects (operating/construction) and Proposed/Other (pre-construction, announced, etc.)
+- **Google Satellite map** with Leaflet polygon overlay and Leaflet.Draw for editing/drawing
+- **Search & filter**: by name, ID, capacity, country, confidence level, review status
+- **Review actions**: confirm polygon, mark no match, edit polygon, draw new polygon, feasibility assessment
+- **Coordinates**: click-to-copy in decimal degrees and DMS format
+- **Reviewer tracking**: name persisted in localStorage, append-only review log in Postgres
+
+### Pre-processing Pipeline
+
+Run these scripts in order to generate the matching data:
+
+```bash
+# 1. Extract GSPT South Asia projects from Excel tracker
+python3 scripts/extract_gspt_south_asia.py
+# Output: data/gspt_south_asia.json (5,093 projects)
+
+# 2. Query GRW polygons from Google Earth Engine
+python3 scripts/query_grw_south_asia.py
+# Output: data/grw_south_asia.geojson (3,957 polygons)
+
+# 3. Match GSPT projects with GRW polygons
+python3 scripts/match_gspt_grw.py
+# Output: data/projects_merged.json (5,093 matched records)
+
+# 4. Seed Vercel Postgres database
+python3 scripts/seed_database.py
+# Requires POSTGRES_URL env var
+```
+
+### Web App Local Development
+
+```bash
+cd webapp
+npm install
+# Set POSTGRES_URL in .env.local (from Vercel dashboard)
+npm run dev
+# Open http://localhost:3000
+```
+
+### Deployment (Vercel)
+
+1. Create Vercel project from this repo's `webapp/` directory
+2. Add Vercel Postgres storage in dashboard
+3. Set `POSTGRES_URL` env var (auto-set with Postgres storage)
+4. Run `python3 scripts/seed_database.py` with the Postgres URL
+5. Deploy via `git push`
+
 ## Key Scripts
 
 ### Data Download
@@ -37,6 +93,15 @@ python3 -c "import ee; ee.Authenticate(); ee.Initialize(project='bangladesh-sola
 |--------|---------|
 | `scripts/download_planet_basemaps.py` | Download Planet monthly basemap quads (4.77m) for all sites |
 | `scripts/download_satellite_images.py` | Download Sentinel-2 imagery via GEE (10m) |
+
+### Pre-processing (South Asia Scale-Up)
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/extract_gspt_south_asia.py` | Extract & filter GSPT tracker for South Asia (5,093 phases) |
+| `scripts/query_grw_south_asia.py` | Query GRW solar polygons from GEE (3,957 features) |
+| `scripts/match_gspt_grw.py` | Spatial matching of GSPT coords to GRW polygons |
+| `scripts/seed_database.py` | Seed Vercel Postgres from matched data |
 
 ### Classification & Analysis
 
@@ -82,26 +147,37 @@ python3 scripts/compare_lulc_datasets.py --skip-gee
 ```
 solar-landuse/
 ├── data/
-│   ├── raw_images/              # GeoTIFF files (Planet basemaps)
-│   ├── for_labeling/            # PNG files for labeling
-│   ├── training_dataset/        # DINOv2 training images and masks
-│   ├── vlm_v2_responses/        # Cached Gemini classification results
-│   ├── lulc_raw_cache/          # Cached GEE dataset values (.npz)
-│   ├── lulc_comparison/         # Per-image LULC visualizations
-│   ├── grw/                     # Global Renewables Watch polygon matches
-│   ├── lulc_comparison_v3.csv   # Full-AOI comparison results
-│   └── lulc_polygon_v3.csv     # Within-polygon results
+│   ├── Global-Solar-Power-Tracker-February-2026.xlsx  # GSPT source (gitignored)
+│   ├── gspt_south_asia.json       # Extracted South Asia projects (gitignored)
+│   ├── grw_south_asia.geojson     # GRW polygons from GEE (gitignored)
+│   ├── projects_merged.json       # Matched GSPT+GRW data (gitignored)
+│   ├── grw/                       # Bangladesh GRW polygon matches + HTML tools
+│   ├── raw_images/                # GeoTIFF files (Planet basemaps)
+│   ├── for_labeling/              # PNG files for labeling
+│   ├── training_dataset/          # DINOv2 training images and masks
+│   ├── vlm_v2_responses/          # Cached Gemini classification results
+│   ├── lulc_raw_cache/            # Cached GEE dataset values (.npz)
+│   └── lulc_comparison/           # Per-image LULC visualizations
+├── webapp/                        # Next.js polygon verification app
+│   ├── app/                       # App Router pages & API routes
+│   ├── components/                # React components (Map, ProjectList, etc.)
+│   ├── lib/                       # Database queries & TypeScript types
+│   └── package.json
 ├── scripts/
-│   ├── compare_lulc_datasets.py # Main V3 analysis pipeline
-│   ├── figure_style.py          # Publication figure styling module
-│   ├── vlm_classify_v2.py       # Gemini 2.0 Flash classifier
+│   ├── extract_gspt_south_asia.py # GSPT extraction for South Asia
+│   ├── query_grw_south_asia.py    # GRW polygon query from GEE
+│   ├── match_gspt_grw.py          # GSPT-GRW spatial matching
+│   ├── seed_database.py           # Vercel Postgres seeder
+│   ├── compare_lulc_datasets.py   # Main V3 analysis pipeline
+│   ├── figure_style.py            # Publication figure styling module
+│   ├── vlm_classify_v2.py         # Gemini 2.0 Flash classifier
 │   ├── download_planet_basemaps.py
 │   ├── train_segmentation.py
 │   └── apply_segmentation.py
-├── models/                      # Trained model weights
-├── docs/figures/                # Publication-quality figures
-├── RESULTS.md                   # Analysis results and findings
-├── LOG.md                       # Detailed change log
+├── models/                        # Trained model weights
+├── docs/figures/                  # Publication-quality figures
+├── RESULTS.md                     # Analysis results and findings
+├── LOG.md                         # Detailed change log
 └── requirements.txt
 ```
 
@@ -115,13 +191,14 @@ solar-landuse/
 
 ## Data Sources
 
+- **GSPT**: Global Solar Power Tracker (February 2026) — 5,093 South Asia utility-scale phases
+- **GRW**: Global Renewables Watch solar polygons via GEE (3,957 South Asia features)
 - **Planet Basemaps**: 4.77m monthly mosaics (Jan 2016 - Jan 2026) via Basemaps API
 - **Dynamic World**: 10m per-date composite via GEE
 - **ESA WorldCover**: 10m single snapshot (2021) via GEE
 - **ESRI LULC**: 10m annual (2017-2024) via GEE (sat-io)
 - **GLAD GLCLUC**: 30m single snapshot (2020) via GEE
 - **VLM V2**: Gemini 2.0 Flash percentage-based classification per image
-- **GRW**: Global Renewables Watch solar farm polygons
 
 ## Environment Variables
 
@@ -134,5 +211,7 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
+
+For the web app, also set `POSTGRES_URL` (from Vercel Postgres dashboard).
 
 The `.env` file is git-ignored. Never commit it.

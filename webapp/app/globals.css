@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet container must have explicit height */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* Override Leaflet draw toolbar z-index */
+.leaflet-draw {
+  z-index: 1000 !important;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Badge styles */
+.badge-high { @apply bg-green-100 text-green-800; }
+.badge-medium { @apply bg-yellow-100 text-yellow-800; }
+.badge-low { @apply bg-orange-100 text-orange-800; }
+.badge-none { @apply bg-red-100 text-red-800; }
