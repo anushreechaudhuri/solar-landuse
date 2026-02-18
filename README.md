@@ -59,9 +59,10 @@ A Leaflet-based annotation interface at `/label` for hand-labeling satellite ima
 - **51 satellite images** across 15 Bangladesh solar sites (pre/post construction, 1km and 5km buffers)
 - **10 LULC classes**: Cropland, Trees, Shrub, Grassland, Flooded Veg, Built, Bare, Water, Snow/Ice, No Data
 - **Polygon annotation** with Leaflet.Draw: draw, edit, delete polygons
+- **SAM auto-segmentation**: Click-to-segment using SAM 2 on Modal GPU backend (Q to toggle, shift+click to exclude)
 - **Solar polygon overlay**: Pre-loaded GRW solar installation boundaries shown as dashed red outlines on post-construction images
 - **Class assignment**: Select class, draw polygon; click existing polygon to reassign class
-- **Keyboard shortcuts**: 1-9, 0 for class selection; Ctrl+S to save
+- **Keyboard shortcuts**: 1-9, 0 for class selection; Q for SAM mode; Ctrl+S to save
 - **Per-annotator persistence**: One annotation set per task per annotator, auto-loaded on revisit
 - **Export endpoint**: `GET /api/labeling/export` returns all annotations as JSON for ML training
 - **Images served from S3**: 51 PNGs stored in S3, served via presigned URLs (no data files in repo)
@@ -73,6 +74,17 @@ A Leaflet-based annotation interface at `/label` for hand-labeling satellite ima
 python3 scripts/seed_labeling.py
 # Uploads 51 PNGs to S3, creates labeling_tasks + labeling_annotations tables
 # Requires POSTGRES_URL and AWS credentials in .env
+```
+
+### SAM Backend (Optional)
+
+SAM auto-segmentation requires a Modal GPU backend:
+
+```bash
+pip install modal
+modal setup  # One-time auth
+modal deploy scripts/modal_sam.py
+# Copy the printed web endpoint URL → set as MODAL_SAM_URL in .env.local and Vercel
 ```
 
 ### Pre-processing Pipeline
@@ -135,6 +147,7 @@ npm run dev
 | `scripts/match_gspt_grw.py` | Spatial matching of GSPT coords to GRW polygons |
 | `scripts/seed_database.py` | Seed Vercel Postgres from matched data |
 | `scripts/seed_labeling.py` | Upload images to S3 + seed labeling tasks |
+| `scripts/modal_sam.py` | SAM 2 segmentation backend on Modal GPU |
 
 ### Classification & Analysis
 
@@ -248,6 +261,6 @@ AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 ```
 
-For the web app, also set `POSTGRES_URL` (from Vercel Postgres dashboard).
+For the web app, also set `POSTGRES_URL` (from Vercel Postgres dashboard) and optionally `MODAL_SAM_URL` (from `modal deploy scripts/modal_sam.py`).
 
 The `.env` file is git-ignored. Never commit it.

@@ -59,6 +59,13 @@ export default function LabelingApp() {
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string>("");
 
+  // SAM state
+  const [samMode, setSamMode] = useState(false);
+  const [samPoints, setSamPoints] = useState<[number, number, number][]>([]);
+  const [samLoading, setSamLoading] = useState(false);
+  const [samPreview, setSamPreview] = useState<number[][][]>([]);
+  const [samError, setSamError] = useState<string>("");
+
   // Refs
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -68,6 +75,10 @@ export default function LabelingApp() {
   const drawControlRef = useRef<L.Control.Draw | null>(null);
   const activeClassRef = useRef(activeClass);
   const regionsRef = useRef(regions);
+  const samPointsLayerRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  const samPreviewLayerRef = useRef<L.LayerGroup>(new L.LayerGroup());
+  const samModeRef = useRef(false);
+  const selectedTaskRef = useRef<TaskWithUrl | null>(null);
 
   // Keep refs in sync
   useEffect(() => {
@@ -76,6 +87,12 @@ export default function LabelingApp() {
   useEffect(() => {
     regionsRef.current = regions;
   }, [regions]);
+  useEffect(() => {
+    samModeRef.current = samMode;
+  }, [samMode]);
+  useEffect(() => {
+    selectedTaskRef.current = selectedTask;
+  }, [selectedTask]);
 
   // Load annotator from localStorage
   useEffect(() => {
@@ -116,6 +133,8 @@ export default function LabelingApp() {
 
     drawLayerRef.current.addTo(map);
     solarLayerRef.current.addTo(map);
+    samPointsLayerRef.current.addTo(map);
+    samPreviewLayerRef.current.addTo(map);
 
     const drawControl = new L.Control.Draw({
       position: "topleft",
@@ -204,9 +223,18 @@ export default function LabelingApp() {
       );
     });
 
-    // Click handler for selecting regions
-    map.on("click", () => {
-      setSelectedRegionId(null);
+    // Click handler for selecting regions + SAM points
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      if (samModeRef.current && selectedTaskRef.current) {
+        const pixelX = Math.round(e.latlng.lng);
+        const pixelY = Math.round(
+          selectedTaskRef.current.image_height - e.latlng.lat
+        );
+        const label = e.originalEvent.shiftKey ? 0 : 1;
+        setSamPoints((prev) => [...prev, [pixelX, pixelY, label]]);
+      } else {
+        setSelectedRegionId(null);
+      }
     });
 
     mapRef.current = map;
@@ -218,10 +246,11 @@ export default function LabelingApp() {
     };
   }, []);
 
-  // Update draw control color when active class changes
+  // Update draw control color when active class changes (hide in SAM mode)
   useEffect(() => {
     if (!drawControlRef.current || !mapRef.current) return;
     mapRef.current.removeControl(drawControlRef.current);
+    if (samMode) return; // Don't show draw controls in SAM mode
     const newControl = new L.Control.Draw({
       position: "topleft",
       draw: {
@@ -246,7 +275,90 @@ export default function LabelingApp() {
     });
     newControl.addTo(mapRef.current);
     drawControlRef.current = newControl;
-  }, [activeClass]);
+  }, [activeClass, samMode]);
+
+  // SAM: render point markers + call API when points change
+  useEffect(() => {
+    if (samPoints.length === 0 || !selectedTask) {
+      samPointsLayerRef.current.clearLayers();
+      samPreviewLayerRef.current.clearLayers();
+      setSamPreview([]);
+      return;
+    }
+
+    // Render point markers
+    samPointsLayerRef.current.clearLayers();
+    for (const [px, py, label] of samPoints) {
+      const lat = selectedTask.image_height - py;
+      const lng = px;
+      L.circleMarker([lat, lng], {
+        radius: 6,
+        fillColor: label === 1 ? "#4caf50" : "#f44336",
+        color: "#fff",
+        weight: 2,
+        fillOpacity: 1,
+      })
+        .bindTooltip(label === 1 ? "Include" : "Exclude", {
+          permanent: false,
+          direction: "top",
+        })
+        .addTo(samPointsLayerRef.current);
+    }
+
+    // Debounced API call
+    setSamLoading(true);
+    setSamError("");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/labeling/sam", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task_id: selectedTask.id,
+            points: samPoints,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSamPreview(data.polygons || []);
+          setSamError("");
+        } else {
+          const err = await res.json().catch(() => ({ error: "Unknown" }));
+          setSamError(err.error || "Prediction failed");
+          setSamPreview([]);
+        }
+      } catch (e) {
+        console.error("SAM error:", e);
+        setSamError("Network error");
+        setSamPreview([]);
+      } finally {
+        setSamLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [samPoints, selectedTask]);
+
+  // SAM: render preview polygon
+  useEffect(() => {
+    samPreviewLayerRef.current.clearLayers();
+    if (samPreview.length === 0 || !selectedTask) return;
+
+    const color = classColor(activeClass);
+    for (const polygon of samPreview) {
+      const latlngs: L.LatLngExpression[] = polygon.map(
+        ([x, y]: number[]) =>
+          [selectedTask.image_height - y, x] as L.LatLngExpression
+      );
+      L.polygon(latlngs, {
+        color,
+        fillColor: color,
+        fillOpacity: 0.2,
+        weight: 2,
+        dashArray: "4 4",
+      }).addTo(samPreviewLayerRef.current);
+    }
+  }, [samPreview, selectedTask, activeClass]);
 
   // Load task detail + image
   const loadTask = useCallback(async (taskId: number) => {
@@ -257,9 +369,14 @@ export default function LabelingApp() {
       const data: TaskWithUrl = await res.json();
       setSelectedTask(data);
 
-      // Clear existing layers
+      // Clear existing layers + SAM state
       drawLayerRef.current.clearLayers();
       solarLayerRef.current.clearLayers();
+      samPointsLayerRef.current.clearLayers();
+      samPreviewLayerRef.current.clearLayers();
+      setSamPoints([]);
+      setSamPreview([]);
+      setSamError("");
 
       if (!mapRef.current) return;
       const map = mapRef.current;
@@ -283,7 +400,8 @@ export default function LabelingApp() {
       if (data.solar_polygon_pixels) {
         for (const ring of data.solar_polygon_pixels) {
           const latlngs: L.LatLngExpression[] = ring.map(
-            ([x, y]: number[]) => [y, x] as L.LatLngExpression
+            ([x, y]: number[]) =>
+              [data.image_height - y, x] as L.LatLngExpression
           );
           const poly = L.polygon(latlngs, {
             color: "#ff0000",
@@ -381,6 +499,72 @@ export default function LabelingApp() {
     }
   }, [selectedTask, annotator, regions]);
 
+  // SAM: accept prediction as a region
+  const acceptSamPrediction = useCallback(() => {
+    if (samPreview.length === 0 || !selectedTask) return;
+
+    for (const polygon of samPreview) {
+      const regionId = uid();
+      const className = activeClass;
+      const color = classColor(className);
+
+      // Convert pixel coords to annotation format [x, leafletY]
+      const points: [number, number][] = polygon.map(
+        ([x, y]: number[]) =>
+          [x, selectedTask.image_height - y] as [number, number]
+      );
+
+      const newRegion: AnnotationRegion = {
+        id: regionId,
+        class_name: className,
+        points,
+      };
+      setRegions((prev) => [...prev, newRegion]);
+
+      // Add to map
+      const latlngs: L.LatLngExpression[] = points.map(
+        ([x, y]) => [y, x] as L.LatLngExpression
+      );
+      const poly = L.polygon(latlngs, {
+        color,
+        fillColor: color,
+        fillOpacity: 0.3,
+        weight: 2,
+      });
+      (poly as L.Polygon & { regionId?: string }).regionId = regionId;
+      poly.bindTooltip(
+        LULC_CLASSES.find((c) => c.name === className)?.label || className,
+        { permanent: false, direction: "center" }
+      );
+      poly.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        setSelectedRegionId(regionId);
+      });
+      drawLayerRef.current.addLayer(poly);
+    }
+
+    // Clear SAM state
+    setSamPoints([]);
+    setSamPreview([]);
+    setSamError("");
+    samPointsLayerRef.current.clearLayers();
+    samPreviewLayerRef.current.clearLayers();
+  }, [samPreview, selectedTask, activeClass]);
+
+  // SAM: clear state
+  const clearSamState = useCallback(() => {
+    setSamPoints([]);
+    setSamPreview([]);
+    setSamError("");
+    samPointsLayerRef.current.clearLayers();
+    samPreviewLayerRef.current.clearLayers();
+  }, []);
+
+  // SAM: undo last point
+  const undoSamPoint = useCallback(() => {
+    setSamPoints((prev) => prev.slice(0, -1));
+  }, []);
+
   // Change class of selected region
   const changeRegionClass = useCallback(
     (newClass: string) => {
@@ -408,7 +592,7 @@ export default function LabelingApp() {
     [selectedRegionId]
   );
 
-  // Keyboard shortcut: 1-9,0 for classes
+  // Keyboard shortcuts: 1-9,0 for classes, q toggle SAM, Enter accept, Escape clear
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -426,10 +610,39 @@ export default function LabelingApp() {
         e.preventDefault();
         handleSave();
       }
+      // SAM shortcuts
+      if (e.key === "q" && selectedTask) {
+        setSamMode((prev) => !prev);
+      }
+      if (e.key === "Enter" && samModeRef.current && samPreview.length > 0) {
+        acceptSamPrediction();
+      }
+      if (e.key === "Escape" && samModeRef.current) {
+        clearSamState();
+      }
+      if (
+        e.key === "z" &&
+        (e.metaKey || e.ctrlKey) &&
+        samModeRef.current &&
+        samPoints.length > 0
+      ) {
+        e.preventDefault();
+        undoSamPoint();
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [selectedRegionId, changeRegionClass, handleSave]);
+  }, [
+    selectedRegionId,
+    changeRegionClass,
+    handleSave,
+    selectedTask,
+    samPreview,
+    samPoints,
+    acceptSamPrediction,
+    clearSamState,
+    undoSamPoint,
+  ]);
 
   const grouped = groupBySite(tasks);
 
@@ -617,6 +830,93 @@ export default function LabelingApp() {
           style={{ width: "100%", height: "100%", background: "#1a1a1a" }}
         />
 
+        {/* SAM toolbar */}
+        {selectedTask && samMode && (
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "#fff",
+              padding: "8px 16px",
+              borderRadius: 8,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+              border: "2px solid #7b1fa2",
+            }}
+          >
+            <span
+              style={{ fontSize: 12, color: "#7b1fa2", fontWeight: 600 }}
+            >
+              SAM
+            </span>
+            <span style={{ fontSize: 11, color: "#666" }}>
+              Click: include | Shift+click: exclude
+            </span>
+            {samLoading && (
+              <span style={{ fontSize: 12, color: "#f57c00", fontWeight: 500 }}>
+                Predicting...
+              </span>
+            )}
+            {samError && (
+              <span style={{ fontSize: 12, color: "#d32f2f" }}>
+                {samError}
+              </span>
+            )}
+            {samPoints.length > 0 && (
+              <>
+                <button
+                  onClick={undoSamPoint}
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    border: "1px solid #ccc",
+                    borderRadius: 4,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Undo (Ctrl+Z)
+                </button>
+                <button
+                  onClick={clearSamState}
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    border: "1px solid #ccc",
+                    borderRadius: 4,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear (Esc)
+                </button>
+              </>
+            )}
+            {samPreview.length > 0 && !samLoading && (
+              <button
+                onClick={acceptSamPrediction}
+                style={{
+                  padding: "4px 14px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#4caf50",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Accept (Enter)
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Save bar */}
         {selectedTask && (
           <div
@@ -689,6 +989,54 @@ export default function LabelingApp() {
           <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>
             Keys 1-9, 0 to select
           </div>
+        </div>
+
+        {/* Tool mode toggle */}
+        <div
+          style={{
+            padding: "8px 12px",
+            borderBottom: "1px solid #e0e0e0",
+            display: "flex",
+            gap: 4,
+          }}
+        >
+          <button
+            onClick={() => {
+              setSamMode(false);
+              clearSamState();
+            }}
+            style={{
+              flex: 1,
+              padding: "6px 8px",
+              fontSize: 12,
+              fontWeight: 500,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: !samMode ? "#1976d2" : "#fff",
+              color: !samMode ? "#fff" : "#333",
+              cursor: "pointer",
+            }}
+          >
+            Draw
+          </button>
+          <button
+            onClick={() => setSamMode(true)}
+            disabled={!selectedTask}
+            style={{
+              flex: 1,
+              padding: "6px 8px",
+              fontSize: 12,
+              fontWeight: 500,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: samMode ? "#7b1fa2" : "#fff",
+              color: samMode ? "#fff" : "#333",
+              cursor: selectedTask ? "pointer" : "not-allowed",
+              opacity: selectedTask ? 1 : 0.5,
+            }}
+          >
+            SAM (Q)
+          </button>
         </div>
 
         {LULC_CLASSES.map((cls, idx) => (
@@ -823,11 +1171,15 @@ export default function LabelingApp() {
             }}
           >
             <li>Select a class (right panel)</li>
-            <li>Click polygon tool (left toolbar)</li>
-            <li>Click points to draw boundary</li>
-            <li>Double-click to finish polygon</li>
-            <li>Click existing polygon to select it</li>
-            <li>Click a class to reassign</li>
+            <li>
+              <b>Draw mode:</b> polygon tool + click
+            </li>
+            <li>
+              <b>SAM mode (Q):</b> click to auto-segment
+            </li>
+            <li>Shift+click to exclude area (SAM)</li>
+            <li>Enter to accept, Esc to clear</li>
+            <li>Click existing polygon to reassign</li>
             <li>Save when done (Ctrl+S)</li>
           </ol>
         </div>
