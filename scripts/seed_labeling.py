@@ -27,6 +27,13 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "Pillow"])
     from PIL import Image
 
+try:
+    import rasterio
+except ImportError:
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "rasterio"])
+    import rasterio
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -37,6 +44,7 @@ load_dotenv()
 PROJECT_DIR = Path(__file__).parent.parent
 DATA_DIR = PROJECT_DIR / "data"
 LABEL_DIR = DATA_DIR / "for_labeling"
+RAW_DIR = DATA_DIR / "raw_images"
 CONFIRMED_MATCHES = DATA_DIR / "grw" / "confirmed_matches.json"
 
 S3_BUCKET = "anuc-satellite-analysis"
@@ -75,6 +83,20 @@ def make_bbox(lat, lon, buffer_km):
     dlat = buffer_km / km_per_deg_lat
     dlon = buffer_km / km_per_deg_lon
     return (lon - dlon, lat - dlat, lon + dlon, lat + dlat)
+
+
+def get_tif_bounds(png_filename):
+    """Read actual geographic bounds from the corresponding GeoTIFF.
+
+    Returns (west, south, east, north) or None if no TIF found.
+    """
+    tif_name = png_filename.replace(".png", ".tif")
+    tif_path = RAW_DIR / tif_name
+    if not tif_path.exists():
+        return None
+    with rasterio.open(str(tif_path)) as src:
+        b = src.bounds
+        return (b.left, b.bottom, b.right, b.top)
 
 
 def geo_to_pixel(lon, lat, bbox, img_width, img_height):
@@ -230,8 +252,13 @@ def seed_tasks(conn, solar_polygons):
             img = Image.open(str(f))
             img_width, img_height = img.size
 
-            # Compute geographic bounding box
-            bbox = make_bbox(site_info["lat"], site_info["lon"], meta["buffer_km"])
+            # Get geographic bounding box: prefer actual TIF bounds over recomputed
+            bbox = get_tif_bounds(f.name)
+            if bbox is not None:
+                pass  # Using actual GeoTIFF bounds
+            else:
+                bbox = make_bbox(site_info["lat"], site_info["lon"], meta["buffer_km"])
+                print(f"  Warning: no TIF for {f.name}, using computed bbox")
 
             # Convert solar polygon to pixel coords for post images
             solar_px = None
