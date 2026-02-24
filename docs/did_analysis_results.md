@@ -310,18 +310,82 @@ The bare ground effect is remarkably consistent between the pilot and the full s
 | DiD results (IN) | `data/did_results/india/did_results.json` | 18 regressions, India only |
 | Regression tables | `data/did_results/did_regression_table.csv` | Summary statistics |
 | Full summaries | `data/did_results/did_full_summaries.txt` | statsmodels output |
-| Figures | `docs/figures/did_fig*.png` | 8 figures |
+| Figures | `docs/figures/did_fig*.png` | 9 figures |
+| Polygon LULC | `data/polygon_lulc_results.json` | 5,888 sites, baseline DW within polygons |
+| VLM validation | `data/vlm_validation/validation_results.json` | 50 comparison sites, Gemini assessment |
 
 ---
 
-## 6. Next Steps
+## 6. Pre-Construction Land Use Within Solar Polygons
+
+To complement the DiD analysis (which uses 1 km circular buffers), we queried Dynamic World composition at baseline within the **exact polygon boundaries** of 5,888 operational solar sites with GRW or TZ-SAM polygons. This isolates what the land was before solar panels were installed — without any buffer dilution.
+
+![Pre-construction land use within solar polygon boundaries](figures/did_fig9_polygon_lulc.png)
+*Figure 9. Pre-construction land use within solar polygon boundaries, by country. Based on Dynamic World mode composite at the earliest available year (2016–2020) for 5,888 operational sites.*
+
+### Key Findings
+
+**South Asia overall (n=5,888):**
+- **Cropland dominates** at 39.6% — the single largest pre-solar land cover class
+- **Bare ground** (17.3%) and **shrub/scrub** (17.1%) are the next largest categories
+- **Built-up** (16.4%) likely reflects DW misclassification of construction-phase sites
+- **Trees/forest** (7.0%) — lower than the 1 km buffer DiD estimate, suggesting tree loss concentrates outside the polygon footprint
+- High standard deviations (28–40%) indicate substantial site-to-site heterogeneity
+
+**Country differences:**
+| Country | Top 1 | Top 2 | Top 3 | n |
+|---------|-------|-------|-------|---|
+| India | Cropland (41%) | Shrub (18%) | Bare (16%) | 5,144 |
+| Pakistan | Cropland (35%) | Bare (30%) | Built (25%) | 485 |
+| Sri Lanka | Trees (35%) | Shrub (23%) | Built (21%) | 114 |
+| Nepal | Cropland (38%) | Trees (18%) | Bare (16%) | 68 |
+| Bangladesh | Built (36%) | Cropland (18%) | Bare (15%) | 71 |
+| Bhutan | Trees (34%) | Shrub (23%) | Built (18%) | 6 |
+
+- **India and Pakistan** — solar farms primarily replace cropland and semi-arid scrubland
+- **Sri Lanka and Bhutan** — solar farms primarily replace tree cover, consistent with forested terrain
+- **Bangladesh** — high "built" percentage likely reflects DW misclassification of dense settlements or pre-existing structures near small solar sites
+
+---
+
+## 7. VLM Validation of Comparison Sites
+
+To validate that our comparison (control) sites are genuine non-solar sites, we ran Gemini 2.0 Flash visual assessment on Planet basemap images (4.77m, 2km × 2km) for a stratified random sample of 50 comparison sites across all 6 countries.
+
+### Results
+
+**Solar visibility check:**
+- **49/50 (98%)** sites show no visible solar installation — confirming they are valid controls
+- **1 site** (NE_0076, Nepal: Janaki Saurya Vidyut Aayojana) flagged with partial solar panels visible in corner of image — likely a small nearby installation, not the proposed project
+
+**Feasibility scores** (0–1 scale, how suitable for utility-scale solar):
+- Mean: 0.43, Median: 0.40
+- India (0.47) and Pakistan (0.45) highest; Bhutan (0.20) lowest
+- Moderate feasibility is expected — these are sites where solar was proposed but not built
+
+**DW vs VLM land cover comparison** (VLM − DW, percentage points):
+| Class | Mean diff | Abs mean diff |
+|-------|-----------|---------------|
+| Grassland | +9.3 | 9.3 |
+| Shrub | +5.9 | 8.1 |
+| Cropland | −3.8 | 13.5 |
+| Trees | −4.1 | 12.2 |
+| Built | −6.6 | 11.3 |
+
+DW overestimates built-up area and underestimates grassland/shrub relative to Gemini visual assessment, consistent with known DW classification biases in South Asian landscapes.
+
+---
+
+## 8. Next Steps
 
 ### Completed
-- ~~**Additional outcomes**~~: Added MODIS NDVI/EVI (250m), MODIS LST day/night (1km), WorldPop population (100m), Google Open Buildings (2.5m) — 18 outcome variables total, 14 significant at p < 0.05.
+- ~~Additional outcomes~~: MODIS NDVI/EVI, LST, WorldPop, Open Buildings — 18 outcomes, 14 significant
+- ~~Country fixed effects~~: Trees robust (−2.39***), cropland loses significance under FE
+- ~~Propensity score matching~~: 326 matched pairs, tree loss −4.39***, NTL loses significance
+- ~~Heterogeneity analysis~~: Stratified by capacity, baseline LULC, construction year, GHI interaction
+- ~~VLM validation~~: 98% of comparison sites confirmed as non-solar
+- ~~Polygon-level LULC~~: Baseline land use within exact polygon boundaries for 5,888 sites
 
-### In Progress
-1. **Polygon-level buffers**: Use actual GRW/TZ-SAM polygon boundaries instead of fixed 1 km circles to reduce signal dilution.
-2. **Country fixed effects**: Add country dummies to the pooled regression to control for country-level confounders.
-3. **Heterogeneity analysis**: Test whether treatment effects vary by farm capacity, pre-existing land cover, construction year, or climate zone.
-4. **Propensity score matching**: Match treatment and control sites on observable characteristics (GHI, land cover, urbanization) to strengthen causal identification.
-5. **VLM validation**: Run Gemini visual assessment on a sample of comparison sites to validate GEE-based screening.
+### Remaining
+1. **Polygon-level DiD**: Re-run temporal data collection and DiD regression using polygon geometries instead of 1 km circles (code ready: `--use-polygons` flag)
+2. **Site-level case studies**: Detailed before/after analysis of high-confidence sites with Planet imagery

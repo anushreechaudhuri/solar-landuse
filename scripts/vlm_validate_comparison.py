@@ -107,45 +107,57 @@ def download_planet_image(site, year=2023):
 
     try:
         from download_planet_basemaps import (
-            find_mosaic_by_date, get_quads_for_bbox, download_and_mosaic
+            find_mosaic_id, get_quads, download_quad,
+            mosaic_and_clip, make_bbox,
         )
-        import rasterio
-        from rasterio.transform import from_bounds
 
-        # 1km buffer = ~2km x 2km AOI
-        dlat = 0.009  # ~1km
-        dlon = 0.011
-        bbox = [lon - dlon, lat - dlat, lon + dlon, lat + dlat]
+        bbox = make_bbox(lat, lon, buffer_km=1)
 
-        mosaic = find_mosaic_by_date(year, 6)  # June of target year
-        if not mosaic:
-            mosaic = find_mosaic_by_date(year, 1)
-        if not mosaic:
+        # Try June, then January
+        mosaic_id = None
+        for month in [6, 1]:
+            mid, _name = find_mosaic_id(f"{year}_{month:02d}")
+            if mid:
+                mosaic_id = mid
+                break
+        if not mosaic_id:
             print(f"    No mosaic for {site_id} in {year}")
             return None
 
-        quads = get_quads_for_bbox(mosaic["id"], bbox)
+        quads = get_quads(mosaic_id, bbox)
         if not quads:
             print(f"    No quads for {site_id}")
             return None
 
+        # Download quads to temp files
+        quad_paths = []
+        for qi, quad in enumerate(quads):
+            qpath = IMG_DIR / f"{site_id}_{year}_q{qi}.tif"
+            download_quad(quad, str(qpath))
+            quad_paths.append(str(qpath))
+
+        # Mosaic, reproject, clip
         tiff_path = IMG_DIR / f"{site_id}_{year}.tif"
-        download_and_mosaic(quads, bbox, str(tiff_path))
+        mosaic_and_clip(quad_paths, bbox, str(tiff_path))
+
+        # Clean up quad files
+        for qp in quad_paths:
+            Path(qp).unlink(missing_ok=True)
 
         # Convert to PNG
+        import rasterio
         with rasterio.open(tiff_path) as src:
-            rgb = src.read([1, 2, 3])
-            # Normalize to 0-255
-            rgb = rgb.astype(float)
+            rgb = src.read([1, 2, 3]).astype(float)
             for b in range(3):
-                p2, p98 = rgb[b][rgb[b] > 0].min(), rgb[b][rgb[b] > 0].max()
-                if p98 > p2:
-                    rgb[b] = ((rgb[b] - p2) / (p98 - p2) * 255).clip(0, 255)
+                valid = rgb[b][rgb[b] > 0]
+                if len(valid) > 0:
+                    p2, p98 = valid.min(), valid.max()
+                    if p98 > p2:
+                        rgb[b] = ((rgb[b] - p2) / (p98 - p2) * 255).clip(0, 255)
             rgb = rgb.astype("uint8")
             img = Image.fromarray(rgb.transpose(1, 2, 0))
             img.save(img_path)
 
-        # Clean up tiff
         tiff_path.unlink(missing_ok=True)
         return img_path
 
@@ -229,8 +241,12 @@ def compare_with_gee(site, vlm_result):
 
     comparison = {}
     for dw_key, our_key in dw_map.items():
-        dw_val = gee_dw.get(dw_key, 0) or 0
-        vlm_val = vlm_lc.get(our_key, 0) or 0
+        try:
+            dw_val = float(gee_dw.get(dw_key, 0) or 0)
+            vlm_val = float(vlm_lc.get(our_key, 0) or 0)
+        except (TypeError, ValueError):
+            dw_val = 0.0
+            vlm_val = 0.0
         comparison[our_key] = {
             "dw": round(dw_val, 1),
             "vlm": round(vlm_val, 1),

@@ -162,6 +162,7 @@ npm run dev
 | `scripts/create_did_figures.py` | Forest plot, parallel trends, LULC stacked bars, distributions |
 | `scripts/create_pipeline_diagram.py` | Pipeline diagram figure |
 | `scripts/vlm_validate_comparison.py` | VLM validation of comparison sites (Gemini + Planet images) |
+| `scripts/analyze_polygon_lulc.py` | Pre-construction LULC within exact solar polygon boundaries |
 | `scripts/sync_to_s3.py` | Sync all data to/from S3 (archive caches, incremental upload) |
 
 ### Classification & Analysis

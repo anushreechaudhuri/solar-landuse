@@ -588,6 +588,23 @@ India dominates the sample (87% of treatment sites). Country-specific regression
 
 **Heterogeneity**: Tree loss is consistent across capacity terciles. Bare ground increase concentrated in large farms. Nighttime cooling strongest in medium/large installations. GHI interaction: tree loss smaller at high-GHI sites (less tree cover to begin with).
 
+### Pre-Construction Land Use Within Polygons
+
+Queried Dynamic World baseline composition within the **exact polygon boundaries** of 5,888 operational sites (no buffer dilution):
+
+- **Cropland (39.6%)** is the dominant pre-solar land cover across South Asia
+- Followed by bare ground (17.3%), shrub/scrub (17.1%), and built-up (16.4%)
+- Trees/forest only 7.0% within polygons — lower than 1km buffer DiD, suggesting tree loss concentrates in the surrounding landscape
+- Strong country variation: India/Pakistan = cropland-dominated; Sri Lanka/Bhutan = forest-dominated; Bangladesh = built-up (likely DW misclassification)
+
+### VLM Validation of Controls
+
+Gemini 2.0 Flash visual assessment of 50 stratified comparison sites (Planet 4.77m imagery):
+
+- **98% (49/50)** confirmed as non-solar — validating the control group
+- Mean site feasibility: 0.43 (moderate, as expected for proposed-but-not-built)
+- DW overestimates built-up (+6.6 pp) and underestimates grassland (-9.3 pp) vs VLM
+
 ### Key Findings
 
 1. **Solar farms primarily replace tree cover**, not cropland. The -4.15 pp tree loss is the largest effect, robust to PSM (-4.39***) and country FE (-2.39***).
