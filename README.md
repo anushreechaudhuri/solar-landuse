@@ -8,12 +8,13 @@ Also includes a **LULC labeling studio** (`/label`) for hand-labeling satellite 
 
 ## Current Scope
 
-- **5,093 utility-scale solar phases** across 6 South Asian countries (India, Bangladesh, Pakistan, Nepal, Sri Lanka, Bhutan)
-- **3,957 GRW solar installation polygons** matched against GSPT project coordinates
-- **Match results**: 1,829 high confidence / 1,132 medium / 269 low / 1,863 unmatched
+- **6,705 unified solar entries** across 6 South Asian countries (India, Bangladesh, Pakistan, Nepal, Sri Lanka, Bhutan) from 3-way spatial matching of GEM/GSPT (5,093), GRW (3,957), and TZ-SAM (5,368)
+- **Difference-in-differences analysis**: 3,676 operational (treatment) vs 368 proposed/cancelled (control) sites, 18 outcome variables, 14 significant at p < 0.05
+- **7 EO datasets** at 4 time points per site: Dynamic World, VIIRS NTL, Sentinel-1 SAR, MODIS NDVI/EVI, MODIS LST, WorldPop, Google Open Buildings Temporal
+- **16,176-row temporal panel** (4,044 sites × 4 time points × 37 columns)
 - **Pre/post construction** imagery comparison (2016-2026) for 15 Bangladesh test sites
 - **5 classification sources**: Dynamic World, ESA WorldCover, ESRI LULC, GLAD GLCLUC, VLM V2 (Gemini)
-- **10-class unified scheme**: cropland, trees, shrub, grassland, flooded veg, built, bare, water, snow, no data
+- **All data backed up to S3** (`s3://anuc-satellite-analysis/data/`)
 
 ## Setup
 
@@ -149,13 +150,26 @@ npm run dev
 | `scripts/seed_labeling.py` | Upload images to S3 + seed labeling tasks |
 | `scripts/modal_sam.py` | SAM 2 segmentation backend on Modal GPU |
 
+### DiD Analysis Pipeline
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/query_tzsam_south_asia.py` | Query TZ-SAM solar polygons from GEE |
+| `scripts/integrate_solar_datasets.py` | 3-way spatial matching (GEM + GRW + TZ-SAM), confidence scoring |
+| `scripts/screen_comparison_sites.py` | GEE screening of treatment/control sites (DW, GHI, elevation) |
+| `scripts/collect_temporal_data.py` | Multi-temporal panel collection from 7 EO datasets (parallelized) |
+| `scripts/run_did_analysis.py` | WLS DiD regression on 18 outcome variables |
+| `scripts/create_did_figures.py` | Forest plot, parallel trends, LULC stacked bars, distributions |
+| `scripts/create_pipeline_diagram.py` | Pipeline diagram figure |
+| `scripts/sync_to_s3.py` | Sync all data to/from S3 (archive caches, incremental upload) |
+
 ### Classification & Analysis
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/compare_lulc_datasets.py` | Multi-dataset LULC comparison (main analysis pipeline) |
+| `scripts/compare_lulc_datasets.py` | Multi-dataset LULC comparison (V3 analysis pipeline) |
 | `scripts/vlm_classify_v2.py` | VLM classification using Gemini 2.0 Flash (10-class, polygon-aware) |
-| `scripts/figure_style.py` | Publication-quality figure styling (Paul Tol colorblind-safe palette) |
+| `scripts/figure_style.py` | Figure styling (Paul Tol colorblind-safe palette) |
 
 ### Training
 
@@ -224,7 +238,7 @@ solar-landuse/
 │   ├── train_segmentation.py
 │   └── apply_segmentation.py
 ├── models/                        # Trained model weights
-├── docs/figures/                  # Publication-quality figures
+├── docs/figures/                  # Analysis figures
 ├── RESULTS.md                     # Analysis results and findings
 ├── LOG.md                         # Detailed change log
 └── requirements.txt
@@ -232,18 +246,41 @@ solar-landuse/
 
 ## Key Findings
 
+### DiD Analysis (V4, South Asia)
+
+1. **Solar farms primarily replace tree cover** (-4.15 pp, p<0.001), not cropland — the largest effect in the analysis
+2. **Nighttime cooling** (-0.34°C, p<0.001) at solar sites from vegetation-to-panel land surface change
+3. **Nighttime lights increase** (+0.29 nW/sr/cm², p=0.014) near operational sites — new electrical infrastructure
+4. **SAR cross-polarization drops** (-0.51 dB, p<0.001) as smooth panels replace rough vegetation
+5. **Population growth is slower** near solar sites (-58.6 people/km², p=0.024)
+6. **14 of 18 outcome variables** show statistically significant treatment effects
+
+### LULC Classification (V3, Bangladesh)
+
 1. **Cropland is the primary pre-solar land cover** across all datasets and VLM
 2. **Only Dynamic World and VLM V2** provide true temporal change detection (WC/GLAD are static snapshots)
 3. **DW detects cropland-to-built conversion** at solar sites (no solar class, so panels appear as built/bare/snow)
 4. **VLM V2 is polygon-aware** for post-construction images, avoiding the solar-as-built misclassification
-5. **Cross-dataset agreement is moderate** — cropland is most consistently identified, other classes vary
 
 ## Data Sources
 
-- **GSPT**: Global Solar Power Tracker (February 2026) — 5,093 South Asia utility-scale phases
-- **GRW**: Global Renewables Watch solar polygons via GEE (3,957 South Asia features)
+### Solar Detection
+- **GEM/GSPT**: Global Solar Power Tracker (Feb 2026) — 5,093 South Asia utility-scale phases
+- **GRW**: Global Renewables Watch polygons via GEE — 3,957 South Asia features
+- **TZ-SAM**: Transition Zero solar polygons via GEE — 5,368 South Asia features
+
+### Earth Observation (DiD Panel)
+- **Dynamic World**: 10m LULC composition via GEE
+- **VIIRS NTL**: 463m nighttime light radiance via GEE
+- **Sentinel-1 SAR**: 10m VV/VH backscatter via GEE
+- **MODIS MOD13Q1**: 250m NDVI/EVI vegetation indices via GEE
+- **MODIS MOD11A2**: 1km day/night land surface temperature via GEE
+- **WorldPop**: 100m population density (2000-2020) via GEE
+- **Google Open Buildings Temporal**: 2.5m building presence/height/count (2016-2023) via GEE
+- **Global Solar Atlas**: 250m GHI irradiance via GEE
+
+### Imagery & Classification
 - **Planet Basemaps**: 4.77m monthly mosaics (Jan 2016 - Jan 2026) via Basemaps API
-- **Dynamic World**: 10m per-date composite via GEE
 - **ESA WorldCover**: 10m single snapshot (2021) via GEE
 - **ESRI LULC**: 10m annual (2017-2024) via GEE (sat-io)
 - **GLAD GLCLUC**: 30m single snapshot (2020) via GEE

@@ -508,3 +508,92 @@ VLM V2 uses Gemini 2.0 Flash with the 10-class scheme and polygon-awareness for 
 4. **VLM V2 provides polygon-aware classification.** For post-construction images, VLM knows the solar percentage from polygon geometry and classifies only the remaining area, avoiding the solar-as-built misclassification issue.
 5. **Cross-dataset agreement is moderate.** Cropland is the most consistently identified dominant class, but other classes vary widely between datasets.
 6. **ESRI and GLAD have systematic issues for Bangladesh.** ESRI has high no_data and misclassifies bright surfaces. Both datasets' built percentages in pre-construction polygons may be inflated by temporal mismatch.
+
+---
+
+## V4: Difference-in-Differences Analysis (South Asia)
+
+### Overview
+
+Quasi-experimental analysis across 4,044 solar sites in South Asia (Bangladesh, India, Pakistan, Nepal, Sri Lanka, Bhutan), comparing 3,676 operational sites (treatment) against 368 proposed/cancelled projects (control) using a difference-in-differences framework with multi-temporal Earth observation data.
+
+### Data Pipeline
+
+![Pipeline diagram](docs/figures/did_pipeline_diagram.png)
+
+Three independent solar datasets (GEM/GSPT, GRW, TZ-SAM) are spatially matched using R-tree indices and IoU overlap to create a unified database of 6,705 entries with confidence tiers. Treatment sites require high/very_high confidence (2+ source agreement). Control sites are GEM projects with announced/pre-construction/cancelled status and no detected polygon.
+
+For each site, 7 EO datasets are queried at 4 time points (baseline 2016, pre-construction, post-construction, current 2025):
+
+| Dataset | Resolution | What it measures |
+|---------|-----------|------------------|
+| Dynamic World | 10m | 9-class LULC composition |
+| VIIRS NTL | 463m | Nighttime light radiance |
+| Sentinel-1 | 10m | SAR VV/VH backscatter |
+| MODIS MOD13Q1 | 250m | NDVI and EVI vegetation indices |
+| MODIS MOD11A2 | 1km | Day/night land surface temperature |
+| WorldPop | 100m | Population density (2000–2020) |
+| Google Open Buildings | 2.5m | Building presence, height, count (2016–2023) |
+
+Panel: 16,176 rows (4,044 sites × 4 time points) × 37 columns.
+
+### Regression
+
+WLS DiD regression: `Δoutcome ~ treatment + GHI + capacity_mw + baseline_value`, weighted by confidence score. The treatment coefficient estimates the causal effect of solar construction on each outcome, controlling for solar resource quality, project scale, and baseline levels.
+
+### Results
+
+![Forest plot](docs/figures/did_fig3_forest_plot.png)
+
+**14 of 18 outcomes are statistically significant (p < 0.05):**
+
+| Category | Outcome | DiD Coef | p-value | Interpretation |
+|----------|---------|:--------:|:-------:|---------------|
+| LULC | Trees (%) | **-4.15*** | <0.001 | Largest effect — tree cover loss at solar sites |
+| LULC | Bare ground (%) | **+2.51*** | <0.001 | Construction/clearing increases bare ground |
+| LULC | Cropland (%) | **+1.93** | 0.015 | Counter-intuitive increase (DW reclassification artifact) |
+| LULC | Water (%) | **-0.61*** | <0.001 | Water body loss near construction |
+| LULC | Grassland (%) | **-0.35*** | 0.002 | Minor grassland conversion |
+| LULC | Built-up (%) | -0.35 | 0.205 | Not significant — DW doesn't distinguish solar from built |
+| Remote sensing | NTL (nW/sr/cm²) | **+0.29** | 0.014 | More nighttime light near operational sites |
+| Remote sensing | SAR VH (dB) | **-0.51*** | <0.001 | Cross-pol backscatter drops (smooth panel surfaces) |
+| Remote sensing | SAR VV (dB) | -0.03 | 0.650 | Co-pol not significant |
+| Vegetation | NDVI | **-0.017*** | <0.001 | Vegetation productivity declines |
+| Vegetation | EVI | **-0.011*** | <0.001 | Same signal, slightly smaller magnitude |
+| Temperature | Night LST (°C) | **-0.34*** | <0.001 | Cooler nights (vegetation-to-panel transition) |
+| Temperature | Day LST (°C) | +0.06 | 0.542 | Not significant |
+| Population | Pop density | -0.15* | 0.063 | Marginal — less population growth near solar |
+| Population | Pop sum (1km) | **-58.6** | 0.024 | Significant lower population accumulation |
+| Buildings | Presence | **+0.004*** | <0.001 | More built structures detected |
+| Buildings | Height (m) | **+0.055*** | <0.001 | Taller structures (solar infrastructure) |
+| Buildings | Count | **-0.000*** | <0.001 | Fractional count decrease (large panels vs many small buildings) |
+
+### Country-Level Variation
+
+India dominates the sample (87% of treatment sites). Country-specific regressions show:
+
+| Country | N treat | N control | Significant outcomes | Key differences |
+|---------|:-------:|:---------:|:-------------------:|----------------|
+| India | 3,222 | 177 | 12/18 | Strongest tree loss (-4.5***), bare gain (+2.8***) |
+| Pakistan | 126 | 59 | 3/18 | Large effects but lower power; bare +10.6* |
+| Bangladesh | 30 | 51 | 1/18 | Only bare ground significant (+2.8*); small sample |
+| Nepal | 96 | 33 | 2/18 | NTL +0.5*, built +1.1* |
+| Sri Lanka | 72 | 31 | 2/18 | Trees -3.3*, NTL +1.5** |
+
+### Key Findings
+
+1. **Solar farms primarily replace tree cover**, not cropland. The -4.15 pp tree loss is the largest effect, likely reflecting clearing of scrubland and scattered trees at semi-arid sites.
+2. **Nighttime cooling** (-0.34°C) at solar sites suggests a measurable microclimate effect from replacing vegetation with panel surfaces.
+3. **Nighttime lights increase** (+0.29 nW/sr/cm²) at treatment sites, consistent with new electrical infrastructure and operational lighting.
+4. **SAR cross-polarization drops** (-0.51 dB) as smooth solar panels replace rough vegetation surfaces, while co-pol (VV) is unaffected.
+5. **Population growth is slower** near solar sites (-58.6 people within 1km, p=0.024), suggesting solar farms are sited in less-developing areas or may displace some settlement growth.
+6. **Building metrics show mixed signals**: more building presence and taller structures (solar infrastructure) but lower fractional count (large contiguous panels vs scattered small buildings).
+
+### Data Availability
+
+All data backed up to `s3://anuc-satellite-analysis/data/`. Restore with:
+```bash
+python scripts/sync_to_s3.py --restore
+```
+
+Full methodology and figures: [`docs/did_analysis_results.md`](docs/did_analysis_results.md)

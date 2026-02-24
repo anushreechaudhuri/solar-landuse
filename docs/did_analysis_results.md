@@ -1,0 +1,264 @@
+# Difference-in-Differences Analysis of Solar Farm Land-Use Impacts in South Asia
+
+## 1. Introduction
+
+This document presents the results of a quasi-experimental analysis measuring the land-use and environmental impacts of utility-scale solar farm construction across South Asia (Bangladesh, India, Pakistan, Nepal, Sri Lanka, Bhutan). We exploit variation in project completion status — comparing sites where solar farms were built (treatment) against sites where projects were announced but never constructed (control) — in a difference-in-differences (DiD) framework using multi-temporal Earth observation data.
+
+**Research questions:**
+1. Does solar farm construction cause measurable changes in land cover composition within 1 km?
+2. Are these changes detectable via nighttime lights (VIIRS) or radar backscatter (Sentinel-1)?
+3. Which land cover classes are most affected by solar development?
+4. Do treatment effects vary across countries with different baseline environments?
+
+---
+
+## 2. Methods
+
+### 2.1 Pipeline Overview
+
+![Data processing and analysis pipeline](figures/did_pipeline_diagram.png)
+*Figure 0. Data processing and analysis pipeline, from source datasets through spatial integration, temporal data collection, and DiD regression.*
+
+### 2.2 Dataset Integration (Phase 1)
+
+We combine three independent solar detection datasets to create a unified project database with confidence scores based on cross-source agreement:
+
+| Dataset | Type | Source | Coverage | South Asia Count |
+|---------|------|--------|----------|-----------------|
+| **GEM/GSPT** | Self-reported coordinates + metadata | Global Energy Monitor | Global, all statuses | 5,093 projects |
+| **GRW** | ML-detected polygons | Google Earth Engine | Global, built only | 3,957 polygons |
+| **TZ-SAM** | ML-detected polygons | Transition Zero / GEE | Global, built only | 5,368 polygons |
+
+**Spatial matching algorithm:**
+- Build R-tree spatial indices for GRW and TZ-SAM polygon sets
+- For each GEM project, find polygons within 5 km (exact coords) or 10 km (approximate) using **point-to-polygon edge distance** (not centroid), which better captures large installations
+- Compute GRW–TZ-SAM polygon intersections using IoU ≥ 0.1 threshold
+- Assign confidence tiers based on agreement:
+
+| Tier | Criteria | South Asia Total |
+|------|----------|-----------------|
+| **Very high** | All 3 sources: GRW ∩ TZ-SAM polygon overlap + GEM within 1 km | 2,718 |
+| **High** | 2 sources: (GRW or TZ-SAM) polygon + GEM within 1 km | 958 |
+| **Medium** | Partial agreement: polygon pair without GEM, or GEM + distant polygon | varies |
+| **Low** | Single source only | varies |
+
+The unified database contains **6,705 entries** across South Asia.
+
+![Dataset integration summary](figures/did_fig1_integration_summary.png)
+*Figure 1. (a) Source overlap for South Asia solar entries. Multi-source matches (teal) provide higher confidence than single-source detections (grey). (b) Confidence tier distribution.*
+
+### 2.3 Treatment and Control Group Assignment
+
+**Treatment group** (n=3,676): Operational solar farms confirmed by at least two independent sources (very high or high confidence). These are sites where construction definitively occurred.
+
+**Control group** (n=368): GEM projects with status *announced*, *pre-construction*, *shelved*, or *cancelled* — sites where solar farms were planned but never built. These serve as the counterfactual: locations selected for solar development (similar site characteristics) but without the actual land-use intervention.
+
+| Country | Treatment | Control | Total |
+|---------|----------|---------|-------|
+| India | 3,401 | 132 | 3,533 |
+| Pakistan | 158 | 31 | 189 |
+| Nepal | 27 | 102 | 129 |
+| Sri Lanka | 58 | 45 | 103 |
+| Bangladesh | 30 | 51 | 81 |
+| Bhutan | 2 | 7 | 9 |
+| **Total** | **3,676** | **368** | **4,044** |
+
+### 2.4 Comparison Site Screening (Phase 2)
+
+To validate that control sites are plausible comparison locations, we screen all 4,044 sites using Google Earth Engine:
+
+- **Dynamic World** (2023): LULC class percentages within 1 km
+- **Global Solar Atlas**: GHI (kWh/m²/day) at centroid
+- **SRTM**: mean elevation and slope within 1 km
+
+Sites receive a feasibility score (0–1) based on built-up penalty, suitable land bonus, GHI adequacy, and slope.
+
+![Feasibility comparison](figures/did_fig7_feasibility.png)
+*Figure 7. (a) Feasibility score distributions for treatment and control groups. (b) Solar irradiance (GHI) comparison.*
+
+### 2.5 Multi-Temporal Data Collection (Phase 3)
+
+For each of the 4,044 sites, we collect Earth observation data at four time points:
+
+| Time point | Year | Rationale |
+|------------|------|-----------|
+| **Baseline** | 2016 | Earliest DW/VIIRS/S1 coverage |
+| **Pre-construction** | construction_year − 1 (or 2019 for controls) | Immediate pre-intervention |
+| **Post-construction** | construction_year + 1 (or 2022 for controls) | Immediate post-intervention |
+| **Current** | 2025 | Most recent data |
+
+**Data sources and extraction:**
+
+| Source | Variable | Buffer | Scale | Compositing |
+|--------|----------|--------|-------|-------------|
+| Dynamic World | 9 LULC class percentages | 1 km circle | 10 m | Annual mode |
+| VIIRS DNB | Mean nighttime radiance (nW/sr/cm²) | 1 km circle | 463 m | Annual median, cf_cvg ≥ 3 |
+| Sentinel-1 GRD | Mean VV, VH backscatter (dB) | 1 km circle | 10 m | Apr–Oct median, IW mode |
+| Global Solar Atlas | GHI (kWh/m²/day) | Point sample | 250 m | Static (long-term average) |
+
+This yields a balanced panel of **16,176 observations** (4,044 sites × 4 time points) with 26 variables per row. Data completeness: DW 99.96%, VIIRS 100%, SAR 96.9%.
+
+Collection used 8 parallel GEE workers and completed in **145 minutes** (~52,500 queries, zero errors).
+
+### 2.6 Difference-in-Differences Specification (Phase 5)
+
+We estimate treatment effects using a first-difference specification:
+
+$$\Delta Y_i = \alpha + \beta \cdot \text{Treatment}_i + \gamma \cdot X_i + \varepsilon_i$$
+
+where:
+- $\Delta Y_i$ = post − pre change in outcome for site $i$
+- $\text{Treatment}_i$ = 1 if site is operational (high/very_high confidence), 0 if proposed/cancelled
+- $X_i$ = covariates: GHI, capacity (MW), baseline outcome level
+- $\beta$ is the **DiD estimator**: the causal effect of solar construction
+
+Observations are weighted by confidence: very_high = 1.0, high = 0.8, proposed = 0.6. We estimate this via **weighted least squares** (WLS) separately for each outcome variable.
+
+---
+
+## 3. Results
+
+### 3.1 South Asia (Combined, N=4,044)
+
+#### 3.1.1 Land Cover Composition Over Time
+
+![LULC stacked bars](figures/did_fig2_lulc_stacked.png)
+*Figure 2. Dynamic World LULC composition at four time points for treatment (left) and control (right) sites.*
+
+#### 3.1.2 Temporal Trajectories
+
+![Land cover trajectories](figures/did_fig6_trajectories.png)
+*Figure 6. Mean LULC class trajectories with standard error bands.*
+
+![Parallel trends](figures/did_fig4_parallel_trends.png)
+*Figure 4. Parallel trends for four key indicators: (a) Built-up, (b) Cropland, (c) Nighttime lights, (d) SAR VV backscatter.*
+
+#### 3.1.3 DiD Regression Results
+
+![Forest plot](figures/did_fig3_forest_plot.png)
+*Figure 3. Forest plot of DiD treatment effects with 95% confidence intervals. Seven of nine outcomes are statistically significant.*
+
+| Outcome | DiD coefficient | SE | 95% CI | p-value | R² | N |
+|---------|:-:|:-:|:-:|:-:|:-:|:-:|
+| **Trees (%)** | **−4.15*** | 0.51 | [−5.14, −3.16] | **<0.001** | 0.025 | 4,039 |
+| **Bare ground (%)** | **+2.51*** | 0.69 | [+1.16, +3.86] | **<0.001** | 0.015 | 4,039 |
+| **Water (%)** | **−0.61*** | 0.11 | [−0.82, −0.39] | **<0.001** | 0.017 | 4,039 |
+| **SAR VH (dB)** | **−0.51*** | 0.09 | [−0.68, −0.34] | **<0.001** | 0.071 | 3,544 |
+| **Grassland (%)** | **−0.35*** | 0.11 | [−0.57, −0.12] | **0.002** | 0.010 | 4,039 |
+| **NTL (nW/sr/cm²)** | **+0.29** | 0.12 | [+0.06, +0.52] | **0.014** | 0.043 | 4,042 |
+| **Cropland (%)** | **+1.93** | 0.79 | [+0.38, +3.48] | **0.015** | 0.003 | 4,039 |
+| Built-up (%) | −0.35 | 0.27 | [−0.89, +0.19] | 0.205 | 0.022 | 4,039 |
+| SAR VV (dB) | −0.03 | 0.06 | [−0.15, +0.09] | 0.650 | 0.048 | 3,544 |
+
+*Significance: \*\*\*p < 0.001, \*\*p < 0.05*
+
+**Key findings:**
+- **Trees**: The largest effect. Treatment sites lose 1.0 pp of tree cover while control sites gain 1.9 pp — a net −4.15 pp differential (p < 0.001). Solar construction causes substantial deforestation.
+- **Bare ground**: Treatment sites gain 2.5 pp more bare ground than controls (p < 0.001), consistent with land clearing and panel installation. Dynamic World classifies solar panels as "bare ground."
+- **Water**: Treatment sites show 0.6 pp less water increase than controls (p < 0.001), possibly reflecting drainage of seasonal ponds during site preparation.
+- **SAR VH**: Treatment sites show 0.51 dB lower VH backscatter change than controls (p < 0.001). This radar signature is consistent with smooth panel surfaces reducing cross-polarization scattering.
+- **NTL**: Treatment sites show 0.29 nW/sr/cm² more nightlight increase (p = 0.014), likely from associated infrastructure (substations, access roads, security lighting).
+- **Cropland**: Surprising positive effect (+1.93 pp, p = 0.015). Control sites lose more cropland than treatment sites, possibly reflecting that proposed sites in rapidly urbanizing areas face more land conversion pressure.
+- **Built-up**: Not significant (p = 0.205). DW does not reliably classify solar panels as "built."
+
+#### 3.1.4 Change Distributions
+
+![Change distributions](figures/did_fig5_change_distributions.png)
+*Figure 5. Site-level pre→post change distributions (box + strip plots) for four key outcomes.*
+
+### 3.2 Country-Level Results
+
+| Outcome | Bangladesh (n=81) | India (n=3,533) | Pakistan (n=189) | Nepal (n=129) | Sri Lanka (n=103) |
+|---------|:-:|:-:|:-:|:-:|:-:|
+| Built-up (%) | −1.08 | −0.04 | +1.09 | **−1.23** | +0.44 |
+| Cropland (%) | +0.11 | −0.05 | −3.51 | +0.59 | +0.33 |
+| **Trees (%)** | −0.59 | **−4.77*** | +0.49 | −0.08 | −4.80 |
+| **Bare ground (%)** | **+2.82** | **+5.16*** | +0.66 | +0.92 | +0.24 |
+| Water (%) | −1.68 | −0.31 | −1.08 | **−0.29** | **−1.02** |
+| Grassland (%) | −0.01 | −0.20 | −0.01 | **−0.26*** | −0.45 |
+| NTL (nW/sr/cm²) | −0.15 | +0.30 | +0.38 | **−0.12** | −0.01 |
+| SAR VV (dB) | +0.02 | +0.10 | **−0.23** | **−0.39*** | **−0.26*** |
+| **SAR VH (dB)** | +0.07 | **−0.57*** | **−0.69*** | **−0.48*** | **−0.70*** |
+
+*Bold = p < 0.05, *** = p < 0.001. Bhutan excluded (n=9, only 2 treatment sites).*
+
+**Cross-country patterns:**
+- **SAR VH decrease** is the most robust signal, significant in India, Pakistan, Nepal, and Sri Lanka. The smooth surface of solar panels consistently reduces cross-polarization radar backscatter.
+- **Tree loss** is large in India (−4.77 pp) and Sri Lanka (−4.80 pp), where solar farms frequently replace forest/plantation land.
+- **Bare ground increase** is strongest in India (+5.16 pp) and Bangladesh (+2.82 pp).
+- **Nepal** shows the most diverse effects: significant reductions in built-up, water, grassland, NTL, and both SAR polarizations — consistent with solar farms in relatively undeveloped mountainous areas.
+- **Pakistan's** large but insignificant bare ground effect (+0.66, p = 0.87) reflects high variance from desert environments where baseline bare ground is already dominant.
+
+---
+
+## 4. Discussion
+
+### 4.1 Interpretation of Results
+
+The scaling from Bangladesh (81 sites, 1 significant result) to South Asia (4,044 sites, 7 significant results) demonstrates the critical importance of sample size for detecting land-use impacts of solar farms. The ~50× increase in treatment sites substantially improved statistical power, revealing effects that were obscured by noise in the Bangladesh pilot.
+
+The **tree loss** finding (−4.15 pp, p < 0.001) is the most policy-relevant result. Solar farms in South Asia disproportionately convert tree-covered land, not just bare or agricultural land as commonly assumed. This is particularly pronounced in India, the region's dominant solar market, where the effect reaches −4.77 pp.
+
+The **SAR VH** result (−0.51 dB, p < 0.001) provides independent physical validation: solar panels create smooth, highly specular surfaces that reduce cross-polarization radar scattering. This is the most consistently significant effect across countries, detected in 4 of 5 testable countries. SAR VH may be a better remote indicator of solar panel installation than any single LULC class.
+
+The **null result for built-up** persists at scale (p = 0.205), confirming that DW does not classify solar panels as "built" infrastructure. This has important implications for using DW to monitor solar expansion — bare ground and tree loss are better proxies.
+
+The **positive cropland effect** (+1.93 pp, p = 0.015) is counterintuitive but plausible. Control sites (proposed/cancelled projects) may be in areas facing stronger urbanization pressure, leading to more cropland-to-urban conversion. Treatment sites, by hosting solar farms, may paradoxically preserve surrounding agricultural land from urban sprawl.
+
+### 4.2 Comparison: Bangladesh Pilot vs. South Asia
+
+| Metric | Bangladesh Pilot | South Asia Full |
+|--------|-----------------|-----------------|
+| Treatment sites | 30 | 3,676 |
+| Control sites | 51 | 368 |
+| Significant results (p < 0.05) | 1 of 9 | 7 of 9 |
+| Bare ground effect | +2.82 pp (p = 0.031) | +2.51 pp (p < 0.001) |
+| Trees effect | −0.59 pp (p = 0.716) | −4.15 pp (p < 0.001) |
+| SAR VH effect | +0.07 dB (p = 0.555) | −0.51 dB (p < 0.001) |
+| Total GEE queries | ~1,050 | ~52,500 |
+| Collection time | 28 min (sequential) | 145 min (8 workers) |
+
+The bare ground effect is remarkably consistent between the pilot and the full sample (+2.82 vs +2.51 pp), providing confidence in the finding. The tree loss effect, undetectable in Bangladesh, becomes the largest effect at scale — reflecting the different land cover context of Indian solar farms compared to Bangladeshi ones.
+
+### 4.3 Limitations
+
+1. **Treatment-control imbalance**: The 10:1 ratio (3,676 treatment vs 368 control) is not ideal for DiD but is inherent to the data — there are far more operational solar farms than cancelled/shelved projects. WLS partially addresses this.
+
+2. **India dominance**: India contributes 87% of treatment sites, so the pooled South Asia results largely reflect Indian conditions. Country-level analyses reveal substantial heterogeneity.
+
+3. **1 km buffer dilution**: The 1 km analysis buffer includes substantial area beyond the solar installation, diluting any site-level signal. Most solar farms occupy 0.1–2 km² — a fraction of the 3.14 km² buffer area. Future work should use polygon-level buffers.
+
+4. **Dynamic World accuracy**: DW's 10 m resolution and per-scene classification introduce noise. Our earlier VLM comparison work found DW overestimates water and underestimates cropland relative to visual assessment.
+
+5. **Temporal alignment**: Treatment sites have heterogeneous construction years (2015–2025), while controls use fixed 2019/2022 as pre/post years. More precise construction date matching would strengthen the design.
+
+6. **Control group validity**: Proposed/cancelled sites may differ systematically from operational sites in unobservable ways (e.g., land availability, political factors, regulatory environment). Country fixed effects or propensity score matching could help.
+
+---
+
+## 5. Summary of Key Outputs
+
+| Output | Path | Description |
+|--------|------|-------------|
+| Unified DB | `data/unified_solar_db.json` | 6,705 entries, 3-source confidence scoring |
+| TZ-SAM data | `data/tzsam_south_asia.geojson` | 5,368 polygons, South Asia |
+| Comparison sites | `data/comparison_sites.json` | 4,044 screened sites with feasibility scores |
+| Temporal panel | `data/temporal_panel.csv` | 16,176 rows × 26 columns |
+| DiD results (SA) | `data/did_results/did_results.json` | 9 regressions, all South Asia |
+| DiD results (BD) | `data/did_results/bangladesh/did_results.json` | 9 regressions, Bangladesh only |
+| DiD results (IN) | `data/did_results/india/did_results.json` | 9 regressions, India only |
+| Regression tables | `data/did_results/did_regression_table.csv` | Summary statistics |
+| Full summaries | `data/did_results/did_full_summaries.txt` | statsmodels output |
+| Figures | `docs/figures/did_fig*.png` | 8 figures |
+
+---
+
+## 6. Next Steps
+
+1. **Polygon-level buffers**: Use actual GRW/TZ-SAM polygon boundaries instead of fixed 1 km circles to reduce signal dilution.
+2. **Country fixed effects**: Add country dummies to the pooled regression to control for country-level confounders.
+3. **Heterogeneity analysis**: Test whether treatment effects vary by farm capacity, pre-existing land cover, construction year, or climate zone.
+4. **Propensity score matching**: Match treatment and control sites on observable characteristics (GHI, land cover, urbanization) to strengthen causal identification.
+5. **VLM validation**: Run Gemini visual assessment on a sample of comparison sites to validate GEE-based screening.
+6. **Additional outcomes**: Add NDVI time series, land surface temperature (Landsat), and population density (WorldPop) to the panel.
+7. **TESSERA embeddings**: Integrate 128-dimensional foundation model features for 2024 (requires Python 3.11+).

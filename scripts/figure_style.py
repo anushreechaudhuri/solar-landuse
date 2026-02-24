@@ -1,4 +1,4 @@
-"""Publication-quality figure styling for solar land-use analysis.
+"""Figure styling for solar land-use analysis.
 
 Single source of truth for colors, fonts, and layout constants.
 All figures use the Paul Tol Muted palette (colorblind-safe).
@@ -112,7 +112,7 @@ CHANGE_COLORS = {
 # ── Helper functions ──────────────────────────────────────────────────────────
 
 def apply_style():
-    """Set matplotlib rcParams for publication-quality figures."""
+    """Set matplotlib rcParams for consistent figure styling."""
     plt.rcParams.update({
         # Font
         'font.family': 'sans-serif',
