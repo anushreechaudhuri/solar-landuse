@@ -580,13 +580,21 @@ India dominates the sample (87% of treatment sites). Country-specific regression
 | Nepal | 96 | 33 | 2/18 | NTL +0.5*, built +1.1* |
 | Sri Lanka | 72 | 31 | 2/18 | Trees -3.3*, NTL +1.5** |
 
+### Robustness Checks
+
+**Country fixed effects**: Adding country dummies, tree loss shrinks to -2.39*** (from -4.15***) but remains highly significant. Cropland effect loses significance (baseline +1.93 confounded by country composition). SAR VH, NDVI, night LST, building metrics all robust to FE.
+
+**Propensity score matching**: 326 matched pairs on 7 covariates (GHI, baseline LULC, NTL). Tree loss (-4.39***), bare ground (+1.71**), SAR VH (-0.48***), night LST (-0.34***) survive. NTL (+0.29 baseline) loses significance after matching — baseline effect partly reflects selection. SAR VV becomes significant (-0.16***) in matched sample.
+
+**Heterogeneity**: Tree loss is consistent across capacity terciles. Bare ground increase concentrated in large farms. Nighttime cooling strongest in medium/large installations. GHI interaction: tree loss smaller at high-GHI sites (less tree cover to begin with).
+
 ### Key Findings
 
-1. **Solar farms primarily replace tree cover**, not cropland. The -4.15 pp tree loss is the largest effect, likely reflecting clearing of scrubland and scattered trees at semi-arid sites.
-2. **Nighttime cooling** (-0.34°C) at solar sites suggests a measurable microclimate effect from replacing vegetation with panel surfaces.
-3. **Nighttime lights increase** (+0.29 nW/sr/cm²) at treatment sites, consistent with new electrical infrastructure and operational lighting.
-4. **SAR cross-polarization drops** (-0.51 dB) as smooth solar panels replace rough vegetation surfaces, while co-pol (VV) is unaffected.
-5. **Population growth is slower** near solar sites (-58.6 people within 1km, p=0.024), suggesting solar farms are sited in less-developing areas or may displace some settlement growth.
+1. **Solar farms primarily replace tree cover**, not cropland. The -4.15 pp tree loss is the largest effect, robust to PSM (-4.39***) and country FE (-2.39***).
+2. **Nighttime cooling** (-0.34°C) at solar sites suggests a measurable microclimate effect, robust across all specifications.
+3. **Nighttime lights increase** (+0.29 nW/sr/cm²) at treatment sites but loses significance under PSM — may partly reflect site selection.
+4. **SAR cross-polarization drops** (-0.51 dB) as smooth solar panels replace rough vegetation surfaces — the most consistently significant effect across countries (4/5).
+5. **Population growth is slower** near solar sites (-58.6 people within 1km, p=0.024), significant under PSM (-95.1, p=0.024).
 6. **Building metrics show mixed signals**: more building presence and taller structures (solar infrastructure) but lower fractional count (large contiguous panels vs scattered small buildings).
 
 ### Data Availability

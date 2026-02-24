@@ -504,6 +504,7 @@ def fig_temporal_trajectories(df):
         ax.set_title(title, fontsize=10, fontweight='bold')
         if gi == 0:
             ax.set_ylabel('Coverage (%)')
+        if gi == 1:
             ax.legend(fontsize=7, loc='upper right')
 
     fig.suptitle('Land cover trajectories: treatment vs. control',
@@ -530,10 +531,11 @@ def fig_feasibility(comp):
     c_scores = [s['feasibility_score'] for s in control if s.get('feasibility_score') is not None]
 
     bins = np.arange(0, 1.15, 0.1)
-    ax.hist(t_scores, bins=bins, alpha=0.7, color=TREAT_COLOR,
-            label=f'Treatment (n={len(t_scores)})', edgecolor='white')
-    ax.hist(c_scores, bins=bins, alpha=0.7, color=CONTROL_COLOR,
+    # Plot control first (background), then treatment on top (foreground)
+    ax.hist(c_scores, bins=bins, alpha=0.6, color=CONTROL_COLOR,
             label=f'Control (n={len(c_scores)})', edgecolor='white')
+    ax.hist(t_scores, bins=bins, alpha=0.8, color=TREAT_COLOR,
+            label=f'Treatment (n={len(t_scores)})', edgecolor='white')
     ax.set_xlabel('Feasibility score')
     ax.set_ylabel('Count')
     ax.set_title('(a) Site feasibility scores', fontsize=10, fontweight='bold')

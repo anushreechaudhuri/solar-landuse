@@ -17,7 +17,7 @@ This document presents the results of a quasi-experimental analysis measuring th
 ### 2.1 Pipeline Overview
 
 ![Data processing and analysis pipeline](figures/did_pipeline_diagram.png)
-*Figure 0. Data processing and analysis pipeline, from source datasets through spatial integration, temporal data collection, and DiD regression.*
+*Figure 1. Data processing and analysis pipeline, from source datasets through spatial integration, temporal data collection, and DiD regression.*
 
 ### 2.2 Dataset Integration (Phase 1)
 
@@ -45,7 +45,7 @@ We combine three independent solar detection datasets to create a unified projec
 The unified database contains **6,705 entries** across South Asia.
 
 ![Dataset integration summary](figures/did_fig1_integration_summary.png)
-*Figure 1. (a) Source overlap for South Asia solar entries. Multi-source matches (teal) provide higher confidence than single-source detections (grey). (b) Confidence tier distribution.*
+*Figure 2. (a) Source overlap for South Asia solar entries. Multi-source matches (teal) provide higher confidence than single-source detections (grey). (b) Confidence tier distribution.*
 
 ### 2.3 Treatment and Control Group Assignment
 
@@ -74,7 +74,7 @@ To validate that control sites are plausible comparison locations, we screen all
 Sites receive a feasibility score (0–1) based on built-up penalty, suitable land bonus, GHI adequacy, and slope.
 
 ![Feasibility comparison](figures/did_fig7_feasibility.png)
-*Figure 7. (a) Feasibility score distributions for treatment and control groups. (b) Solar irradiance (GHI) comparison.*
+*Figure 3. (a) Feasibility score distributions for treatment and control groups. (b) Solar irradiance (GHI) comparison.*
 
 ### 2.5 Multi-Temporal Data Collection (Phase 3)
 
@@ -114,6 +114,18 @@ where:
 
 Observations are weighted by confidence: very_high = 1.0, high = 0.8, proposed = 0.6. We estimate this via **weighted least squares** (WLS) separately for each outcome variable.
 
+### 2.7 Robustness Checks
+
+**Country fixed effects**: We add country dummies `C(country)` to the pooled regression to absorb country-level confounders (climate, policy, baseline development). This tests whether results survive controlling for which country a site is in.
+
+**Heterogeneity analysis**: We test whether treatment effects vary by:
+- Farm capacity (small/medium/large terciles)
+- Baseline dominant land cover class
+- Construction year cohort (early 2015-18, mid 2019-21, late 2022-25)
+- Treatment × GHI interaction (do effects differ at high vs low irradiance sites?)
+
+**Propensity score matching (PSM)**: We estimate P(treatment=1 | X) via logistic regression on 7 observable covariates (GHI, baseline DW crops/trees/built/bare/water, baseline NTL), then match treatment to control sites 1:1 using nearest-neighbor within caliper = 0.2σ. We re-run DiD on the matched sample to test robustness to selection on observables.
+
 ---
 
 ## 3. Results
@@ -123,34 +135,43 @@ Observations are weighted by confidence: very_high = 1.0, high = 0.8, proposed =
 #### 3.1.1 Land Cover Composition Over Time
 
 ![LULC stacked bars](figures/did_fig2_lulc_stacked.png)
-*Figure 2. Dynamic World LULC composition at four time points for treatment (left) and control (right) sites.*
+*Figure 4. Dynamic World LULC composition at four time points for treatment (left) and control (right) sites.*
 
 #### 3.1.2 Temporal Trajectories
 
 ![Land cover trajectories](figures/did_fig6_trajectories.png)
-*Figure 6. Mean LULC class trajectories with standard error bands.*
+*Figure 5. Mean LULC class trajectories with standard error bands.*
 
 ![Parallel trends](figures/did_fig4_parallel_trends.png)
-*Figure 4. Parallel trends for four key indicators: (a) Built-up, (b) Cropland, (c) Nighttime lights, (d) SAR VV backscatter.*
+*Figure 6. Parallel trends for four key indicators: (a) Built-up, (b) Cropland, (c) Nighttime lights, (d) SAR VV backscatter.*
 
 #### 3.1.3 DiD Regression Results
 
 ![Forest plot](figures/did_fig3_forest_plot.png)
-*Figure 3. Forest plot of DiD treatment effects with 95% confidence intervals. Seven of nine outcomes are statistically significant.*
+*Figure 7. Forest plot of DiD treatment effects with 95% confidence intervals.*
 
-| Outcome | DiD coefficient | SE | 95% CI | p-value | R² | N |
-|---------|:-:|:-:|:-:|:-:|:-:|:-:|
-| **Trees (%)** | **−4.15*** | 0.51 | [−5.14, −3.16] | **<0.001** | 0.025 | 4,039 |
-| **Bare ground (%)** | **+2.51*** | 0.69 | [+1.16, +3.86] | **<0.001** | 0.015 | 4,039 |
-| **Water (%)** | **−0.61*** | 0.11 | [−0.82, −0.39] | **<0.001** | 0.017 | 4,039 |
-| **SAR VH (dB)** | **−0.51*** | 0.09 | [−0.68, −0.34] | **<0.001** | 0.071 | 3,544 |
-| **Grassland (%)** | **−0.35*** | 0.11 | [−0.57, −0.12] | **0.002** | 0.010 | 4,039 |
-| **NTL (nW/sr/cm²)** | **+0.29** | 0.12 | [+0.06, +0.52] | **0.014** | 0.043 | 4,042 |
-| **Cropland (%)** | **+1.93** | 0.79 | [+0.38, +3.48] | **0.015** | 0.003 | 4,039 |
-| Built-up (%) | −0.35 | 0.27 | [−0.89, +0.19] | 0.205 | 0.022 | 4,039 |
-| SAR VV (dB) | −0.03 | 0.06 | [−0.15, +0.09] | 0.650 | 0.048 | 3,544 |
+| Outcome | DiD coef | SE | p-value | R² | N |
+|---------|:-:|:-:|:-:|:-:|:-:|
+| **Trees (%)** | **−4.15*** | 0.51 | **<0.001** | 0.025 | 4,039 |
+| **Bare ground (%)** | **+2.51*** | 0.69 | **<0.001** | 0.015 | 4,039 |
+| **Water (%)** | **−0.61*** | 0.11 | **<0.001** | 0.017 | 4,039 |
+| **SAR VH (dB)** | **−0.51*** | 0.09 | **<0.001** | 0.071 | 3,544 |
+| **Nighttime LST (°C)** | **−0.34*** | 0.05 | **<0.001** | 0.049 | 4,042 |
+| **Grassland (%)** | **−0.35*** | 0.11 | **0.002** | 0.010 | 4,039 |
+| **NDVI** | **−0.017*** | 0.003 | **<0.001** | 0.014 | 4,042 |
+| **EVI** | **−0.011*** | 0.002 | **<0.001** | 0.010 | 4,042 |
+| **Building presence** | **+0.004*** | 0.001 | **<0.001** | 0.013 | 4,041 |
+| **Building height (m)** | **+0.055*** | 0.006 | **<0.001** | 0.032 | 4,041 |
+| **Building count** | **−0.000*** | 0.000 | **<0.001** | 0.091 | 4,041 |
+| **NTL (nW/sr/cm²)** | **+0.29** | 0.12 | **0.014** | 0.043 | 4,042 |
+| **Cropland (%)** | **+1.93** | 0.79 | **0.015** | 0.003 | 4,039 |
+| **Population (sum)** | **−58.6** | 25.9 | **0.024** | 0.129 | 4,042 |
+| Built-up (%) | −0.35 | 0.27 | 0.205 | 0.022 | 4,039 |
+| Daytime LST (°C) | +0.06 | 0.10 | 0.542 | 0.025 | 4,042 |
+| Population density | −0.15 | 0.08 | 0.063 | 0.148 | 4,039 |
+| SAR VV (dB) | −0.03 | 0.06 | 0.650 | 0.048 | 3,544 |
 
-*Significance: \*\*\*p < 0.001, \*\*p < 0.05*
+*Significance: \*\*\*p < 0.001, \*\*p < 0.05. 14 of 18 outcomes significant at p < 0.05.*
 
 **Key findings:**
 - **Trees**: The largest effect. Treatment sites lose 1.0 pp of tree cover while control sites gain 1.9 pp — a net −4.15 pp differential (p < 0.001). Solar construction causes substantial deforestation.
@@ -164,7 +185,7 @@ Observations are weighted by confidence: very_high = 1.0, high = 0.8, proposed =
 #### 3.1.4 Change Distributions
 
 ![Change distributions](figures/did_fig5_change_distributions.png)
-*Figure 5. Site-level pre→post change distributions (box + strip plots) for four key outcomes.*
+*Figure 8. Site-level pre→post change distributions (box + strip plots) for four key outcomes.*
 
 ### 3.2 Country-Level Results
 
@@ -188,6 +209,46 @@ Observations are weighted by confidence: very_high = 1.0, high = 0.8, proposed =
 - **Bare ground increase** is strongest in India (+5.16 pp) and Bangladesh (+2.82 pp).
 - **Nepal** shows the most diverse effects: significant reductions in built-up, water, grassland, NTL, and both SAR polarizations — consistent with solar farms in relatively undeveloped mountainous areas.
 - **Pakistan's** large but insignificant bare ground effect (+0.66, p = 0.87) reflects high variance from desert environments where baseline bare ground is already dominant.
+
+### 3.3 Robustness: Country Fixed Effects
+
+Adding country dummies absorbs country-level confounders. Key changes from baseline:
+
+| Outcome | Baseline | Country FE | Change |
+|---------|:-:|:-:|:-:|
+| Trees (%) | −4.15*** | −2.39*** | +1.76 |
+| Bare ground (%) | +2.51*** | +3.14*** | +0.63 |
+| Cropland (%) | +1.93** | −0.40 | −2.33 |
+| NTL | +0.29** | +0.24* | −0.05 |
+| Night LST (°C) | −0.34*** | −0.22*** | +0.12 |
+
+Trees and bare ground effects survive FE, confirming they are not driven by country composition. **Cropland loses significance** — the baseline effect was partly capturing country-level differences in cropland trends. SAR VH, NDVI, EVI, and building metrics are robust to FE.
+
+### 3.4 Robustness: Propensity Score Matching
+
+PSM matched 326 treatment-control pairs on 7 covariates (GHI, baseline LULC, NTL). Balance improved from SMD > 1.0 (GHI) to < 0.05 on most covariates.
+
+Key PSM results vs baseline:
+
+| Outcome | Baseline | PSM (n=652) | Robust? |
+|---------|:-:|:-:|:-:|
+| Trees (%) | −4.15*** | −4.39*** | Yes |
+| Bare ground (%) | +2.51*** | +1.71** | Yes |
+| Cropland (%) | +1.93** | +2.93*** | Stronger |
+| SAR VH (dB) | −0.51*** | −0.48*** | Yes |
+| Night LST (°C) | −0.34*** | −0.34*** | Yes |
+| NTL | +0.29** | −0.04 | No |
+| SAR VV (dB) | −0.03 | −0.16*** | Strengthened |
+
+Tree loss, bare ground increase, nighttime cooling, and SAR VH decrease all survive PSM. **NTL loses significance** after matching, suggesting the baseline NTL effect may partly reflect selection (treatment sites in more electrified areas). SAR VV becomes significant in the matched sample.
+
+### 3.5 Heterogeneity
+
+**By capacity**: Tree loss is consistent across capacity terciles (−2.8 to −4.0 pp). Bare ground increase is concentrated in large farms (+2.2 pp, p < 0.05). Nighttime cooling is strongest for medium and large farms.
+
+**By baseline land cover**: Tree loss is largest on shrub-dominant (−5.7 pp) and tree-dominant (−5.1 pp) sites. Cropland-dominant sites show moderate tree loss (−3.8 pp). Bare-dominant sites show no significant tree change (−0.4 pp, n.s.).
+
+**GHI interaction**: Tree loss is *smaller* at high-GHI sites (interaction +2.8, p = 0.011), suggesting that high-irradiance locations (typically drier) have less tree cover to begin with. SAR VH decrease is *stronger* at high-GHI sites (−0.57, p = 0.001).
 
 ---
 
@@ -243,10 +304,10 @@ The bare ground effect is remarkably consistent between the pilot and the full s
 | Unified DB | `data/unified_solar_db.json` | 6,705 entries, 3-source confidence scoring |
 | TZ-SAM data | `data/tzsam_south_asia.geojson` | 5,368 polygons, South Asia |
 | Comparison sites | `data/comparison_sites.json` | 4,044 screened sites with feasibility scores |
-| Temporal panel | `data/temporal_panel.csv` | 16,176 rows × 26 columns |
-| DiD results (SA) | `data/did_results/did_results.json` | 9 regressions, all South Asia |
-| DiD results (BD) | `data/did_results/bangladesh/did_results.json` | 9 regressions, Bangladesh only |
-| DiD results (IN) | `data/did_results/india/did_results.json` | 9 regressions, India only |
+| Temporal panel | `data/temporal_panel.csv` | 16,176 rows × 37 columns |
+| DiD results (SA) | `data/did_results/did_results.json` | 18 regressions, all South Asia |
+| DiD results (BD) | `data/did_results/bangladesh/did_results.json` | 18 regressions, Bangladesh only |
+| DiD results (IN) | `data/did_results/india/did_results.json` | 18 regressions, India only |
 | Regression tables | `data/did_results/did_regression_table.csv` | Summary statistics |
 | Full summaries | `data/did_results/did_full_summaries.txt` | statsmodels output |
 | Figures | `docs/figures/did_fig*.png` | 8 figures |
@@ -255,10 +316,12 @@ The bare ground effect is remarkably consistent between the pilot and the full s
 
 ## 6. Next Steps
 
+### Completed
+- ~~**Additional outcomes**~~: Added MODIS NDVI/EVI (250m), MODIS LST day/night (1km), WorldPop population (100m), Google Open Buildings (2.5m) — 18 outcome variables total, 14 significant at p < 0.05.
+
+### In Progress
 1. **Polygon-level buffers**: Use actual GRW/TZ-SAM polygon boundaries instead of fixed 1 km circles to reduce signal dilution.
 2. **Country fixed effects**: Add country dummies to the pooled regression to control for country-level confounders.
 3. **Heterogeneity analysis**: Test whether treatment effects vary by farm capacity, pre-existing land cover, construction year, or climate zone.
 4. **Propensity score matching**: Match treatment and control sites on observable characteristics (GHI, land cover, urbanization) to strengthen causal identification.
 5. **VLM validation**: Run Gemini visual assessment on a sample of comparison sites to validate GEE-based screening.
-6. **Additional outcomes**: Add NDVI time series, land surface temperature (Landsat), and population density (WorldPop) to the panel.
-7. **TESSERA embeddings**: Integrate 128-dimensional foundation model features for 2024 (requires Python 3.11+).

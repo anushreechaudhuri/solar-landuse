@@ -9,7 +9,7 @@ Also includes a **LULC labeling studio** (`/label`) for hand-labeling satellite 
 ## Current Scope
 
 - **6,705 unified solar entries** across 6 South Asian countries (India, Bangladesh, Pakistan, Nepal, Sri Lanka, Bhutan) from 3-way spatial matching of GEM/GSPT (5,093), GRW (3,957), and TZ-SAM (5,368)
-- **Difference-in-differences analysis**: 3,676 operational (treatment) vs 368 proposed/cancelled (control) sites, 18 outcome variables, 14 significant at p < 0.05
+- **Difference-in-differences analysis**: 3,676 operational (treatment) vs 368 proposed/cancelled (control) sites, 18 outcome variables, 14 significant at p < 0.05, with country fixed effects, propensity score matching (326 matched pairs), and heterogeneity analysis
 - **7 EO datasets** at 4 time points per site: Dynamic World, VIIRS NTL, Sentinel-1 SAR, MODIS NDVI/EVI, MODIS LST, WorldPop, Google Open Buildings Temporal
 - **16,176-row temporal panel** (4,044 sites × 4 time points × 37 columns)
 - **Pre/post construction** imagery comparison (2016-2026) for 15 Bangladesh test sites
@@ -158,9 +158,10 @@ npm run dev
 | `scripts/integrate_solar_datasets.py` | 3-way spatial matching (GEM + GRW + TZ-SAM), confidence scoring |
 | `scripts/screen_comparison_sites.py` | GEE screening of treatment/control sites (DW, GHI, elevation) |
 | `scripts/collect_temporal_data.py` | Multi-temporal panel collection from 7 EO datasets (parallelized) |
-| `scripts/run_did_analysis.py` | WLS DiD regression on 18 outcome variables |
+| `scripts/run_did_analysis.py` | WLS DiD regression with country FE, PSM, heterogeneity analysis |
 | `scripts/create_did_figures.py` | Forest plot, parallel trends, LULC stacked bars, distributions |
 | `scripts/create_pipeline_diagram.py` | Pipeline diagram figure |
+| `scripts/vlm_validate_comparison.py` | VLM validation of comparison sites (Gemini + Planet images) |
 | `scripts/sync_to_s3.py` | Sync all data to/from S3 (archive caches, incremental upload) |
 
 ### Classification & Analysis
@@ -248,12 +249,13 @@ solar-landuse/
 
 ### DiD Analysis (V4, South Asia)
 
-1. **Solar farms primarily replace tree cover** (-4.15 pp, p<0.001), not cropland — the largest effect in the analysis
+1. **Solar farms primarily replace tree cover** (-4.15 pp, p<0.001), robust to PSM (-4.39***) and country FE (-2.39***) — the largest effect in the analysis
 2. **Nighttime cooling** (-0.34°C, p<0.001) at solar sites from vegetation-to-panel land surface change
 3. **Nighttime lights increase** (+0.29 nW/sr/cm², p=0.014) near operational sites — new electrical infrastructure
 4. **SAR cross-polarization drops** (-0.51 dB, p<0.001) as smooth panels replace rough vegetation
 5. **Population growth is slower** near solar sites (-58.6 people/km², p=0.024)
 6. **14 of 18 outcome variables** show statistically significant treatment effects
+7. **Heterogeneity**: Tree loss consistent across capacity terciles; bare ground concentrated in large farms; GHI interacts significantly with trees and SAR VH
 
 ### LULC Classification (V3, Bangladesh)
 

@@ -57,11 +57,30 @@ def make_circle(lat, lon, radius_km):
     return ee.Geometry.Point([lon, lat]).buffer(radius_km * 1000)
 
 
+def make_geometry(lat, lon, polygon_geojson=None, buffer_m=100):
+    """Create analysis geometry: use polygon (with buffer) if available, else 1km circle.
+
+    Args:
+        lat, lon: Site centroid
+        polygon_geojson: GeoJSON polygon dict (type + coordinates), or None
+        buffer_m: Buffer around polygon in meters (default 100m for edge effects)
+    """
+    if polygon_geojson and polygon_geojson.get("coordinates"):
+        try:
+            poly = ee.Geometry.Polygon(polygon_geojson["coordinates"])
+            if buffer_m > 0:
+                return poly.buffer(buffer_m)
+            return poly
+        except Exception:
+            pass
+    return ee.Geometry.Point([lon, lat]).buffer(1000)
+
+
 # ── GEE query functions ─────────────────────────────────────────────────────
 
-def query_dw(lat, lon, year, radius_km=1):
+def query_dw(lat, lon, year, radius_km=1, geometry=None):
     """Query Dynamic World mode composite, return class percentages."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
     start = f"{year}-01-01"
     end = f"{year}-12-31"
 
@@ -91,10 +110,10 @@ def query_dw(lat, lon, year, radius_km=1):
             for i, cn in enumerate(DW_CLASSES)}
 
 
-def query_viirs(lat, lon, year, radius_km=1):
+def query_viirs(lat, lon, year, radius_km=1, geometry=None):
     """Query VIIRS nighttime lights mean radiance within 1km.
     Uses annual median of monthly composites, filtering for quality."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
     start = f"{year}-01-01"
     end = f"{year}-12-31"
 
@@ -128,10 +147,10 @@ def query_viirs(lat, lon, year, radius_km=1):
     }
 
 
-def query_sar(lat, lon, year, radius_km=1):
+def query_sar(lat, lon, year, radius_km=1, geometry=None):
     """Query Sentinel-1 mean VV/VH backscatter within 1km.
     Uses 6-month composite centered on middle of year, IW mode, descending."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
     # Use 6-month window centered on July
     start = f"{year}-04-01"
     end = f"{year}-10-01"
@@ -174,10 +193,10 @@ def query_solar_atlas(lat, lon):
     return None
 
 
-def query_modis_ndvi(lat, lon, year, radius_km=1):
+def query_modis_ndvi(lat, lon, year, radius_km=1, geometry=None):
     """Query MODIS MOD13Q1 NDVI and EVI within 1km (250m, 16-day).
     Returns annual mean NDVI and EVI (scaled to 0-1)."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
     start = f"{year}-01-01"
     end = f"{year}-12-31"
 
@@ -212,10 +231,10 @@ def query_modis_ndvi(lat, lon, year, radius_km=1):
     }
 
 
-def query_modis_lst(lat, lon, year, radius_km=1):
+def query_modis_lst(lat, lon, year, radius_km=1, geometry=None):
     """Query MODIS MOD11A2 land surface temperature within 1km (1km, 8-day).
     Returns annual mean day/night LST in Celsius."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
     start = f"{year}-01-01"
     end = f"{year}-12-31"
 
@@ -244,10 +263,10 @@ def query_modis_lst(lat, lon, year, radius_km=1):
     }
 
 
-def query_worldpop(lat, lon, year, radius_km=1):
+def query_worldpop(lat, lon, year, radius_km=1, geometry=None):
     """Query WorldPop population density within 1km (100m, annual, 2000-2020).
     Returns sum and mean population within buffer."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
 
     # WorldPop only available 2000-2020; clamp to available range
     query_year = min(year, 2020)
@@ -270,10 +289,10 @@ def query_worldpop(lat, lon, year, radius_km=1):
     }
 
 
-def query_open_buildings(lat, lon, year, radius_km=1):
+def query_open_buildings(lat, lon, year, radius_km=1, geometry=None):
     """Query Google Open Buildings 2.5D Temporal within 1km (2.5m, 2016-2023).
     Returns building presence fraction, mean height, and fractional count."""
-    circle = make_circle(lat, lon, radius_km)
+    circle = geometry or make_circle(lat, lon, radius_km)
 
     # Available 2016-2023; clamp to range
     query_year = max(min(year, 2023), 2016)
@@ -349,6 +368,12 @@ def load_sites(country_filter=None):
                 and e.get("centroid_lat") and e.get("centroid_lon")):
             if country_filter and e["country"].lower() != country_filter.lower():
                 continue
+            # Pick best polygon: prefer GRW (higher res), fall back to TZ-SAM
+            polygon = None
+            if e.get("grw", {}).get("polygon"):
+                polygon = e["grw"]["polygon"]
+            elif e.get("tzsam", {}).get("polygon"):
+                polygon = e["tzsam"]["polygon"]
             sites.append({
                 "site_id": e["site_id"],
                 "country": e["country"],
@@ -359,6 +384,7 @@ def load_sites(country_filter=None):
                 "construction_year": e.get("best_construction_year"),
                 "confidence": e["confidence"],
                 "project_name": e.get("gem", {}).get("project_name", ""),
+                "polygon": polygon,
             })
 
     # Control: proposed sites from comparison_sites.json (if available)
@@ -401,12 +427,14 @@ def load_sites(country_filter=None):
     return sites
 
 
-def collect_site_data(site, skip_gee=False, only_new=False):
+def collect_site_data(site, skip_gee=False, only_new=False, use_polygons=False):
     """Collect all temporal data for one site. Returns list of row dicts.
-    If only_new=True, loads DW/VIIRS/SAR from cache, only queries new sources."""
+    If only_new=True, loads DW/VIIRS/SAR from cache, only queries new sources.
+    If use_polygons=True, uses polygon geometry instead of 1km circle."""
     site_id = site["site_id"]
     lat, lon = site["lat"], site["lon"]
     construction_year = site.get("construction_year")
+    polygon = site.get("polygon") if use_polygons else None
 
     time_points = compute_time_points(construction_year)
 
@@ -425,6 +453,14 @@ def collect_site_data(site, skip_gee=False, only_new=False):
     else:
         solar_atlas = {}
 
+    # Create analysis geometry (polygon or circle)
+    geom = None
+    if polygon and not skip_gee:
+        try:
+            geom = make_geometry(lat, lon, polygon)
+        except Exception:
+            geom = None
+
     rows = []
     for tp_name, year in time_points.items():
         row = {
@@ -440,6 +476,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
             "lat": lat,
             "lon": lon,
             "ghi_kwh_m2_day": solar_atlas.get("ghi_kwh_m2_day"),
+            "uses_polygon": polygon is not None and geom is not None,
         }
 
         if skip_gee:
@@ -470,7 +507,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                     dw_data = json.load(f)
             else:
                 try:
-                    dw_data = query_dw(lat, lon, year) or {}
+                    dw_data = query_dw(lat, lon, year, geometry=geom) or {}
                 except Exception as e:
                     dw_data = {"error": str(e)}
                 with open(dw_cache, "w") as f:
@@ -484,7 +521,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                     viirs_data = json.load(f)
             else:
                 try:
-                    viirs_data = query_viirs(lat, lon, year) or {}
+                    viirs_data = query_viirs(lat, lon, year, geometry=geom) or {}
                 except Exception as e:
                     viirs_data = {"error": str(e)}
                 with open(viirs_cache, "w") as f:
@@ -498,7 +535,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                     sar_data = json.load(f)
             else:
                 try:
-                    sar_data = query_sar(lat, lon, year) or {}
+                    sar_data = query_sar(lat, lon, year, geometry=geom) or {}
                 except Exception as e:
                     sar_data = {"error": str(e)}
                 with open(sar_cache, "w") as f:
@@ -512,7 +549,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                 ndvi_data = json.load(f)
         else:
             try:
-                ndvi_data = query_modis_ndvi(lat, lon, year) or {}
+                ndvi_data = query_modis_ndvi(lat, lon, year, geometry=geom) or {}
             except Exception as e:
                 ndvi_data = {"error": str(e)}
             with open(ndvi_cache, "w") as f:
@@ -526,7 +563,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                 lst_data = json.load(f)
         else:
             try:
-                lst_data = query_modis_lst(lat, lon, year) or {}
+                lst_data = query_modis_lst(lat, lon, year, geometry=geom) or {}
             except Exception as e:
                 lst_data = {"error": str(e)}
             with open(lst_cache, "w") as f:
@@ -540,7 +577,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                 pop_data = json.load(f)
         else:
             try:
-                pop_data = query_worldpop(lat, lon, year) or {}
+                pop_data = query_worldpop(lat, lon, year, geometry=geom) or {}
             except Exception as e:
                 pop_data = {"error": str(e)}
             with open(pop_cache, "w") as f:
@@ -554,7 +591,7 @@ def collect_site_data(site, skip_gee=False, only_new=False):
                 bldg_data = json.load(f)
         else:
             try:
-                bldg_data = query_open_buildings(lat, lon, year) or {}
+                bldg_data = query_open_buildings(lat, lon, year, geometry=geom) or {}
             except Exception as e:
                 bldg_data = {"error": str(e)}
             with open(bldg_cache, "w") as f:
@@ -598,20 +635,25 @@ def _merge_source_data(row, source, data):
         row["bldg_year_actual"] = data.get("bldg_year_actual")
 
 
-def _process_site(site, skip_gee, only_new=False):
+def _process_site(site, skip_gee, only_new=False, use_polygons=False):
     """Worker function: process one site and return (site_id, rows)."""
     try:
-        rows = collect_site_data(site, skip_gee=skip_gee, only_new=only_new)
+        rows = collect_site_data(site, skip_gee=skip_gee, only_new=only_new,
+                                 use_polygons=use_polygons)
         return site["site_id"], rows, None
     except Exception as e:
         return site["site_id"], [], str(e)
 
 
-def collect_all(country_filter=None, skip_gee=False, workers=1, only_new=False):
+def collect_all(country_filter=None, skip_gee=False, workers=1, only_new=False,
+                use_polygons=False):
     sites = load_sites(country_filter)
     n_treat = sum(1 for s in sites if s['group'] == 'treatment')
     n_ctrl = sum(1 for s in sites if s['group'] == 'control')
+    n_poly = sum(1 for s in sites if s.get('polygon'))
     print(f"Loaded {len(sites)} sites ({n_treat} treatment, {n_ctrl} control)")
+    if use_polygons:
+        print(f"Polygon mode: {n_poly}/{len(sites)} sites have polygon geometries")
 
     if not skip_gee:
         print("Initializing GEE...")
@@ -631,7 +673,8 @@ def collect_all(country_filter=None, skip_gee=False, workers=1, only_new=False):
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {
-                executor.submit(_process_site, site, skip_gee, only_new): site
+                executor.submit(_process_site, site, skip_gee, only_new,
+                                use_polygons): site
                 for site in sites
             }
 
@@ -666,7 +709,8 @@ def collect_all(country_filter=None, skip_gee=False, workers=1, only_new=False):
             print(f"  {name} ({site['group']}, {n_tp} time points)...",
                   end=" ", flush=True)
 
-            rows = collect_site_data(site, skip_gee=skip_gee, only_new=only_new)
+            rows = collect_site_data(site, skip_gee=skip_gee, only_new=only_new,
+                                    use_polygons=use_polygons)
             all_rows.extend(rows)
             print(f"{len(rows)} rows")
 
@@ -738,10 +782,14 @@ def main():
     parser.add_argument("--only-new", action="store_true",
                         help="Only query new sources (NDVI, LST, WorldPop, Buildings); "
                              "load DW/VIIRS/SAR from cache")
+    parser.add_argument("--use-polygons", action="store_true",
+                        help="Use actual GRW/TZ-SAM polygon boundaries instead of "
+                             "fixed 1km circles (reduces signal dilution)")
     args = parser.parse_args()
 
     collect_all(country_filter=args.country, skip_gee=args.skip_gee,
-                workers=args.workers, only_new=args.only_new)
+                workers=args.workers, only_new=args.only_new,
+                use_polygons=args.use_polygons)
 
 
 if __name__ == "__main__":
