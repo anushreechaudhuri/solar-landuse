@@ -638,6 +638,9 @@ def plot_placebo_results(placebo_results, country_label=""):
     apply_style()
 
     valid = [r for r in placebo_results if not np.isnan(r["treatment_coef"])]
+    # Remove outlier-scale outcomes that blow out the x-axis
+    valid = _filter_outlier_outcomes(
+        valid, "treatment_coef", ("treatment_ci_low", "treatment_ci_high"))
     if not valid:
         return
 
@@ -650,7 +653,7 @@ def plot_placebo_results(placebo_results, country_label=""):
     pvals = [r["treatment_pval"] for r in valid]
     y_pos = range(len(valid))
 
-    # Color: red if significant (parallel trends violated), grey if not
+    # Color: red if significant (parallel trends violated), blue if not
     colors = ["#CC6677" if p < 0.05 else "#88CCEE" for p in pvals]
 
     ax.barh(y_pos, coefs, color=colors, edgecolor="none", height=0.6, alpha=0.8)
@@ -1366,12 +1369,42 @@ def run_conditional_placebo(df, outcomes_list):
     return results
 
 
+def _filter_outlier_outcomes(results_list, coef_key="agg_att", ci_keys=("agg_ci_low", "agg_ci_high")):
+    """Remove outcomes whose CIs are >20x the median CI width.
+
+    This prevents population sum (CI width ~5000) from blowing out the
+    x-axis when other outcomes have CI widths of ~1-10.
+    """
+    if not results_list:
+        return results_list
+
+    ci_lo_key, ci_hi_key = ci_keys
+    widths = []
+    for r in results_list:
+        lo = r.get(ci_lo_key, 0)
+        hi = r.get(ci_hi_key, 0)
+        if not np.isnan(lo) and not np.isnan(hi):
+            widths.append(abs(hi - lo))
+
+    if not widths:
+        return results_list
+
+    median_width = np.median(widths)
+    if median_width == 0:
+        return results_list
+
+    return [r for r in results_list
+            if abs(r.get(ci_hi_key, 0) - r.get(ci_lo_key, 0)) < 20 * median_width]
+
+
 def plot_staggered_did(cs_results_list, country_label=""):
     """Forest plot comparing Callaway-Sant'Anna ATT estimates."""
     apply_style()
 
     valid = [r for r in cs_results_list
              if r and not np.isnan(r["agg_att"])]
+    # Remove outlier-scale outcomes (e.g. population sum)
+    valid = _filter_outlier_outcomes(valid, "agg_att", ("agg_ci_low", "agg_ci_high"))
     if not valid:
         return
 
@@ -1475,8 +1508,10 @@ def plot_coefficient_chart(results, country_label=""):
     """Forest plot of DiD treatment coefficients."""
     apply_style()
 
-    # Filter to results with valid coefficients
+    # Filter to results with valid coefficients, remove outlier-scale outcomes
     valid = [r for r in results if not np.isnan(r["treatment_coef"])]
+    valid = _filter_outlier_outcomes(
+        valid, "treatment_coef", ("treatment_ci_low", "treatment_ci_high"))
     if not valid:
         return
 
