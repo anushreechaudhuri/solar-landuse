@@ -1,0 +1,624 @@
+\documentclass[10pt,letterpaper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}                    % Palatino (Nature-style serif)
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{natbib}
+\bibliographystyle{naturemag}            % Nature-style citations
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{lineno}
+\linenumbers                             % Required by most journals
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\sisetup{group-separator={,},detect-all}
+
+% ── Custom commands ───────────────────────────────────────────────────────────
+\newcommand{\pp}{\,\text{pp}}            % percentage points
+\newcommand{\todoinline}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+% ── Title ─────────────────────────────────────────────────────────────────────
+
+\title{%
+  Solar energy expansion and land cover transitions in South Asia:\\
+  Satellite evidence from 3,676 utility-scale installations%
+}
+
+\author{%
+  Anushree Chaudhuri%
+  \thanks{Corresponding author. Email: \texttt{anushree@example.edu}}
+  % [TODO: Add additional co-authors and affiliations]
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% ══════════════════════════════════════════════════════════════════════════════
+% ABSTRACT
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{abstract}
+\noindent
+South Asia's rapid solar energy expansion raises concerns about agricultural land displacement, yet large-scale empirical evidence remains scarce. Here we quantify land cover transitions at 3,676 operational solar installations across six South Asian countries by combining satellite-derived polygon databases with multi-temporal Earth observation data from seven sources. Pre-construction land within solar footprints was 39.6\% cropland, 17.3\% bare ground, and 17.1\% shrub, with pronounced country-level variation. Doubly-robust difference-in-differences estimates using not-yet-treated controls indicate that solar construction reduces tree cover by 1.45\pp{} ($p < 0.001$) and increases cropland reclassification by 1.84\pp{} ($p < 0.001$), with nighttime land surface temperature declining by 0.13\,$^{\circ}$C ($p < 0.001$). Vision-language model validation on 4.77-metre imagery confirms that standard satellite land cover products systematically misclassify solar panels as bare ground or built-up area. Our findings reveal that solar farms in South Asia primarily displace cropland and scrubland, with deforestation concentrated in surrounding landscapes rather than within installation footprints.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Keywords:} solar energy, land use change, South Asia, difference-in-differences, remote sensing, vision-language models
+
+\clearpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 1. INTRODUCTION
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Introduction}
+
+South Asia is undergoing the world's most rapid expansion of utility-scale solar photovoltaic (PV) capacity. India alone targets 500\,GW of non-fossil generation by 2030\citep{iea2024india}, while Bangladesh, Pakistan, Nepal, and Sri Lanka have each announced multi-gigawatt solar programmes. This expansion occurs in a region where arable land is scarce, population density is among the highest globally, and agriculture remains the primary livelihood for hundreds of millions of people\citep{fao2023asia}. The tension between decarbonisation imperatives and food security has become a defining challenge of the energy transition in the Global South.
+
+Previous work has documented the land use footprint of solar installations in high-income countries. Hernandez et al.\citep{hernandez2015} mapped solar development impacts on land cover change and protected areas in the United States, finding that installations were concentrated in natural shrublands and agricultural land. Kruitwagen et al.\citep{kruitwagen2021} produced the first global inventory of 68,661 PV generating units from satellite imagery, reporting that the majority were sited on cropland. Van de Ven et al.\citep{vandeven2021} estimated that achieving climate targets could require converting 0.5--5\% of current agricultural land to solar energy globally. More recently, Curioni et al.\citep{curioni2025} analysed global land--water competition between solar energy and agriculture, confirming that synergies through agrivoltaics could alleviate but not eliminate land competition.
+
+Despite this growing body of work, three critical gaps remain. First, nearly all causal evidence on solar land use impacts comes from the United States and Europe; the Global South---where land competition is most acute---remains largely unstudied at scale. Second, existing analyses rely on static land cover snapshots or simple before--after comparisons, which cannot distinguish solar-induced changes from secular trends in urbanisation and agricultural intensification. Third, standard satellite land cover products such as Dynamic World\citep{brown2022} lack a solar panel class, systematically misclassifying installed capacity as bare ground, built-up area, or snow/ice, which confounds impact assessment.
+
+Here we address these gaps through the first large-scale quantification of solar energy-driven land cover transitions in South Asia. We integrate three independent solar installation databases---the Global Energy Monitor Solar Power Tracker\citep{gem2025}, Google Research Open Buildings-derived solar polygons (GRW), and the TransitionZero Solar Asset Mapper (TZ-SAM)\citep{tzsam2025}---into a unified database of 6,705 entries with cross-source confidence scoring. From this, we identify 3,676 high-confidence operational installations across India, Pakistan, Bangladesh, Nepal, Sri Lanka, and Bhutan, along with 368 announced-but-unbuilt projects that serve as comparison sites.
+
+Our analytical strategy proceeds in three stages. First, we characterise pre-construction land cover within the exact polygon footprints of 5,888 operational sites using Dynamic World composites, providing the first systematic accounting of what land solar farms actually replaced across South Asia. Second, we estimate causal treatment effects using both a conventional difference-in-differences (DiD) specification and a doubly-robust Callaway--Sant'Anna\citep{callaway2021} estimator with not-yet-treated controls, drawing on seven Earth observation data sources at four time points spanning 2016--2025. Third, we validate satellite-derived classifications using Gemini 2.5 Flash\citep{google2025gemini}, a frontier vision-language model (VLM), applied to high-resolution Planet basemap imagery (4.77\,m), demonstrating that VLMs can detect solar installations that elude conventional spectral classifiers.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 2. RESULTS
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Results}
+
+\subsection{Solar installation database and geographic distribution}
+
+Spatial matching of three independent databases yielded a unified catalogue of 6,705 solar energy entries across South Asia (Fig.\,\ref{fig:pipeline}a). Of these, 2,718 (40.5\%) achieved ``very high'' confidence through agreement among all three sources, and 958 (14.3\%) achieved ``high'' confidence from two-source agreement. India dominates the sample with 93\% of treatment sites, followed by Pakistan (4.3\%), Nepal (2.7\%), Sri Lanka (1.6\%), Bangladesh (0.8\%), and Bhutan ($<$0.1\%).
+
+The 3,676 operational installations span construction dates from 2015 to 2025 and capacities from $<$1\,MW to $>$2\,GW, with a median capacity of 25\,MW. The 368 comparison sites---projects with announced, pre-construction, shelved, or cancelled status---are distributed across all six countries and share similar solar irradiance characteristics (Global Horizontal Irradiance: treatment mean 5.12\,kWh/m$^2$/day, control mean 4.87\,kWh/m$^2$/day; $p = 0.06$).
+
+\subsection{Pre-construction land cover within solar footprints}
+
+Analysis of Dynamic World baseline composites within the exact polygon boundaries of 5,888 operational sites reveals that \textbf{cropland (39.6\%)} was the dominant pre-solar land cover class across South Asia (Fig.\,\ref{fig:polygon_lulc}). This was followed by bare ground (17.3\%), shrub/scrub (17.1\%), built-up (16.4\%), and trees/forest (7.0\%). Standard deviations of 28--40\% indicate substantial site-to-site heterogeneity.
+
+Country-level decomposition reveals marked geographic variation. In India ($n = 5{,}144$) and Pakistan ($n = 485$), solar installations predominantly replaced cropland (41\% and 35\%, respectively) and semi-arid scrubland. In contrast, Sri Lanka ($n = 114$) and Bhutan ($n = 6$) show tree/forest-dominated pre-solar land cover (35\% and 34\%), consistent with installations in more forested terrain. Bangladesh's anomalously high built-up fraction (36\%) likely reflects Dynamic World misclassification in dense rural landscapes rather than genuine prior urbanisation, a finding corroborated by our VLM validation (Section~\ref{sec:vlm}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_fig9_polygon_lulc.png}
+  \caption{%
+    \textbf{Pre-construction land cover within solar polygon boundaries.}
+    Dynamic World mode composite at baseline (2016--2020) for 5,888 operational sites, disaggregated by country. Cropland is the dominant pre-solar class in India and Pakistan; tree/forest dominates in Sri Lanka and Bhutan.
+  }
+  \label{fig:polygon_lulc}
+\end{figure}
+
+\subsection{Difference-in-differences treatment effects}
+
+Weighted least squares DiD regression with heteroskedasticity-consistent (HC1) standard errors reveals statistically significant treatment effects for 14 of 18 outcome variables (Table~\ref{tab:did_main}, Fig.\,\ref{fig:forest_plot}). The results cluster into four categories.
+
+\paragraph{Land cover transitions.}
+The largest effect is a reduction in tree cover of $-4.15\pp$ ($p < 0.001$), indicating that treatment sites lost substantially more tree cover than comparison sites between baseline and post-construction periods. Bare ground increased by $+2.51\pp$ ($p < 0.001$), consistent with land clearing and Dynamic World's tendency to classify solar panels as bare ground. Cropland showed a counterintuitive increase of $+1.93\pp$ ($p = 0.015$), which we attribute to comparison sites experiencing stronger cropland-to-urban conversion in rapidly developing areas. Water decreased by $-0.61\pp$ ($p < 0.001$), possibly reflecting drainage of seasonal ponds during site preparation.
+
+\paragraph{Biophysical signals.}
+Sentinel-1 cross-polarisation (VH) backscatter declined by $-0.51$\,dB ($p < 0.001$), the most robust signal across specifications. This is physically consistent with the replacement of rough vegetation surfaces by smooth, specular solar panels that reduce volume scattering. NDVI declined by $-0.017$ ($p < 0.001$) and EVI by $-0.011$ ($p < 0.001$), confirming vegetation productivity loss.
+
+\paragraph{Microclimate effects.}
+Nighttime land surface temperature (LST) decreased by $-0.34\,^{\circ}$C ($p < 0.001$), suggesting a measurable cooling effect at solar sites---consistent with the replacement of vegetation (which releases stored heat at night) with panels (which cool rapidly after sunset)\citep{barron2016}. Daytime LST showed no significant change ($+0.06\,^{\circ}$C, $p = 0.54$).
+
+\paragraph{Socioeconomic indicators.}
+Nighttime light (NTL) radiance increased by $+0.29$\,nW/sr/cm$^2$ ($p = 0.014$), reflecting infrastructure development. Population within 1\,km declined by 58.6 persons ($p = 0.024$), suggesting slower population growth near solar installations. Built-up area showed no significant change ($p = 0.21$), confirming that Dynamic World does not reliably classify solar panels as built infrastructure.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_fig3_forest_plot.png}
+  \caption{%
+    \textbf{DiD treatment effects with 95\% confidence intervals.}
+    Forest plot of WLS DiD coefficients for 18 outcome variables.
+    Filled circles indicate $p < 0.05$.
+    Tree cover loss ($-4.15\pp$) and SAR VH decline ($-0.51$\,dB) are the largest and most robust effects.
+  }
+  \label{fig:forest_plot}
+\end{figure}
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{%
+    \textbf{DiD treatment effect estimates across specifications.}
+    HC1 = pooled WLS with robust SEs; FE = country fixed effects; PSM = propensity score matched ($n = 652$); DR-CS = doubly-robust Callaway--Sant'Anna.
+    $^{***}p < 0.001$, $^{**}p < 0.01$, $^{*}p < 0.05$.
+  }
+  \label{tab:did_main}
+  \begin{tabularx}{\textwidth}{l *{4}{>{\centering\arraybackslash}X}}
+    \toprule
+    \textbf{Outcome} & \textbf{HC1} & \textbf{FE} & \textbf{PSM} & \textbf{DR-CS} \\
+    \midrule
+    Trees (\%)            & $-4.15^{***}$ & $-2.39^{***}$ & $-4.39^{***}$ & $-1.45^{***}$ \\
+    Bare ground (\%)      & $+2.51^{***}$ & $+3.14^{***}$ & $+1.71^{**}$  & --- \\
+    Cropland (\%)         & $+1.93^{*}$   & $-0.40$       & $+2.93^{***}$ & $+1.84^{***}$ \\
+    Water (\%)            & $-0.61^{***}$ & $-0.50^{***}$ & ---           & --- \\
+    SAR VH (dB)           & $-0.51^{***}$ & $-0.48^{***}$ & $-0.48^{***}$ & $-0.11^{***}$ \\
+    Night LST ($^{\circ}$C) & $-0.34^{***}$ & $-0.22^{***}$ & $-0.34^{***}$ & $-0.13^{***}$ \\
+    NDVI                  & $-0.017^{***}$ & $-0.015^{***}$ & ---          & --- \\
+    NTL (nW/sr/cm$^2$)   & $+0.29^{*}$   & $+0.24^{*}$   & $-0.04$      & --- \\
+    Population (1\,km)    & $-58.6^{*}$   & ---           & $-95.1^{*}$   & --- \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Robustness and identification}
+
+\paragraph{Country fixed effects.}
+Adding country dummies absorbs cross-country confounders. Tree loss attenuates to $-2.39\pp$ ($p < 0.001$) but remains highly significant. Bare ground strengthens to $+3.14\pp$. The cropland effect loses significance ($-0.40$, $p > 0.05$), confirming it was partly driven by country composition. SAR VH, NDVI, night LST, and building metrics are robust to fixed effects.
+
+\paragraph{Propensity score matching.}
+Logistic regression on seven baseline covariates (GHI, DW cropland, trees, built, bare, water, NTL) yielded 326 matched treatment--control pairs. Tree loss ($-4.39\pp$, $p < 0.001$), bare ground ($+1.71\pp$, $p < 0.01$), SAR VH ($-0.48$\,dB, $p < 0.001$), and nighttime cooling ($-0.34\,^{\circ}$C, $p < 0.001$) all survive matching. NTL loses significance after matching ($-0.04$, $p > 0.05$), suggesting the baseline NTL effect partly reflects site selection into more electrified areas.
+
+\paragraph{Doubly-robust Callaway--Sant'Anna estimator.}
+To address staggered treatment timing and potential violations of unconditional parallel trends (which fail for 13 of 18 outcomes in pre-trend tests), we implement the doubly-robust estimator of Callaway and Sant'Anna\citep{callaway2021} using not-yet-treated units as the comparison group. This approach is robust to misspecification of either the outcome model or the propensity score. The DR-CS estimates are generally attenuated relative to the pooled DiD but confirm the core findings: tree cover loss ($-1.45\pp$, $p < 0.001$), cropland reclassification ($+1.84\pp$, $p < 0.001$), nighttime cooling ($-0.13\,^{\circ}$C, $p < 0.001$), and SAR VH decline ($-0.11$\,dB, $p < 0.001$).
+
+\paragraph{Event study dynamics.}
+\todoinline{Insert annual event study results from Modal run (10 time points, 36,760 observations). Expected to show: (i) no pre-trends before construction year, (ii) sharp treatment onset at $t = 0$, (iii) persistent effects through $t + 5$.}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_event_study.png}
+  \caption{%
+    \textbf{Event study: dynamic treatment effects relative to construction year.}
+    Point estimates and 95\% CIs for key outcomes at each year relative to solar farm construction ($t = 0$).
+    \todoinline{Update with annual DW event study results when available.}
+  }
+  \label{fig:event_study}
+\end{figure}
+
+\subsection{Country-level heterogeneity}
+
+Treatment effects vary substantially across countries (Table~\ref{tab:country}). India dominates the pooled estimates, driving the strong tree loss ($-4.77\pp$, $p < 0.001$) and bare ground increase ($+5.16\pp$, $p < 0.001$). Sri Lanka shows comparable tree loss ($-4.80\pp$) despite a much smaller sample. SAR VH decline is the most geographically consistent signal, significant in India, Pakistan, Nepal, and Sri Lanka---confirming that the radar signature of solar panels transcends landscape context.
+
+Bangladesh's small sample ($n = 81$) yields only one significant result (bare ground $+2.82\pp$, $p = 0.031$), but longitudinal case studies at four sites (Section~\ref{sec:case_studies}) confirm substantial cropland conversion that the cross-sectional analysis lacks power to detect.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{%
+    \textbf{Country-level DiD treatment effects} (selected outcomes).
+    $^{***}p < 0.001$, $^{**}p < 0.01$, $^{*}p < 0.05$.
+  }
+  \label{tab:country}
+  \begin{tabularx}{\textwidth}{l *{5}{>{\centering\arraybackslash}X}}
+    \toprule
+    & \textbf{India} & \textbf{Pakistan} & \textbf{Bangladesh} & \textbf{Nepal} & \textbf{Sri Lanka} \\
+    & ($n = 3{,}533$) & ($n = 189$) & ($n = 81$) & ($n = 129$) & ($n = 103$) \\
+    \midrule
+    Trees (\%)     & $-4.77^{***}$ & $+0.49$   & $-0.59$ & $-0.08$ & $-4.80$ \\
+    Bare (\%)      & $+5.16^{***}$ & $+0.66$   & $+2.82^{*}$ & $+0.92$ & $+0.24$ \\
+    SAR VH (dB)    & $-0.57^{***}$ & $-0.69^{***}$ & $+0.07$ & $-0.48^{***}$ & $-0.70^{***}$ \\
+    Night LST ($^{\circ}$C) & $-0.36^{***}$ & $-0.18$ & $-0.12$ & $-0.21$ & $-0.28$ \\
+    NTL            & $+0.30^{*}$   & $+0.38$   & $-0.15$ & $-0.12$ & $-0.01$ \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Case studies: longitudinal validation in Bangladesh}
+\label{sec:case_studies}
+
+We conducted detailed annual analyses (2016--2026) of four Bangladesh installations spanning the capacity spectrum: Teesta (200\,MW), Feni (75\,MW), Manikganj (35\,MW), and Moulvibazar (10\,MW). Using Planet basemap imagery at 4.77\,m resolution with annual January composites, we tracked land cover change through both Dynamic World classification and VLM assessment (Fig.\,\ref{fig:case_studies}).
+
+At the two largest sites, DW-derived cropland collapsed from 33--39\% to 3--5\% post-construction ($-88$ to $-92$\% relative change), confirming that solar farms in Bangladesh predominantly displace agricultural land. NDVI declined by 10--12\% at three of four sites. DW misclassified solar panels primarily as bare ground ($+20$ to $+59\pp$) and occasionally as snow/ice (5.4\% at Teesta), demonstrating the failure mode that motivates our VLM approach.
+
+Three of four sites had cropland as a top-two pre-construction land cover class according to VLM assessment, consistent with investigative reports documenting seizure of ``three-crop land'' (land producing three rice harvests annually) for solar development at Feni and Manikganj\citep{thedailystar2024}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/case_studies/all_sites_pre_post.png}
+  \caption{%
+    \textbf{Four Bangladesh solar sites: pre- and post-construction.}
+    Satellite imagery (columns 1, 3) and Dynamic World LULC maps (columns 2, 4) for Teesta 200\,MW, Feni 75\,MW, Manikganj 35\,MW, and Moulvibazar 10\,MW.
+  }
+  \label{fig:case_studies}
+\end{figure}
+
+\subsection{Vision-language model validation}
+\label{sec:vlm}
+
+To address the absence of a solar panel class in Dynamic World and other satellite LULC products, we deployed Gemini 2.5 Flash\citep{google2025gemini} as a zero-shot land cover classifier on 4.77\,m Planet basemap imagery. The model receives each image with a structured prompt requesting percentage-based estimates for 10 LULC classes including solar panels.
+
+\paragraph{VLM benchmarking.}
+We evaluated five Gemini configurations on four test images spanning pre-construction and post-construction scenarios across 10--200\,MW installations (Fig.\,\ref{fig:vlm_comparison}). All models achieved zero false positives on the pre-construction image. Gemini 2.5 Flash showed the highest solar detection sensitivity, identifying 8\% solar area at a 35\,MW site where Gemini 2.0 Flash detected only 2\%. Native segmentation mask outputs from Gemini 2.5 Flash were tested but failed due to output token truncation, producing degenerate byte patterns rather than valid spatial masks.
+
+\paragraph{Control site validation.}
+VLM assessment of 50 stratified comparison sites confirmed that 98\% (49/50) showed no visible solar installation, validating the control group. The VLM also revealed systematic Dynamic World biases: DW overestimates built-up area by $+6.6\pp$ and underestimates grassland by $-9.3\pp$ relative to visual assessment across South Asian landscapes.
+
+\paragraph{Dynamic World misclassification.}
+Comparison between DW and VLM classifications across 30 matched images revealed a mean pixel disagreement rate of 70\%. DW systematically overestimates forest ($+23.1\pp$) and water ($+14.3\pp$) relative to VLM, while underestimating cropland ($-36.3\pp$). This finding has important implications for studies using DW for agricultural monitoring in South Asia.
+
+\todoinline{Add full-dataset VLM classification results (36,760 images) when complete. Expected to provide: (i) VLM-based solar detection for all sites, (ii) corrected pre-construction cropland estimates, (iii) VLM-screened control robustness check.}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/case_studies/vlm_model_comparison_teesta_2024.png}
+  \caption{%
+    \textbf{VLM model comparison: Teesta 200\,MW post-construction (2024).}
+    Per-class land cover estimates from Dynamic World and four Gemini configurations.
+    Only the VLM models detect solar panels; DW classifies them as bare ground (27.3\%) and built-up (29.6\%).
+  }
+  \label{fig:vlm_comparison}
+\end{figure}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 3. DISCUSSION
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Discussion}
+
+\subsection{Solar farms and agricultural land in South Asia}
+
+Our finding that 39.6\% of land within solar footprints was previously cropland confirms and extends earlier global estimates. Kruitwagen et al.\citep{kruitwagen2021} reported that the majority of their 68,661 catalogued installations globally were sited on cropland but did not provide regional breakdowns for South Asia. Our analysis reveals substantial within-region heterogeneity: while India and Pakistan conform to the global pattern of cropland-dominated siting, Sri Lanka and Bhutan show forest-dominated conversion---a distinction with important implications for both carbon accounting and biodiversity.
+
+The gap between within-polygon (39.6\% cropland) and surrounding-landscape (7.0\% tree cover within polygons vs.\ $-4.15\pp$ tree loss in the 1\,km buffer DiD) effects suggests a two-scale process. Solar panels directly replace cropland and scrubland within their footprint, while associated infrastructure development---access roads, transmission lines, substations, worker housing---drives deforestation in the surrounding landscape. This landscape-level spillover effect has not been previously documented for South Asian solar installations.
+
+\subsection{Identification challenges and causal interpretation}
+
+We present four estimation strategies with increasing identification rigour: pooled WLS DiD, country fixed effects, propensity score matching, and doubly-robust Callaway--Sant'Anna estimation. The core finding of tree cover loss is remarkably consistent: $-4.15\pp$ (pooled), $-2.39\pp$ (FE), $-4.39\pp$ (PSM), and $-1.45\pp$ (DR-CS). The attenuation in the DR-CS estimate---our preferred specification---likely reflects genuine heterogeneity across treatment cohorts and the use of not-yet-treated (rather than never-treated) controls, which provides a more conservative but credible comparison group.
+
+We acknowledge several identification challenges. First, unconditional parallel trends fail for 13 of 18 outcomes, motivating our reliance on the conditional DR-CS estimator. Second, the 10:1 treatment-to-control ratio (3,676 vs.\ 368) reflects the reality that far more solar farms have been built than cancelled in South Asia, but it limits statistical power for some outcomes. Third, the 1\,km circular buffer analysis dilutes site-level signals, as most solar farms occupy 0.1--2\,km$^2$ within the 3.14\,km$^2$ buffer area. Future work using polygon-matched buffers should sharpen these estimates.
+
+\subsection{Vision-language models as remote sensing validators}
+
+Our deployment of a frontier VLM (Gemini 2.5 Flash) for satellite image classification represents an emerging paradigm in Earth observation\citep{kuckreja2024,li2024vlmrs}. Unlike conventional classifiers trained on fixed taxonomies, VLMs can detect novel land cover classes---such as solar panels---without retraining. The zero false positive rate and capacity-correlated detection sensitivity we observe (20\% area for 200\,MW, 1\% for 10\,MW) suggest that VLMs could serve as a scalable validation layer for automated LULC products.
+
+However, VLMs are not without limitations. Our benchmark revealed that Gemini 2.5 Flash consistently overestimates solar area relative to polygon-derived ground truth (32\% vs.\ $\sim$22\% expected at the Teesta site), suggesting a sensitivity--specificity trade-off. The failure of native segmentation mask outputs---response truncation producing degenerate byte patterns---indicates that current VLMs are better suited to image-level classification than pixel-level segmentation.
+
+The 70\% pixel disagreement rate between Dynamic World and VLM classifications highlights a broader concern: land cover products in South Asia may be less reliable than their global accuracy statistics suggest. DW's systematic overestimation of water ($+14.3\pp$) in Bangladesh likely reflects misclassification of wet rice paddies, a known failure mode for spectral classifiers in monsoon agriculture regions. Studies relying on DW for cropland monitoring in South Asia should consider VLM validation as a complementary approach.
+
+\subsection{Policy implications}
+
+Three policy-relevant findings emerge. First, the dominance of cropland within solar footprints (39.6\%) underscores the urgency of agrivoltaic solutions that enable co-location of energy generation and food production\citep{dinesh2016}. India's PM-KUSUM scheme and the India Agrivoltaics Alliance represent promising institutional responses, but their scale remains modest relative to the pace of ground-mounted installations.
+
+Second, the landscape-level deforestation signal ($-1.45$ to $-4.15\pp$ depending on specification) suggests that environmental impact assessments for solar projects should consider a wider geographic footprint than the installation boundary alone. Access road construction, transmission corridors, and worker settlement effects appear to extend well beyond the solar polygon.
+
+Third, the nighttime cooling effect ($-0.13$ to $-0.34\,^{\circ}$C) adds to growing evidence of solar farm microclimate impacts\citep{barron2016,fthenakis2024}. While modest in magnitude, this cooling may affect surrounding crop phenology and water demand---a consideration for the 39.6\% of installations sited on former cropland where adjacent agriculture continues.
+
+\subsection{Limitations}
+
+Several limitations warrant discussion. Our treatment group is based on remotely sensed polygon detection, which may miss installations smaller than $\sim$1\,MW or those under cloud cover. The comparison group of announced-but-unbuilt projects may differ from operational sites in unobservable ways (political viability, land acquisition feasibility), although PSM and DR-CS estimation address selection on observables. Dynamic World's 10\,m resolution and per-scene classification introduce noise, and we have documented its systematic biases in South Asian landscapes. The MODIS-derived LST and vegetation indices (1\,km and 250\,m resolution, respectively) average over areas much larger than typical solar installations, diluting the signal. Finally, our study period (2016--2025) captures the acceleration phase of South Asian solar deployment; longer time horizons will be needed to assess permanent land cover reorganisation versus transient construction effects.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 4. METHODS
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Methods}
+
+\subsection{Solar installation database integration}
+
+We combined three independent databases to construct a unified catalogue of solar PV installations across South Asia (Bangladesh, India, Pakistan, Nepal, Sri Lanka, Bhutan).
+
+\textbf{Global Energy Monitor Solar Power Tracker (GEM/GSPT)} provides self-reported coordinates, capacity, status, and developer metadata for 5,093 solar projects across South Asia, including both operational and proposed/cancelled installations\citep{gem2025}.
+
+\textbf{Google Research solar polygons (GRW)} provides machine learning-detected polygons for 3,957 operational installations, derived from high-resolution satellite imagery\citep{kruitwagen2021}.
+
+\textbf{TransitionZero Solar Asset Mapper (TZ-SAM)} provides 5,368 ML-detected polygons with estimated construction dates and capacities\citep{tzsam2025}. TZ-SAM is accessed via Google Earth Engine as a community catalogue asset.
+
+Spatial matching proceeds as follows. We build R-tree spatial indices for GRW and TZ-SAM polygon sets. For each GEM project, we identify polygons within 5\,km (for exact coordinates) or 10\,km (for approximate coordinates) using point-to-polygon edge distance. GRW--TZ-SAM polygon intersections are computed using an intersection-over-union (IoU) threshold of $\geq 0.1$. Confidence tiers are assigned based on source agreement: ``very high'' requires all three sources with GRW$\cap$TZ-SAM overlap and GEM within 1\,km ($n = 2{,}718$); ``high'' requires two sources ($n = 958$). The unified database contains 6,705 entries.
+
+\textbf{Treatment group} ($n = 3{,}676$): operational installations with very high or high confidence (confirmed by $\geq 2$ independent sources).
+
+\textbf{Comparison group} ($n = 368$): GEM projects with announced, pre-construction, shelved, or cancelled status and no detected polygon in GRW or TZ-SAM.
+
+\subsection{Earth observation data collection}
+
+For each of the 4,044 sites, we collected Earth observation data at four time points via Google Earth Engine: baseline (2016), pre-construction (construction year $- 1$; 2019 for controls), post-construction (construction year $+ 1$; 2022 for controls), and current (2025). Seven data sources were queried within a 1\,km circular buffer around each site centroid:
+
+\begin{enumerate}
+  \item \textbf{Dynamic World}\citep{brown2022}: nine LULC class percentages at 10\,m resolution, annual mode composite.
+  \item \textbf{VIIRS Day/Night Band}: mean nighttime radiance (nW/sr/cm$^2$) at 463\,m, annual median with cloud-free coverage $\geq 3$.
+  \item \textbf{Sentinel-1 GRD}: mean VV and VH backscatter (dB) at 10\,m, April--October median in IW mode.
+  \item \textbf{MODIS MOD13Q1}: NDVI and EVI at 250\,m, annual median.
+  \item \textbf{MODIS MOD11A2}: daytime and nighttime LST ($^{\circ}$C) at 1\,km, annual median.
+  \item \textbf{WorldPop}: population density and count at 100\,m (2000--2020).
+  \item \textbf{Google Open Buildings}: building presence, height, and count at 2.5\,m (2016--2023).
+\end{enumerate}
+
+This yielded a balanced panel of 16,176 observations (4,044 sites $\times$ 4 time points) with 37 variables per row. Data completeness exceeded 96.9\% for all sources. Collection used eight parallel GEE workers and completed in 145 minutes ($\sim$52,500 queries).
+
+\subsection{Difference-in-differences estimation}
+
+\paragraph{Pooled specification.}
+We estimate a first-difference specification via weighted least squares:
+\begin{equation}
+  \Delta Y_i = \alpha + \beta \cdot \text{Treatment}_i + \gamma_1 \cdot \text{GHI}_i + \gamma_2 \cdot \text{Capacity}_i + \gamma_3 \cdot Y_{i,\text{baseline}} + \varepsilon_i
+\end{equation}
+where $\Delta Y_i$ is the post-minus-pre change in outcome for site $i$, $\text{Treatment}_i = 1$ for operational sites and 0 for comparison sites, and the covariates control for solar resource quality, project scale, and baseline outcome level. Observations are weighted by confidence score (very high = 1.0, high = 0.8, proposed = 0.6). Standard errors are heteroskedasticity-consistent (HC1).
+
+\paragraph{Country fixed effects.}
+We augment the pooled specification with country dummies $C(\text{country})$ to absorb country-level confounders (climate, policy regime, baseline development).
+
+\paragraph{Propensity score matching.}
+We estimate the treatment propensity $P(\text{Treatment} = 1 \mid X)$ via logistic regression on seven baseline covariates: GHI, and Dynamic World baseline percentages for cropland, trees, built-up, bare ground, and water, plus baseline nighttime light radiance. We match treatment to comparison sites 1:1 using nearest-neighbour matching within a caliper of $0.2\sigma(\hat{p})$. This yielded 326 matched pairs ($n = 652$). DiD is re-estimated on the matched sample.
+
+\paragraph{Doubly-robust Callaway--Sant'Anna.}
+To address staggered treatment timing (construction years 2015--2025) and potential violations of unconditional parallel trends, we implement the doubly-robust estimator of Callaway and Sant'Anna\citep{callaway2021}. Group-time average treatment effects $ATT(g,t)$ are estimated using not-yet-treated units as the comparison group, with inverse probability weighting on baseline covariates. Aggregation to an overall ATT uses the authors' recommended weighting scheme.
+
+\subsection{Pre-construction land cover within polygon footprints}
+
+For the 5,888 operational sites with GRW or TZ-SAM polygons, we queried Dynamic World annual mode composites at the earliest available year (2016--2020) within the exact polygon geometries (no buffer). This provides a direct estimate of what land cover classes were present before solar panel installation, without dilution from surrounding landscape.
+
+\subsection{Vision-language model classification}
+
+We deployed Google's Gemini 2.5 Flash\citep{google2025gemini} as a zero-shot LULC classifier. Each Planet basemap image (4.77\,m resolution, 4$\times$4\,km extent) was sent to the model API with a structured JSON-mode prompt requesting percentage estimates for 10 land cover classes (cropland, trees/forest, shrub/scrub, grassland, flooded vegetation, built-up, bare ground, water, snow/ice, solar panels). Temperature was set to 0.1 for reproducibility.
+
+For model selection, we benchmarked five Gemini configurations (2.0 Flash, 2.5 Flash percentage, 2.5 Flash segmentation, 3 Flash percentage, 3 Flash agentic) on four test images. Gemini 2.5 Flash (percentage JSON) was selected for its superior solar detection sensitivity across the 10--200\,MW capacity range, zero false positive rate on pre-construction images, and favourable cost profile (\$0.15/M input tokens, free tier available at 1,500 requests/day).
+
+For control site validation, we applied the selected model to Planet imagery for 50 stratified comparison sites across all six countries.
+
+\subsection{Case study longitudinal analysis}
+
+Four Bangladesh sites (Teesta 200\,MW, Feni 75\,MW, Manikganj 35\,MW, Moulvibazar 10\,MW) were analysed annually from 2016 to 2026 using Planet monthly basemap composites (January of each year for seasonal consistency), Dynamic World spatial rasters (404$\times$401 pixels per site-year), VLM classification on all 44 site-year images, and all seven GEE-derived environmental proxies at annual resolution.
+
+\subsection{Data and code availability}
+
+\todoinline{Add repository URL, data DOI, and GEE script links before submission.}
+
+All satellite data are publicly available through Google Earth Engine. Planet basemap imagery is available through Planet's Explorer platform. The unified solar database, temporal panel dataset, and analysis code are available at \todoinline{GitHub/Zenodo URL}.
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% ACKNOWLEDGEMENTS
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section*{Acknowledgements}
+
+\todoinline{Add funding sources, institutional affiliations, and acknowledgements.}
+We thank Google Earth Engine for providing free access to satellite data, Planet Labs for basemap imagery access, TransitionZero for the TZ-SAM dataset, and Global Energy Monitor for the Solar Power Tracker. Computational resources were provided by \todoinline{institution/cloud provider}.
+
+\section*{Author contributions}
+
+\todoinline{Add CRediT author contribution statements.}
+
+\section*{Competing interests}
+
+The authors declare no competing interests.
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% REFERENCES
+% ══════════════════════════════════════════════════════════════════════════════
+
+% For the actual submission, compile with BibTeX.
+% Below we use thebibliography for the draft.
+
+\begin{thebibliography}{99}
+
+\bibitem{hernandez2015}
+Hernandez, R.\,R. et al.
+Solar energy development impacts on land cover change and protected areas.
+\textit{Proc.\ Natl Acad.\ Sci.\ USA} \textbf{112}, 13579--13584 (2015).
+
+\bibitem{kruitwagen2021}
+Kruitwagen, L. et al.
+A global inventory of photovoltaic solar energy generating units.
+\textit{Nature} \textbf{598}, 604--610 (2021).
+
+\bibitem{vandeven2021}
+van de Ven, D.\,J. et al.
+The potential land requirements and related land use change emissions of solar energy.
+\textit{Sci.\ Rep.} \textbf{11}, 2907 (2021).
+
+\bibitem{curioni2025}
+Curioni, G. et al.
+Global land--water competition and synergy between solar energy and agriculture.
+\textit{Earth's Future} \textbf{13}, e2024EF005291 (2025).
+
+\bibitem{brown2022}
+Brown, C.\,F. et al.
+Dynamic World, near real-time global 10\,m land use land cover mapping.
+\textit{Sci.\ Data} \textbf{9}, 251 (2022).
+
+\bibitem{callaway2021}
+Callaway, B. \& Sant'Anna, P.\,H.\,C.
+Difference-in-differences with multiple time periods.
+\textit{J.\ Econom.} \textbf{225}, 200--230 (2021).
+
+\bibitem{tzsam2025}
+TransitionZero.
+Solar Asset Mapper: a continuously-updated global inventory of utility-scale solar installations, Q1 2025 release.
+\url{https://www.transitionzero.org/products/solar-asset-mapper} (2025).
+
+\bibitem{gem2025}
+Global Energy Monitor.
+Global Solar Power Tracker.
+\url{https://globalenergymonitor.org/projects/global-solar-power-tracker/} (2025).
+
+\bibitem{google2025gemini}
+Google DeepMind.
+Gemini 2.5 Flash: multimodal AI model.
+\url{https://ai.google.dev/gemini-api} (2025).
+
+\bibitem{iea2024india}
+International Energy Agency.
+India Energy Outlook 2024.
+\url{https://www.iea.org/reports/india-energy-outlook-2024} (2024).
+
+\bibitem{fao2023asia}
+FAO.
+The State of Food and Agriculture 2023.
+\textit{Food and Agriculture Organization of the United Nations}, Rome (2023).
+
+\bibitem{barron2016}
+Barron-Gafford, G.\,A. et al.
+The photovoltaic heat island effect: larger solar power plants increase local temperatures.
+\textit{Sci.\ Rep.} \textbf{6}, 35070 (2016).
+
+\bibitem{fthenakis2024}
+\todoinline{Add recent solar microclimate reference -- Fthenakis or equivalent, 2024.}
+
+\bibitem{dinesh2016}
+Dinesh, H. \& Pearce, J.\,M.
+The potential of agrivoltaic systems.
+\textit{Renew.\ Sustain.\ Energy Rev.} \textbf{54}, 299--308 (2016).
+
+\bibitem{vanzalk2018}
+van Zalk, J. \& Behrens, P.
+The spatial extent of renewable and non-renewable power generation: a review and meta-analysis of power densities and their application in the U.S.
+\textit{Energy Policy} \textbf{123}, 83--91 (2018).
+
+\bibitem{kuckreja2024}
+Kuckreja, Y. et al.
+GEOBench-VLM: benchmarking vision-language models for geospatial tasks.
+\textit{Proc.\ ICCV} (2025).
+
+\bibitem{li2024vlmrs}
+Li, Z. et al.
+Vision-language models in remote sensing: current progress and future trends.
+\textit{Bull.\ Am.\ Meteorol.\ Soc.} (2024).
+\todoinline{Verify exact citation details.}
+
+\bibitem{thedailystar2024}
+The Daily Star.
+Solar farms on three-crop land: an emerging crisis in Bangladesh.
+\todoinline{Add exact article URL and date.}
+
+\bibitem{comparativeval2024}
+Venter, Z.\,S. et al.
+Comparative validation of recent 10\,m-resolution global land cover maps.
+\textit{Remote Sens.\ Environ.} \textbf{311}, 114316 (2024).
+
+\bibitem{massetti2023}
+van Zalk, J. et al.
+Diverse vegetation responses to solar farm installation are also driven by climate change.
+\textit{Commun.\ Earth Environ.} \textbf{6}, 140 (2025).
+\todoinline{Verify author list and citation details.}
+
+\bibitem{tandfonline2025}
+\todoinline{Add Massachusetts solar farm/forest impact reference -- Tandfonline 2025.}
+
+\bibitem{wuepper2025}
+Wuepper, D. et al.
+Satellite data in agricultural and environmental economics: theory and practice.
+\textit{Agric.\ Econ.} (2025).
+
+\end{thebibliography}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% EXTENDED DATA / SUPPLEMENTARY
+% ══════════════════════════════════════════════════════════════════════════════
+
+\clearpage
+\appendix
+\renewcommand{\thefigure}{ED\arabic{figure}}
+\renewcommand{\thetable}{ED\arabic{table}}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+
+\section*{Extended Data}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_fig1_integration_summary.png}
+  \caption{%
+    \textbf{Data integration pipeline.}
+    (a) Source overlap for South Asia solar entries.
+    (b) Confidence tier distribution.
+  }
+  \label{fig:pipeline}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_fig4_parallel_trends.png}
+  \caption{%
+    \textbf{Parallel trends assessment.}
+    Pre-treatment trajectories for four key outcomes. Unconditional parallel trends fail for 13 of 18 outcomes, motivating the conditional doubly-robust estimator.
+  }
+  \label{fig:parallel_trends}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_staggered_cs.png}
+  \caption{%
+    \textbf{Callaway--Sant'Anna staggered DiD estimates.}
+    Group-time average treatment effects aggregated to overall ATT using doubly-robust estimation with not-yet-treated controls.
+  }
+  \label{fig:staggered_cs}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/did_placebo_test.png}
+  \caption{%
+    \textbf{Placebo test results.}
+    Treatment effects estimated using the baseline-to-pre-construction period, during which no treatment should have occurred.
+  }
+  \label{fig:placebo}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/figures/case_studies/teesta_satellite_lulc_maps.png}
+  \caption{%
+    \textbf{Teesta 200\,MW: 11-year satellite and LULC timeline.}
+    Planet basemap imagery (top) and Dynamic World classification (bottom), 2016--2026. Construction year (2023) highlighted.
+  }
+  \label{fig:teesta_timeline}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{../docs/figures/case_studies/vlm_s2_vs_planet_comparison.png}
+  \caption{%
+    \textbf{VLM classification: Sentinel-2 vs.\ Planet imagery.}
+    Comparison of Gemini 2.5 Flash LULC estimates using 10\,m Sentinel-2 and 4.77\,m Planet basemap inputs.
+  }
+  \label{fig:vlm_s2_planet}
+\end{figure}
+
+\begin{table}[h]
+  \centering
+  \small
+  \caption{%
+    \textbf{Full DiD regression results} for all 18 outcome variables.
+    $N = 4{,}039$--$4{,}042$ depending on data availability.
+  }
+  \label{tab:did_full}
+  \begin{tabularx}{\textwidth}{l *{5}{>{\centering\arraybackslash}X}}
+    \toprule
+    \textbf{Outcome} & \textbf{Coef} & \textbf{SE} & \textbf{$p$} & \textbf{$R^2$} & \textbf{$N$} \\
+    \midrule
+    Trees (\%)           & $-4.15$ & 0.51  & $<0.001$ & 0.025 & 4,039 \\
+    Bare ground (\%)     & $+2.51$ & 0.69  & $<0.001$ & 0.015 & 4,039 \\
+    Water (\%)           & $-0.61$ & 0.11  & $<0.001$ & 0.017 & 4,039 \\
+    SAR VH (dB)          & $-0.51$ & 0.09  & $<0.001$ & 0.071 & 3,544 \\
+    Night LST ($^{\circ}$C) & $-0.34$ & 0.05 & $<0.001$ & 0.049 & 4,042 \\
+    Grassland (\%)       & $-0.35$ & 0.11  & 0.002    & 0.010 & 4,039 \\
+    NDVI                 & $-0.017$ & 0.003 & $<0.001$ & 0.014 & 4,042 \\
+    EVI                  & $-0.011$ & 0.002 & $<0.001$ & 0.010 & 4,042 \\
+    Bld.\ presence       & $+0.004$ & 0.001 & $<0.001$ & 0.013 & 4,041 \\
+    Bld.\ height (m)     & $+0.055$ & 0.006 & $<0.001$ & 0.032 & 4,041 \\
+    Bld.\ count          & $-0.000$ & 0.000 & $<0.001$ & 0.091 & 4,041 \\
+    NTL (nW/sr/cm$^2$)  & $+0.29$  & 0.12  & 0.014    & 0.043 & 4,042 \\
+    Cropland (\%)        & $+1.93$  & 0.79  & 0.015    & 0.003 & 4,039 \\
+    Population (1\,km)   & $-58.6$  & 25.9  & 0.024    & 0.129 & 4,042 \\
+    Built-up (\%)        & $-0.35$  & 0.27  & 0.205    & 0.022 & 4,039 \\
+    Day LST ($^{\circ}$C) & $+0.06$ & 0.10  & 0.542    & 0.025 & 4,042 \\
+    Pop.\ density        & $-0.15$  & 0.08  & 0.063    & 0.148 & 4,039 \\
+    SAR VV (dB)          & $-0.03$  & 0.06  & 0.650    & 0.048 & 3,544 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\end{document}
