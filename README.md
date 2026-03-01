@@ -262,8 +262,8 @@ solar-landuse/
 
 1. **Cropland is the primary pre-solar land cover** across all datasets and VLM
 2. **Only Dynamic World and VLM V2** provide true temporal change detection (WC/GLAD are static snapshots)
-3. **DW detects cropland-to-built conversion** at solar sites (no solar class, so panels appear as built/bare/snow)
-4. **VLM V2 is polygon-aware** for post-construction images, avoiding the solar-as-built misclassification
+3. **DW detects cropland-to-built conversion** at solar sites (DW does not include a solar class by design; solar-covered land is absorbed into existing categories like built/bare/snow)
+4. **VLM V2 is polygon-aware** for post-construction images, supplementing DW with dedicated solar detection and surrounding land cover context
 
 ## Data Sources
 

@@ -328,7 +328,7 @@ To complement the DiD analysis (which uses 1 km circular buffers), we queried Dy
 **South Asia overall (n=5,888):**
 - **Cropland dominates** at 39.6% — the single largest pre-solar land cover class
 - **Bare ground** (17.3%) and **shrub/scrub** (17.1%) are the next largest categories
-- **Built-up** (16.4%) likely reflects DW misclassification of construction-phase sites
+- **Built-up** (16.4%) likely reflects DW limitations in distinguishing dense rural settlements from other land cover in South Asian landscapes
 - **Trees/forest** (7.0%) — lower than the 1 km buffer DiD estimate, suggesting tree loss concentrates outside the polygon footprint
 - High standard deviations (28–40%) indicate substantial site-to-site heterogeneity
 
@@ -344,7 +344,7 @@ To complement the DiD analysis (which uses 1 km circular buffers), we queried Dy
 
 - **India and Pakistan** — solar farms primarily replace cropland and semi-arid scrubland
 - **Sri Lanka and Bhutan** — solar farms primarily replace tree cover, consistent with forested terrain
-- **Bangladesh** — high "built" percentage likely reflects DW misclassification of dense settlements or pre-existing structures near small solar sites
+- **Bangladesh** — high "built" percentage likely reflects DW limitations in dense rural South Asian landscapes (smallholder plots, homesteads, rice paddies create spectrally ambiguous mosaics) rather than genuine prior urbanisation
 
 ---
 
@@ -437,7 +437,7 @@ The VLM detection tracks plant capacity — the 200 MW Teesta site shows 20% sol
 
 *Manikganj shows an apparent cropland increase because DW classifies the 35 MW solar array as cropland, and the site's footprint is small relative to the 4 km × 4 km AOI.
 
-**DW classification artifacts:** Solar panels at Teesta and Feni are primarily classified as "bare ground" by DW (bare ground increases by +20.5 and +58.9 percentage points respectively). At Teesta, DW also misclassifies solar panels as "snow/ice" (5.4% post-construction) due to their high reflectance. These classification artifacts demonstrate a key limitation of coarse LULC products for solar monitoring.
+**DW classification of solar-covered land:** Since DW does not include a solar panel class in its 9-class taxonomy, installed arrays are absorbed into existing categories — primarily "bare ground" (+20.5 pp at Teesta, +58.9 pp at Feni) and occasionally "snow/ice" (5.4% at Teesta, due to high surface reflectance). This is expected behaviour for a global LULC product and illustrates why dedicated solar detection (via VLM or datasets like GRW) is needed to supplement standard LULC products for solar impact assessment.
 
 **Pre-construction land cover (VLM assessment):**
 

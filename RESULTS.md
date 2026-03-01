@@ -311,7 +311,7 @@ This is an extremely high disagreement rate, indicating that DW and VLM produce 
 
 - **VLM strongly favors agriculture** (+36 pp). In Bangladesh, where flat green fields dominate, the VLM tends to classify more area as cropland. This is likely more accurate for rural Bangladesh than DW's interpretation.
 - **DW strongly favors forest** (+23 pp) and **water** (+14 pp). DW's 10m Sentinel-2 source may confuse dense crops/vegetation with forest, and seasonal flooding/wet fields with permanent water.
-- **Only VLM detects solar panels** (+9.3 pp). DW has no solar panel class; it misclassifies solar arrays as urban or bare land.
+- **Only VLM detects solar panels** (+9.3 pp). DW does not include solar panels in its 9-class taxonomy (by design), so solar-covered land is absorbed into existing categories like built-up or bare ground. VLM supplements DW by adding this detection capability.
 - **DW reports more bare land** (+8.7 pp). DW may be picking up fallow fields or sandy river banks that VLM classifies as agriculture.
 
 ### Interpretation
@@ -466,7 +466,7 @@ Since only Dynamic World has true temporal coverage matching our pre/post image 
 | built | **+5.0 pp** | Solar panels, substations, roads classified as built |
 | bare | **+4.5 pp** | Construction activity, cleared land |
 | water | -0.6 pp | Minor |
-| snow | +1.0 pp | Likely reflective solar panel surfaces misclassified |
+| snow | +1.0 pp | Reflective solar panel surfaces categorised as snow (DW has no solar class) |
 
 ### Cross-Dataset Agreement
 
@@ -505,9 +505,9 @@ VLM V2 uses Gemini 2.0 Flash with the 10-class scheme and polygon-awareness for 
 1. **Cropland is the primary pre-solar land cover.** Both GEE datasets and VLM V2 consistently identify cropland as the dominant class within solar polygon areas.
 2. **Only Dynamic World and VLM V2 provide true change detection.** WC and GLAD are static snapshots, ESRI has high no_data and fallback year contamination.
 3. **DW detects cropland-to-built conversion.** DW has no solar class, so panels appear as built/bare/snow.
-4. **VLM V2 provides polygon-aware classification.** For post-construction images, VLM knows the solar percentage from polygon geometry and classifies only the remaining area, avoiding the solar-as-built misclassification issue.
+4. **VLM V2 provides polygon-aware classification.** For post-construction images, VLM knows the solar percentage from polygon geometry and classifies only the remaining area, providing both solar extent and surrounding land cover context that standard LULC products cannot offer.
 5. **Cross-dataset agreement is moderate.** Cropland is the most consistently identified dominant class, but other classes vary widely between datasets.
-6. **ESRI and GLAD have systematic issues for Bangladesh.** ESRI has high no_data and misclassifies bright surfaces. Both datasets' built percentages in pre-construction polygons may be inflated by temporal mismatch.
+6. **ESRI and GLAD have systematic issues for Bangladesh.** ESRI has high no_data and classifies bright surfaces inconsistently. Both datasets' built percentages in pre-construction polygons may be inflated by temporal mismatch.
 
 ---
 
@@ -595,7 +595,7 @@ Queried Dynamic World baseline composition within the **exact polygon boundaries
 - **Cropland (39.6%)** is the dominant pre-solar land cover across South Asia
 - Followed by bare ground (17.3%), shrub/scrub (17.1%), and built-up (16.4%)
 - Trees/forest only 7.0% within polygons — lower than 1km buffer DiD, suggesting tree loss concentrates in the surrounding landscape
-- Strong country variation: India/Pakistan = cropland-dominated; Sri Lanka/Bhutan = forest-dominated; Bangladesh = built-up (likely DW misclassification)
+- Strong country variation: India/Pakistan = cropland-dominated; Sri Lanka/Bhutan = forest-dominated; Bangladesh = built-up (likely reflects DW limitations in dense rural South Asian landscapes rather than genuine urbanisation)
 
 ### VLM Validation of Controls
 
@@ -658,12 +658,12 @@ VLM correctly detects solar panels in the construction year for 3/4 sites. Detec
 **DW cropland change (pre vs post average):**
 - Teesta: 33.4% → 2.7% (**−92%**)
 - Feni: 38.7% → 4.7% (**−88%**)
-- Manikganj: 19.4% → 25.7% (+33%, DW misclassifies solar as cropland)
+- Manikganj: 19.4% → 25.7% (+33%, DW categorises the small 35MW array within existing classes; site footprint is small relative to 4km AOI)
 - Moulvibazar: 38.1% → 26.2% (**−31%**)
 
 **NDVI decline post-construction:** Teesta −10.1%, Feni −12.2%, Moulvibazar −10.7%.
 
-**DW classification artifact:** Solar panels classified as "bare ground" (+58.9 pp at Feni, +20.5 pp at Teesta) and occasionally "snow/ice" (5.4% at Teesta — high reflectance misclassification).
+**DW classification of solar-covered land:** Since DW does not include a solar panel class, installed arrays are absorbed into existing categories — primarily "bare ground" (+58.9 pp at Feni, +20.5 pp at Teesta) and occasionally "snow/ice" (5.4% at Teesta, due to high surface reflectance). This illustrates why supplementing standard LULC products with dedicated solar detection (via VLM or datasets like GRW) is essential for solar impact assessment.
 
 ### Pre-Construction Land Cover (VLM)
 
