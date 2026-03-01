@@ -110,6 +110,10 @@ def init_ee():
 
     ee.Initialize(project=project)
     _ee_initialized = True
+    # Small random delay to stagger GEE requests across workers
+    import random
+    import time
+    time.sleep(random.uniform(0, 2))
 
 
 def compute_buffer(polygon_geojson):
@@ -170,7 +174,8 @@ def load_sites(max_sites=None, country=None):
     secrets=[modal.Secret.from_name("gee-credentials")],
     volumes={VOL_PATH: vol},
     timeout=300,
-    retries=modal.Retries(max_retries=2, initial_delay=5.0),
+    retries=modal.Retries(max_retries=3, initial_delay=10.0, backoff_coefficient=2.0),
+    max_containers=8,  # Limit parallel GEE calls to avoid rate limiting
 )
 def query_dw_site_year(site: dict, year: int) -> dict:
     """Query DW annual composition + NDVI for one site × year."""
@@ -272,7 +277,8 @@ def query_dw_site_year(site: dict, year: int) -> dict:
     secrets=[modal.Secret.from_name("gee-credentials")],
     volumes={VOL_PATH: vol},
     timeout=120,
-    retries=modal.Retries(max_retries=2, initial_delay=5.0),
+    retries=modal.Retries(max_retries=3, initial_delay=10.0, backoff_coefficient=2.0),
+    concurrency_limit=8,  # Limit parallel GEE calls
 )
 def download_s2_image(site: dict, year: int) -> str:
     """Download S2 RGB composite thumbnail for one site × year."""
