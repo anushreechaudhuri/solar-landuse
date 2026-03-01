@@ -81,6 +81,9 @@ memory.md
 docs/publication_roadmap.md
 docs/econometric_fixes_log.md
 
+# Paper drafts (not for public repo)
+paper/
+
 # Claude Code memory
 .claude/
 
