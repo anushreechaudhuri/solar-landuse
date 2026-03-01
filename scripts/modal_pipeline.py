@@ -55,6 +55,29 @@ YEARS = list(range(2016, 2026))
 DW_CLASSES = ["water", "trees", "grass", "flooded_vegetation",
               "crops", "shrub_and_scrub", "built", "bare", "snow_and_ice"]
 
+# Use dry season (Oct 15 - Mar 15) for temporal consistency.
+# Avoids monsoon cloud contamination, matches Planet Jan basemaps.
+# For year Y, window is Oct 15 of Y-1 to Mar 15 of Y ("winter of year Y").
+# Exception: for DW we use Nov 1 - Mar 31 to ensure enough scenes.
+DW_SEASON_START_MONTH, DW_SEASON_START_DAY = 11, 1   # Nov 1
+DW_SEASON_END_MONTH, DW_SEASON_END_DAY = 3, 31       # Mar 31
+S2_SEASON_START_MONTH, S2_SEASON_START_DAY = 11, 1    # Nov 1
+S2_SEASON_END_MONTH, S2_SEASON_END_DAY = 3, 31        # Mar 31
+
+
+def season_dates(year, start_month, start_day, end_month, end_day):
+    """Return (start_date, end_date) for the dry season centered on `year`.
+
+    If start_month > end_month, the window crosses the year boundary:
+    e.g. Nov 1 of year-1 to Mar 31 of year.
+    """
+    if start_month > end_month:
+        return f"{year - 1}-{start_month:02d}-{start_day:02d}", \
+               f"{year}-{end_month:02d}-{end_day:02d}"
+    else:
+        return f"{year}-{start_month:02d}-{start_day:02d}", \
+               f"{year}-{end_month:02d}-{end_day:02d}"
+
 
 _ee_initialized = False
 
@@ -183,8 +206,9 @@ def query_dw_site_year(site: dict, year: int) -> dict:
     else:
         geom = ee.Geometry.Point([site["lon"], site["lat"]]).buffer(buffer_m)
 
-    start = f"{year}-01-01"
-    end = f"{year}-12-31"
+    # Dry season window for temporal consistency (Nov-Mar)
+    start, end = season_dates(year, DW_SEASON_START_MONTH, DW_SEASON_START_DAY,
+                              DW_SEASON_END_MONTH, DW_SEASON_END_DAY)
 
     # DW mode composite
     dw = (ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
@@ -193,7 +217,7 @@ def query_dw_site_year(site: dict, year: int) -> dict:
           .select("label"))
     count = dw.size().getInfo()
 
-    dw_data = {}
+    dw_data = {"season": f"{start}_to_{end}"}
     if count > 0:
         mode_img = dw.reduce(ee.Reducer.mode()).select("label_mode")
         histogram = mode_img.reduceRegion(
@@ -203,11 +227,11 @@ def query_dw_site_year(site: dict, year: int) -> dict:
         hist = histogram.get("label_mode", {})
         if hist:
             total = sum(hist.values())
-            dw_data = {f"dw_{cn}_pct": 100.0 * hist.get(str(i), 0) / total
-                       for i, cn in enumerate(DW_CLASSES)}
+            dw_data.update({f"dw_{cn}_pct": 100.0 * hist.get(str(i), 0) / total
+                            for i, cn in enumerate(DW_CLASSES)})
         dw_data["dw_n_scenes"] = count
 
-    # NDVI
+    # NDVI (same season)
     try:
         ndvi_col = (ee.ImageCollection("MODIS/061/MOD13Q1")
                     .filterDate(start, end).select("NDVI"))
@@ -275,8 +299,9 @@ def download_s2_image(site: dict, year: int) -> str:
     else:
         geom = ee.Geometry.Point([site["lon"], site["lat"]]).buffer(buffer_m)
 
-    start = f"{year}-01-01"
-    end = f"{year}-12-31"
+    # Dry season window for consistent imagery
+    start, end = season_dates(year, S2_SEASON_START_MONTH, S2_SEASON_START_DAY,
+                              S2_SEASON_END_MONTH, S2_SEASON_END_DAY)
 
     s2 = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
           .filterBounds(geom)
@@ -285,13 +310,21 @@ def download_s2_image(site: dict, year: int) -> str:
 
     count = s2.size().getInfo()
     if count == 0:
+        # Relax cloud filter
         s2 = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
               .filterBounds(geom)
               .filterDate(start, end)
               .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 60)))
         count = s2.size().getInfo()
         if count == 0:
-            return f"no_data:{site_id}_{year}"
+            # Fall back to full year if dry season has no data
+            s2 = (ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
+                  .filterBounds(geom)
+                  .filterDate(f"{year}-01-01", f"{year}-12-31")
+                  .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 40)))
+            count = s2.size().getInfo()
+            if count == 0:
+                return f"no_data:{site_id}_{year}"
 
     # Cloud mask using SCL
     def mask_clouds(img):
