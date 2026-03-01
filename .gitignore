@@ -77,4 +77,11 @@ results/
 # Memory file for chat reference
 memory.md
 
+# Internal planning/research notes (not for publication)
+docs/publication_roadmap.md
+docs/econometric_fixes_log.md
+
+# Claude Code memory
+.claude/
+
 .vercel
