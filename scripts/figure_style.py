@@ -74,6 +74,7 @@ CLASS_LABELS = {
     'bare':        'Bare Ground',
     'water':       'Water',
     'snow':        'Snow/Ice',
+    'solar':       'Solar',
 }
 
 # ── Dataset colors (Paul Tol Bright) ─────────────────────────────────────────

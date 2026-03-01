@@ -19,8 +19,12 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+import io
+import zipfile
+
 import ee
 import numpy as np
+import requests
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -40,6 +44,15 @@ for d in [CACHE_DIR, IMG_DIR, VLM_DIR, FIG_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
 YEARS = list(range(2016, 2027))  # 2016-2026
+GRW_PATH = DATA_DIR / "grw" / "confirmed_matches.json"
+
+# Preferred pre-construction years (before land clearing began)
+PREFERRED_PRE_YEAR = {
+    "teesta": 2020,       # construction began ~2022, use well before
+    "feni": 2020,         # land clearing started before 2023
+    "manikganj": 2018,    # land clearing started before 2020
+    "moulvibazar": 2022,  # construction started 2025
+}
 
 # ── Site definitions ─────────────────────────────────────────────────────────
 
@@ -512,6 +525,165 @@ def classify_images(sites):
 
 # ── Figure Generation ────────────────────────────────────────────────────────
 
+# ── DW Raster Download ──────────────────────────────────────────────────────
+
+DW_RASTER_DIR = DATA_DIR / "case_study_dw_rasters"
+DW_RASTER_DIR.mkdir(parents=True, exist_ok=True)
+
+# DW raw label → 10-class ID
+DW_RAW_TO_10CLASS = {
+    0: 8,  # water
+    1: 2,  # trees
+    2: 4,  # grassland
+    3: 5,  # flooded_veg
+    4: 1,  # cropland
+    5: 3,  # shrub
+    6: 6,  # built
+    7: 7,  # bare
+    8: 9,  # snow
+}
+
+# 10-class IDs → RGB
+LULC_10CLASS_RGB = {
+    0: (221, 221, 221),  # no_data
+    1: (221, 204, 119),  # cropland
+    2: (17, 119, 51),    # trees
+    3: (153, 153, 51),   # shrub
+    4: (68, 170, 153),   # grassland
+    5: (51, 34, 136),    # flooded_veg
+    6: (204, 102, 119),  # built
+    7: (136, 34, 85),    # bare
+    8: (136, 204, 238),  # water
+    9: (245, 245, 245),  # snow
+}
+
+
+def download_ee_image(image, region, scale=10):
+    """Download a single-band EE image as a numpy array."""
+    url = image.getDownloadURL({
+        'scale': scale,
+        'crs': 'EPSG:4326',
+        'region': region.getInfo()['coordinates'],
+        'format': 'GEO_TIFF',
+    })
+    resp = requests.get(url)
+    resp.raise_for_status()
+    content = resp.content
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as zf:
+            tif_name = [n for n in zf.namelist() if n.endswith('.tif')][0]
+            content = zf.read(tif_name)
+    except zipfile.BadZipFile:
+        pass
+    import rasterio
+    with rasterio.MemoryFile(content) as memfile:
+        with memfile.open() as src:
+            return src.read(1)
+
+
+def remap_dw_raw(data):
+    """Remap DW raw labels to 10-class IDs."""
+    out = np.zeros_like(data, dtype=np.uint8)
+    for raw_val, class_id in DW_RAW_TO_10CLASS.items():
+        out[data == raw_val] = class_id
+    return out
+
+
+def colorize_lulc(mask):
+    """Convert 10-class mask to RGB image."""
+    h, w = mask.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    for cid, color in LULC_10CLASS_RGB.items():
+        rgb[mask == cid] = color
+    return rgb
+
+
+def load_grw_polygons():
+    """Load GRW polygon coordinates for case study sites."""
+    if not GRW_PATH.exists():
+        return {}
+    with open(GRW_PATH) as f:
+        data = json.load(f)
+    return data
+
+
+def draw_polygon_outline(ax, site_short_name, img_shape, site_lat, site_lon,
+                         buffer_km=2, color='#FF0000', lw=1.5):
+    """Draw GRW solar polygon outline on a matplotlib axes.
+
+    Converts polygon lon/lat to pixel coordinates within the image extent.
+    """
+    grw = load_grw_polygons()
+    site_data = grw.get(site_short_name)
+    if not site_data or not site_data.get("polygons"):
+        return
+
+    h, w = img_shape[:2]
+    # Image extent in lon/lat (matching Planet download bbox)
+    km_per_deg_lat = 110.574
+    km_per_deg_lon = 111.32 * math.cos(math.radians(site_lat))
+    lon_min = site_lon - buffer_km / km_per_deg_lon
+    lon_max = site_lon + buffer_km / km_per_deg_lon
+    lat_min = site_lat - buffer_km / km_per_deg_lat
+    lat_max = site_lat + buffer_km / km_per_deg_lat
+
+    for polygon in site_data["polygons"]:
+        coords = polygon.get("coordinates", [[]])[0]
+        if len(coords) < 3:
+            continue
+        # Convert lon/lat to pixel coordinates
+        px_coords = []
+        for lon, lat in coords:
+            px_x = (lon - lon_min) / (lon_max - lon_min) * w
+            px_y = (1 - (lat - lat_min) / (lat_max - lat_min)) * h
+            px_coords.append((px_x, px_y))
+
+        xs = [p[0] for p in px_coords]
+        ys = [p[1] for p in px_coords]
+        ax.plot(xs, ys, color=color, linewidth=lw, alpha=0.9)
+
+
+def download_dw_rasters(sites):
+    """Download DW mode composite rasters for all site-years."""
+    ee.Initialize(project="bangladesh-solar")
+
+    for site in sites:
+        name = site["short_name"]
+        lat, lon = site["lat"], site["lon"]
+        buffer_km = 2  # match Planet image extent
+        region = ee.Geometry.Rectangle([
+            lon - buffer_km / 111.32,
+            lat - buffer_km / 110.574,
+            lon + buffer_km / 111.32,
+            lat + buffer_km / 110.574,
+        ])
+
+        print(f"\n--- {site['name']} ---")
+        for year in YEARS:
+            cache_path = DW_RASTER_DIR / f"{name}_{year}_dw.npz"
+            if cache_path.exists():
+                print(f"  {year}: cached")
+                continue
+
+            start, end = f"{year}-01-01", f"{year}-12-31"
+            dw = (ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
+                  .filterBounds(region).filterDate(start, end).select("label"))
+            count = dw.size().getInfo()
+            if count == 0:
+                print(f"  {year}: no DW data")
+                continue
+
+            try:
+                mode_img = dw.reduce(ee.Reducer.mode()).select("label_mode")
+                raw = download_ee_image(mode_img, region, scale=10)
+                remapped = remap_dw_raw(raw)
+                np.savez_compressed(cache_path, raw=raw, remapped=remapped)
+                print(f"  {year}: downloaded ({raw.shape})")
+            except Exception as e:
+                print(f"  {year}: ERROR ({e})")
+            time.sleep(0.5)
+
+
 def load_all_data(sites):
     """Load all cached data for all sites."""
     data = {}
@@ -796,12 +968,335 @@ def fig_pre_post_comparison(sites, data):
     print("  Saved: pre_post_comparison.png")
 
 
+def fig_satellite_lulc_maps(sites):
+    """Create publication-quality figure: satellite + DW LULC maps side by side per year.
+
+    For each site, creates a figure with 2 rows × N columns:
+      Row 1: Planet basemap satellite images
+      Row 2: DW LULC colorized maps
+    Construction year highlighted with red border.
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Patch, Rectangle
+    from PIL import Image
+
+    apply_style()
+
+    for site in sites:
+        name = site["short_name"]
+        cy = site["construction_year"]
+
+        # Find years where both satellite and DW raster exist
+        available = []
+        for year in YEARS:
+            img_path = IMG_DIR / f"{name}_{year}.png"
+            dw_path = DW_RASTER_DIR / f"{name}_{year}_dw.npz"
+            if img_path.exists() and dw_path.exists():
+                available.append(year)
+
+        if len(available) < 3:
+            print(f"  {name}: only {len(available)} year-pairs, skipping")
+            continue
+
+        ncols = len(available)
+        fig, axes = plt.subplots(2, ncols, figsize=(min(FULL_WIDTH * 2.2, ncols * 1.5), 3.6))
+        if ncols == 1:
+            axes = axes.reshape(2, 1)
+
+        for i, year in enumerate(available):
+            # Row 1: Satellite image with polygon outline
+            img = Image.open(IMG_DIR / f"{name}_{year}.png")
+            axes[0, i].imshow(img)
+            img_arr = np.array(img)
+            draw_polygon_outline(axes[0, i], name, img_arr.shape,
+                                 site["lat"], site["lon"], buffer_km=2,
+                                 color='#FF3333', lw=1.2)
+            axes[0, i].axis("off")
+
+            is_cy = (year == cy)
+            title_color = '#CC0000' if is_cy else 'black'
+            title_weight = 'bold' if is_cy else 'normal'
+            axes[0, i].set_title(str(year), fontsize=8, fontweight=title_weight,
+                                  color=title_color)
+
+            if is_cy:
+                for spine in axes[0, i].spines.values():
+                    spine.set_visible(True)
+                    spine.set_color('#CC0000')
+                    spine.set_linewidth(2)
+                for spine in axes[1, i].spines.values():
+                    spine.set_visible(True)
+                    spine.set_color('#CC0000')
+                    spine.set_linewidth(2)
+
+            # Row 2: DW LULC colorized map with polygon outline
+            dw_data = np.load(DW_RASTER_DIR / f"{name}_{year}_dw.npz")
+            remapped = dw_data["remapped"]
+            rgb = colorize_lulc(remapped)
+            axes[1, i].imshow(rgb)
+            draw_polygon_outline(axes[1, i], name, rgb.shape,
+                                 site["lat"], site["lon"], buffer_km=2,
+                                 color='#FF3333', lw=1.2)
+            axes[1, i].axis("off")
+
+        # Row labels
+        axes[0, 0].set_ylabel("Satellite\n(Planet 4.77m)", fontsize=8,
+                               rotation=0, labelpad=55, va='center')
+        axes[1, 0].set_ylabel("Dynamic World\n(10m mode)", fontsize=8,
+                               rotation=0, labelpad=55, va='center')
+
+        # LULC legend at bottom
+        legend_classes = ['cropland', 'trees', 'shrub', 'grassland', 'flooded_veg',
+                          'built', 'bare', 'water']
+        handles = [Patch(facecolor=LULC_COLORS[c], label=CLASS_LABELS[c])
+                   for c in legend_classes]
+        fig.legend(handles=handles, loc='lower center', ncol=len(legend_classes),
+                   fontsize=6.5, bbox_to_anchor=(0.5, -0.06),
+                   frameon=False, handlelength=1.2, handleheight=0.8)
+
+        fig.suptitle(
+            f"{site['name']} — Satellite Imagery & LULC Classification (2016–2026)\n"
+            f"Construction year: {cy} (highlighted in red)",
+            fontsize=9, fontweight='bold', y=1.04)
+        fig.tight_layout()
+        save_fig(fig, FIG_DIR / f"{name}_satellite_lulc_maps.png")
+        plt.close(fig)
+        print(f"  Saved: {name}_satellite_lulc_maps.png")
+
+
+def _set_year_ticks(ax, years=None):
+    """Set integer year ticks on x-axis (no decimals like 2017.5)."""
+    import matplotlib.ticker as mticker
+    if years is None:
+        years = YEARS
+    ax.set_xticks([y for y in years if y % 2 == 0])  # even years
+    ax.set_xticklabels([str(y) for y in years if y % 2 == 0],
+                        fontsize=6.5, rotation=45, ha='right')
+    ax.set_xlim(min(years) - 0.3, max(years) + 0.3)
+
+
+def fig_lulc_change_detail(sites, data):
+    """Create detailed LULC change figure for each site.
+
+    Shows: DW stacked area (left), VLM stacked area (center), proxy overlay (right).
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Patch
+
+    apply_style()
+
+    classes = ["cropland", "trees", "shrub", "grassland", "flooded_veg",
+               "built", "bare", "water"]
+
+    for site in sites:
+        name = site["short_name"]
+        cy = site["construction_year"]
+        site_data = data[name]
+
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(FULL_WIDTH, 3.0))
+
+        # Panel 1: DW stacked area
+        dw_years, dw_vals = [], {c: [] for c in classes}
+        for year in YEARS:
+            dw = site_data.get(year, {}).get("dw")
+            if dw:
+                dw_years.append(year)
+                for c in classes:
+                    dw_key = OURS_TO_DW.get(c, c)
+                    dw_vals[c].append(dw.get(dw_key, 0) or 0)
+
+        if dw_years:
+            bottom = np.zeros(len(dw_years))
+            for c in classes:
+                vals = np.array(dw_vals[c])
+                ax1.fill_between(dw_years, bottom, bottom + vals,
+                                 color=LULC_COLORS[c], alpha=0.85)
+                bottom += vals
+            ax1.axvline(cy, color='red', ls='--', lw=1.5, alpha=0.8)
+            ax1.set_title("Dynamic World LULC", fontsize=8)
+            ax1.set_ylabel("Coverage (%)", fontsize=8)
+            ax1.set_ylim(0, 105)
+            _set_year_ticks(ax1, dw_years)
+
+        # Panel 2: VLM stacked area
+        vlm_years, vlm_vals = [], {c: [] for c in classes + ["solar"]}
+        for year in YEARS:
+            vlm = site_data.get(year, {}).get("vlm", {}).get("land_cover")
+            if vlm:
+                vlm_years.append(year)
+                for c in classes + ["solar"]:
+                    val = vlm.get(c, 0)
+                    try:
+                        vlm_vals[c].append(float(val) if val else 0)
+                    except (TypeError, ValueError):
+                        vlm_vals[c].append(0)
+
+        if vlm_years:
+            bottom = np.zeros(len(vlm_years))
+            for c in classes:
+                vals = np.array(vlm_vals[c])
+                ax2.fill_between(vlm_years, bottom, bottom + vals,
+                                 color=LULC_COLORS[c], alpha=0.85)
+                bottom += vals
+            solar_vals = np.array(vlm_vals["solar"])
+            ax2.fill_between(vlm_years, bottom, bottom + solar_vals,
+                             color='#FF6B35', alpha=0.9)
+            ax2.axvline(cy, color='red', ls='--', lw=1.5, alpha=0.8)
+            ax2.set_title("VLM (Gemini 2.0 Flash)", fontsize=8)
+            ax2.set_ylim(0, 105)
+            _set_year_ticks(ax2, vlm_years)
+
+        # Panel 3: Key proxies (VIIRS + NDVI)
+        viirs_years, viirs_vals = [], []
+        ndvi_years, ndvi_vals = [], []
+        for year in YEARS:
+            v = site_data.get(year, {}).get("viirs")
+            if v and v.get("avg_rad_mean") is not None:
+                viirs_years.append(year)
+                viirs_vals.append(v["avg_rad_mean"])
+            n = site_data.get(year, {}).get("ndvi")
+            if n and n.get("ndvi_mean") is not None:
+                ndvi_years.append(year)
+                ndvi_vals.append(n["ndvi_mean"])
+
+        if viirs_years:
+            ax3.plot(viirs_years, viirs_vals, '-o', color='#332288',
+                     markersize=3, linewidth=1.5, label='NTL')
+        ax3_twin = ax3.twinx()
+        if ndvi_years:
+            ax3_twin.plot(ndvi_years, ndvi_vals, '-s', color='#117733',
+                          markersize=3, linewidth=1.5, label='NDVI')
+            ax3_twin.set_ylabel("NDVI", fontsize=7, color='#117733')
+            ax3_twin.tick_params(labelsize=7, colors='#117733')
+        ax3.axvline(cy, color='red', ls='--', lw=1.5, alpha=0.8)
+        ax3.set_title("Environmental Proxies", fontsize=8)
+        ax3.set_ylabel("NTL (nW/sr/cm²)", fontsize=7, color='#332288')
+        ax3.tick_params(labelsize=7, colors='#332288')
+        _set_year_ticks(ax3)
+
+        # Combined legend
+        legend_handles = [Patch(facecolor=LULC_COLORS[c], label=CLASS_LABELS[c])
+                          for c in classes]
+        legend_handles.append(Patch(facecolor='#FF6B35', label='Solar'))
+        fig.legend(handles=legend_handles, loc='lower center', ncol=5,
+                   fontsize=6, bbox_to_anchor=(0.5, -0.1), frameon=False)
+
+        fig.suptitle(f"{site['name']} — Land Cover Change & Environmental Impact",
+                     fontsize=9, fontweight='bold', y=1.02)
+        fig.tight_layout()
+        save_fig(fig, FIG_DIR / f"{name}_lulc_change_detail.png")
+        plt.close(fig)
+        print(f"  Saved: {name}_lulc_change_detail.png")
+
+
+def fig_all_sites_comparison(sites, data):
+    """4-site comparison panel: pre-construction LULC vs post-construction LULC."""
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Patch
+    from PIL import Image
+
+    apply_style()
+
+    classes = ["cropland", "trees", "shrub", "grassland", "flooded_veg",
+               "built", "bare", "water"]
+
+    # Full display names for each site
+    site_display = {
+        "teesta": "Beximco Teesta 200 MW",
+        "feni": "Feni Sonagazi (EGCB) 75 MW",
+        "manikganj": "Manikganj Spectra 35 MW",
+        "moulvibazar": "Moulvibazar Paramount Group 10 MW",
+    }
+
+    # Use gridspec for proper layout with row label column
+    from matplotlib.gridspec import GridSpec
+
+    fig = plt.figure(figsize=(FULL_WIDTH + 1.2, 8.0))
+    gs = GridSpec(4, 5, figure=fig, width_ratios=[0.35, 1, 1, 1, 1],
+                  hspace=0.25, wspace=0.08,
+                  top=0.88, bottom=0.06, left=0.01, right=0.99)
+
+    for row, site in enumerate(sites):
+        name = site["short_name"]
+        cy = site["construction_year"]
+        pre_year = PREFERRED_PRE_YEAR.get(name, max(y for y in YEARS if y < cy))
+        post_year = min(y for y in YEARS if y > cy)
+
+        # Row label in first column
+        ax_label = fig.add_subplot(gs[row, 0])
+        ax_label.axis("off")
+        display = site_display.get(name, site["name"])
+        ax_label.text(0.95, 0.5, f"{display}\n(built {cy})",
+                      transform=ax_label.transAxes, fontsize=7.5,
+                      fontweight='bold', ha='right', va='center',
+                      linespacing=1.4)
+
+        col_specs = [
+            (pre_year, f"Satellite ({pre_year})", True),
+            (pre_year, f"DW LULC ({pre_year})", False),
+            (post_year, f"Satellite ({post_year})", True),
+            (post_year, f"DW LULC ({post_year})", False),
+        ]
+
+        for col_idx, (year, label, is_satellite) in enumerate(col_specs):
+            ax = fig.add_subplot(gs[row, col_idx + 1])
+            img_shape = None
+            if is_satellite:
+                img_path = IMG_DIR / f"{name}_{year}.png"
+                if img_path.exists():
+                    img = Image.open(img_path)
+                    ax.imshow(img)
+                    img_shape = (img.height, img.width)
+            else:
+                dw_path = DW_RASTER_DIR / f"{name}_{year}_dw.npz"
+                if dw_path.exists():
+                    dw_data = np.load(dw_path)
+                    rgb = colorize_lulc(dw_data["remapped"])
+                    ax.imshow(rgb)
+                    img_shape = rgb.shape
+            # Draw GRW polygon outline
+            if img_shape is not None:
+                draw_polygon_outline(ax, name, img_shape,
+                                     site["lat"], site["lon"],
+                                     buffer_km=2, lw=1.2)
+            ax.axis("off")
+
+            ax.set_title(label, fontsize=6.5, fontweight='bold', pad=2)
+
+    # Column group labels — centered on the two pre columns and two post columns
+    # Pre columns are gs columns 1-2, post columns are gs columns 3-4
+    # With width_ratios [0.35, 1, 1, 1, 1] and left=0.01, right=0.99
+    # Column centers: col1 midpoint to col2 midpoint, col3 midpoint to col4 midpoint
+    pre_center = (gs[0, 1].get_position(fig).x0 + gs[0, 2].get_position(fig).x1) / 2
+    post_center = (gs[0, 3].get_position(fig).x0 + gs[0, 4].get_position(fig).x1) / 2
+    fig.text(pre_center, 0.92, "Pre-Construction", ha='center', fontsize=9.5,
+             fontweight='bold', color='black')
+    fig.text(post_center, 0.92, "Post-Construction", ha='center', fontsize=9.5,
+             fontweight='bold', color='black')
+
+    # Legend
+    handles = [Patch(facecolor=LULC_COLORS[c], label=CLASS_LABELS[c]) for c in classes]
+    fig.legend(handles=handles, loc='lower center', ncol=len(classes),
+               fontsize=6.5, bbox_to_anchor=(0.55, 0.005), frameon=False,
+               handlelength=1.2, handleheight=0.8)
+
+    fig.suptitle("Case Study Sites — Pre/Post Construction Comparison\n"
+                 "Planet satellite imagery (4.77m) + Dynamic World LULC (10m)",
+                 fontsize=10, fontweight='bold', y=0.98)
+    save_fig(fig, FIG_DIR / "all_sites_pre_post.png")
+    plt.close(fig)
+    print("  Saved: all_sites_pre_post.png")
+
+
 def generate_all_figures(sites):
     """Generate all publication figures."""
     data = load_all_data(sites)
 
     print("\nGenerating figures...")
     fig_image_grid(sites)
+    fig_satellite_lulc_maps(sites)
+    fig_lulc_change_detail(sites, data)
+    fig_all_sites_comparison(sites, data)
     fig_lulc_timeseries(sites, data)
     fig_proxy_timeseries(sites, data)
     fig_pre_post_comparison(sites, data)
@@ -814,15 +1309,18 @@ def main():
     parser = argparse.ArgumentParser(description="Case study analysis for 4 BD solar sites")
     parser.add_argument("--collect", action="store_true", help="Collect GEE data")
     parser.add_argument("--download-images", action="store_true", help="Download Planet images")
+    parser.add_argument("--download-dw-rasters", action="store_true", help="Download DW spatial rasters")
     parser.add_argument("--classify", action="store_true", help="Run VLM classification")
     parser.add_argument("--figures", action="store_true", help="Generate figures")
     parser.add_argument("--all", action="store_true", help="Do everything")
     args = parser.parse_args()
 
     if args.all:
-        args.collect = args.download_images = args.classify = args.figures = True
+        args.collect = args.download_images = args.download_dw_rasters = True
+        args.classify = args.figures = True
 
-    if not any([args.collect, args.download_images, args.classify, args.figures]):
+    if not any([args.collect, args.download_images, args.download_dw_rasters,
+                args.classify, args.figures]):
         parser.print_help()
         return
 
@@ -831,6 +1329,9 @@ def main():
 
     if args.download_images:
         download_planet_images(SITES)
+
+    if args.download_dw_rasters:
+        download_dw_rasters(SITES)
 
     if args.classify:
         classify_images(SITES)
