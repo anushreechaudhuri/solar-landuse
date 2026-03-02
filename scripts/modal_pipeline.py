@@ -628,6 +628,7 @@ def main(
     max_sites: int = None,
     country: str = None,
     stage: str = "all",
+    detach: bool = False,
 ):
     """Run the full pipeline or individual stages.
 
@@ -635,12 +636,32 @@ def main(
         max_sites: Limit sites for testing
         country: Filter to one country
         stage: "all", "dw", "s2", "vlm", or "status"
+        detach: If True, spawn the job server-side and exit immediately.
+                The job continues running even if your laptop sleeps.
+                Check progress at https://modal.com/apps/solar-landuse/
     """
     print(f"Solar Land-Use Pipeline")
     print(f"  Stage: {stage}")
     print(f"  Max sites: {max_sites or 'all'}")
     print(f"  Country: {country or 'all'}")
+    print(f"  Detach: {detach}")
 
+    if detach:
+        # Spawn server-side — doesn't need local client to stay alive
+        if stage in ("all", "dw"):
+            fc = collect_dw.spawn(max_sites=max_sites, country=country)
+            print(f"  Spawned DW collection: {fc.object_id}")
+        if stage in ("all", "s2"):
+            fc = collect_s2.spawn(max_sites=max_sites, country=country)
+            print(f"  Spawned S2 collection: {fc.object_id}")
+        if stage in ("all", "vlm"):
+            fc = run_vlm.spawn(max_sites=max_sites, country=country)
+            print(f"  Spawned VLM classification: {fc.object_id}")
+        print("\nJobs launched server-side. Safe to close your laptop.")
+        print("Monitor at: https://modal.com/apps/solar-landuse/")
+        return
+
+    # Synchronous mode — waits for completion (needs stable connection)
     if stage in ("all", "dw"):
         collect_dw.remote(max_sites=max_sites, country=country)
 
