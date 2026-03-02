@@ -455,7 +455,7 @@ Return ONLY the JSON object, no other text."""
 @app.function(
     image=image,
     volumes={VOL_PATH: vol},
-    timeout=7200,
+    timeout=86400,  # 24 hours
 )
 def collect_dw(max_sites: int = None, country: str = None):
     """Stage 1: Collect annual DW compositions for all sites."""
@@ -512,7 +512,7 @@ def collect_dw(max_sites: int = None, country: str = None):
 @app.function(
     image=image,
     volumes={VOL_PATH: vol},
-    timeout=7200,
+    timeout=86400,  # 24 hours
 )
 def collect_s2(max_sites: int = None, country: str = None):
     """Stage 2: Download S2 RGB thumbnails for all sites."""
@@ -554,7 +554,7 @@ def collect_s2(max_sites: int = None, country: str = None):
 @app.function(
     image=image,
     volumes={VOL_PATH: vol},
-    timeout=7200,
+    timeout=86400,  # 24 hours
 )
 def run_vlm(max_sites: int = None, country: str = None):
     """Stage 3: Run Gemini VLM classification on all S2 images."""
