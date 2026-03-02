@@ -276,9 +276,9 @@ def query_dw_site_year(site: dict, year: int) -> dict:
     image=image,
     secrets=[modal.Secret.from_name("gee-credentials")],
     volumes={VOL_PATH: vol},
-    timeout=120,
+    timeout=300,  # 5 min per thumbnail (S2 compositing is slow)
     retries=modal.Retries(max_retries=3, initial_delay=10.0, backoff_coefficient=2.0),
-    concurrency_limit=8,  # Limit parallel GEE calls
+    max_containers=12,
 )
 def download_s2_image(site: dict, year: int) -> str:
     """Download S2 RGB composite thumbnail for one site × year."""
@@ -354,7 +354,7 @@ def download_s2_image(site: dict, year: int) -> str:
         "bands": ["B4", "B3", "B2"],
     })
 
-    resp = requests.get(url, timeout=30)
+    resp = requests.get(url, timeout=120)
     if resp.status_code == 200 and len(resp.content) > 1000:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "wb") as f:
