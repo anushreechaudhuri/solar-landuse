@@ -1,0 +1,251 @@
+{
+  "teesta_2020": {
+    "site": "teesta",
+    "year": 2020,
+    "desc": "Pre-construction: should detect 0% solar",
+    "dw_pcts": {
+      "cropland": 21.6,
+      "trees": 3.3,
+      "shrub": 1.7,
+      "grassland": 0.0,
+      "flooded_veg": 0.0,
+      "built": 28.3,
+      "bare": 31.2,
+      "water": 13.6,
+      "snow": 0.3,
+      "solar": 0.0
+    },
+    "approaches": [
+      {
+        "model": "gemini-2.0-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 35.0,
+          "trees": 15.0,
+          "shrub": 5.0,
+          "grassland": 5.0,
+          "flooded_veg": 5.0,
+          "built": 5.0,
+          "bare": 20.0,
+          "water": 10.0,
+          "snow": 0.0,
+          "solar": 0.0
+        }
+      },
+      {
+        "model": "gemini-2.5-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 32.0,
+          "trees": 10.0,
+          "shrub": 0.0,
+          "grassland": 0.0,
+          "flooded_veg": 0.0,
+          "built": 2.0,
+          "bare": 38.0,
+          "water": 18.0,
+          "snow": 0.0,
+          "solar": 0.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 45.0,
+          "trees": 8.0,
+          "shrub": 2.0,
+          "grassland": 2.0,
+          "flooded_veg": 3.0,
+          "built": 2.0,
+          "bare": 23.0,
+          "water": 15.0,
+          "snow": 0.0,
+          "solar": 0.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "agentic_vision",
+        "percentages": {
+          "cropland": 40.0,
+          "trees": 15.0,
+          "shrub": 0.0,
+          "grassland": 2.0,
+          "flooded_veg": 0.0,
+          "built": 3.0,
+          "bare": 25.0,
+          "water": 15.0,
+          "snow": 0.0,
+          "solar": 0.0
+        }
+      }
+    ]
+  },
+  "feni_2025": {
+    "site": "feni",
+    "year": 2025,
+    "desc": "Post-construction: Feni 75MW",
+    "dw_pcts": {
+      "cropland": 31.2,
+      "trees": 9.5,
+      "shrub": 5.0,
+      "grassland": 0.0,
+      "flooded_veg": 4.9,
+      "built": 1.0,
+      "bare": 11.5,
+      "water": 36.9,
+      "snow": 0.0,
+      "solar": 0.0
+    },
+    "approaches": [
+      {
+        "model": "gemini-2.0-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 25.0,
+          "trees": 10.0,
+          "shrub": 5.0,
+          "grassland": 10.0,
+          "flooded_veg": 10.0,
+          "built": 10.0,
+          "bare": 5.0,
+          "water": 15.0,
+          "snow": 0.0,
+          "solar": 10.0
+        }
+      },
+      {
+        "model": "gemini-2.5-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 30.0,
+          "trees": 6.0,
+          "shrub": 0.0,
+          "grassland": 0.0,
+          "flooded_veg": 14.0,
+          "built": 7.0,
+          "bare": 5.0,
+          "water": 18.0,
+          "snow": 0.0,
+          "solar": 20.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 35.0,
+          "trees": 12.0,
+          "shrub": 3.0,
+          "grassland": 2.0,
+          "flooded_veg": 18.0,
+          "built": 3.0,
+          "bare": 2.0,
+          "water": 15.0,
+          "snow": 0.0,
+          "solar": 10.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "agentic_vision",
+        "percentages": {
+          "cropland": 18.0,
+          "trees": 10.0,
+          "shrub": 1.0,
+          "grassland": 2.0,
+          "flooded_veg": 4.0,
+          "built": 2.0,
+          "bare": 37.0,
+          "water": 16.0,
+          "snow": 0.0,
+          "solar": 10.0
+        }
+      }
+    ]
+  },
+  "manikganj_2023": {
+    "site": "manikganj",
+    "year": 2023,
+    "desc": "Post-construction: Manikganj 35MW",
+    "dw_pcts": {
+      "cropland": 19.8,
+      "trees": 25.6,
+      "shrub": 1.8,
+      "grassland": 0.0,
+      "flooded_veg": 0.0,
+      "built": 11.4,
+      "bare": 6.3,
+      "water": 35.1,
+      "snow": 0.0,
+      "solar": 0.0
+    },
+    "approaches": [
+      {
+        "model": "gemini-2.0-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 25.0,
+          "trees": 30.0,
+          "shrub": 5.0,
+          "grassland": 5.0,
+          "flooded_veg": 0.0,
+          "built": 5.0,
+          "bare": 3.0,
+          "water": 25.0,
+          "snow": 0.0,
+          "solar": 2.0
+        }
+      },
+      {
+        "model": "gemini-2.5-flash",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 15.0,
+          "trees": 30.0,
+          "shrub": 0.0,
+          "grassland": 0.0,
+          "flooded_veg": 0.0,
+          "built": 7.0,
+          "bare": 5.0,
+          "water": 35.0,
+          "snow": 0.0,
+          "solar": 8.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "percentage_json",
+        "percentages": {
+          "cropland": 20.0,
+          "trees": 25.0,
+          "shrub": 0.0,
+          "grassland": 0.0,
+          "flooded_veg": 0.0,
+          "built": 4.0,
+          "bare": 8.0,
+          "water": 40.0,
+          "snow": 0.0,
+          "solar": 3.0
+        }
+      },
+      {
+        "model": "gemini-3-flash-preview",
+        "approach": "agentic_vision",
+        "percentages": {
+          "cropland": 23.0,
+          "trees": 24.0,
+          "shrub": 0.0,
+          "grassland": 0.0,
+          "flooded_veg": 1.0,
+          "built": 2.0,
+          "bare": 8.0,
+          "water": 38.0,
+          "snow": 0.0,
+          "solar": 4.0
+        }
+      }
+    ]
+  }
+}

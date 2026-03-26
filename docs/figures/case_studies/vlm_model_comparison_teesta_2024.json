@@ -1,0 +1,151 @@
+{
+  "site": "teesta",
+  "year": 2024,
+  "dw_percentages": {
+    "cropland": 20.1,
+    "trees": 2.5,
+    "shrub": 1.2,
+    "grassland": 0.0,
+    "flooded_veg": 0.0,
+    "built": 29.6,
+    "bare": 27.3,
+    "water": 18.1,
+    "snow": 1.4,
+    "solar": 0.0
+  },
+  "approaches": [
+    {
+      "model": "gemini-2.0-flash",
+      "approach": "percentage_json",
+      "percentages": {
+        "cropland": 15.0,
+        "trees": 20.0,
+        "shrub": 5.0,
+        "grassland": 5.0,
+        "flooded_veg": 5.0,
+        "built": 5.0,
+        "bare": 10.0,
+        "water": 20.0,
+        "snow": 0.0,
+        "solar": 15.0
+      },
+      "raw_result": {
+        "land_cover": {
+          "cropland": "15",
+          "trees": "20",
+          "shrub": "5",
+          "grassland": "5",
+          "flooded_veg": "5",
+          "built": "5",
+          "bare": "10",
+          "water": "20",
+          "snow": "0",
+          "solar": "15"
+        },
+        "solar_visible": "yes",
+        "solar_area_pct": "15",
+        "description": "The image shows a landscape in Bangladesh near the Teesta River. The dominant land cover types are water (river channels), cropland, trees, and a large solar farm. There are also areas of bare land, shrub, grassland, flooded vegetation, and built-up areas. The solar farm is clearly visible and occupies a significant portion of the image."
+      }
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "approach": "percentage_json",
+      "percentages": {
+        "cropland": 18.0,
+        "trees": 13.0,
+        "shrub": 0.0,
+        "grassland": 0.0,
+        "flooded_veg": 0.0,
+        "built": 7.0,
+        "bare": 18.0,
+        "water": 12.0,
+        "snow": 0.0,
+        "solar": 32.0
+      },
+      "raw_result": {
+        "land_cover": {
+          "cropland": 18,
+          "trees": 13,
+          "shrub": 0,
+          "grassland": 0,
+          "flooded_veg": 0,
+          "built": 7,
+          "bare": 18,
+          "water": 12,
+          "snow": 0,
+          "solar": 32
+        },
+        "solar_visible": "yes",
+        "solar_area_pct": 32,
+        "description": "The satellite image displays a large solar power plant on the left side, adjacent to the Teesta River in Bangladesh. The river itself is characterized by multiple braided channels and extensive sandbars (bare land). Surrounding the solar farm and river are agricultural fields (cropland), scattered rural settlements (built areas), and patches of trees."
+      }
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "approach": "percentage_json",
+      "percentages": {
+        "cropland": 28.0,
+        "trees": 6.0,
+        "shrub": 0.0,
+        "grassland": 0.0,
+        "flooded_veg": 0.0,
+        "built": 3.0,
+        "bare": 18.0,
+        "water": 23.0,
+        "snow": 0.0,
+        "solar": 22.0
+      },
+      "raw_result": {
+        "land_cover": {
+          "cropland": 28,
+          "trees": 6,
+          "shrub": 0,
+          "grassland": 0,
+          "flooded_veg": 0,
+          "built": 3,
+          "bare": 18,
+          "water": 23,
+          "snow": 0,
+          "solar": 22
+        },
+        "solar_visible": "yes",
+        "solar_area_pct": 22,
+        "description": "A large-scale solar power plant is prominently visible adjacent to the braided Teesta River. The surrounding landscape is a mix of intensive cropland, sandy riverbanks, and small rural settlements."
+      }
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "approach": "agentic_vision",
+      "percentages": {
+        "cropland": 38.0,
+        "trees": 8.0,
+        "shrub": 0.0,
+        "grassland": 0.0,
+        "flooded_veg": 0.0,
+        "built": 2.0,
+        "bare": 15.0,
+        "water": 12.0,
+        "snow": 0.0,
+        "solar": 25.0
+      },
+      "raw_result": {
+        "land_cover": {
+          "cropland": 38,
+          "trees": 8,
+          "shrub": 0,
+          "grassland": 0,
+          "flooded_veg": 0,
+          "built": 2,
+          "bare": 15,
+          "water": 12,
+          "snow": 0,
+          "solar": 25
+        },
+        "solar_visible": "yes",
+        "solar_area_pct": 25,
+        "description": "The satellite image features a large-scale solar power facility, identified as the Teesta Solar Limited project, which occupies approximately 25% of the area. The facility is characterized by its dark, grid-like solar panel arrays and a network of access roads. To the east, the braided Teesta River is visible, consisting of several active water channels (12%) and extensive sandy riverbeds classified as bare ground (15%). The remaining landscape is a mix of productive cropland (38%) and rural settlements. These settlements are typically surrounded by dense clusters of trees (8%), with the actual built-up structures (buildings and roads) making up a small portion of the total area (2%). The overall scene is typical of the fertile, riverine plains of northern Bangladesh, where large infrastructure projects are being integrated into traditional agricultural landscapes."
+      },
+      "agentic_response": "```json\n{\"land_cover\": {\"cropland\": 38, \"trees\": 8, \"shrub\": 0, \"grassland\": 0, \"flooded_veg\": 0, \"built\": 2, \"bare\": 15, \"water\": 12, \"snow\": 0, \"solar\": 25},\n  \"solar_visible\": \"yes\",\n  \"solar_area_pct\": 25,\n  \"description\": \"The satellite image features a large-scale solar power facility, identified as the Teesta Solar Limited project, which occupies approximately 25% of the area. The facility is characterized by its dark, grid-like solar panel arrays and a network of access roads. To the east, the braided Teesta River is visible, consisting of several active water channels (12%) and extensive sandy riverbeds classified as bare ground (15%). The remaining landscape is a mix of productive cropland (38%) and rural settlements. These settlements are typically surrounded by dense clusters of trees (8%), with the actual built-up structures (buildings and roads) making up a small portion of the total area (2%). The overall scene is typical of the fertile, riverine plains of northern Bangladesh, where large infrastructure projects are being integrated into traditional agricultural landscapes.\"}\n```"
+    }
+  ]
+}

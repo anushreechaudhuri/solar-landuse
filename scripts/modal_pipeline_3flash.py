@@ -41,7 +41,7 @@ image = (
     .pip_install(
         "earthengine-api",
         "google-auth",
-        "google-genai",
+        "google-generativeai",
         "numpy",
         "pandas",
         "shapely",
@@ -546,55 +546,15 @@ def download_s2_image(site: dict, year: int) -> str:
 
 # ── Stage 3: Gemini VLM classification ───────────────────────────────────────
 
-# Pydantic-like response schema enforced by Gemini's structured output.
-# This guarantees every response has exactly these fields and types.
-VLM_RESPONSE_SCHEMA = {
-    "type": "OBJECT",
-    "properties": {
-        "water": {"type": "NUMBER"},
-        "trees": {"type": "NUMBER"},
-        "grass": {"type": "NUMBER"},
-        "flooded_vegetation": {"type": "NUMBER"},
-        "crops": {"type": "NUMBER"},
-        "shrub_and_scrub": {"type": "NUMBER"},
-        "built": {"type": "NUMBER"},
-        "bare": {"type": "NUMBER"},
-        "snow_and_ice": {"type": "NUMBER"},
-        "solar_panels": {"type": "NUMBER"},
-        "solar_visible": {"type": "BOOLEAN"},
-        "description": {"type": "STRING"},
-    },
-    "required": [
-        "water", "trees", "grass", "flooded_vegetation", "crops",
-        "shrub_and_scrub", "built", "bare", "snow_and_ice", "solar_panels",
-        "solar_visible", "description",
-    ],
-}
-
-VLM_PROMPT = """Analyze this satellite image and estimate the percentage of land cover for each class.
-The image shows a ~1-5km area around a potential solar energy site in South Asia.
-
-Estimate percentage values for each class (must sum to 100):
-- water, trees, grass, flooded_vegetation, crops, shrub_and_scrub, built, bare, snow_and_ice, solar_panels
-
-Also set solar_visible to true/false (are solar panels clearly visible?) and description to a brief 1-sentence description of the landscape."""
-
-
 @app.function(
     image=image,
     secrets=[modal.Secret.from_name("gemini-api-key")],
     volumes={VOL_PATH: vol},
-    timeout=300,  # 5 min — some images take longer with thinking
-    retries=modal.Retries(max_retries=3, initial_delay=5.0),
+    timeout=300,  # 5 min — Gemini with thinking can take 30-60s per image
+    retries=modal.Retries(max_retries=2, initial_delay=5.0),
 )
 def classify_vlm(site_id: str, year: int) -> dict:
-    """Run Gemini 2.5 Flash LULC classification on one S2 image.
-
-    Uses google-genai SDK with:
-    - Structured output (response_schema) for guaranteed consistent JSON
-    - Thinking enabled for better quality
-    - Token tracking for cost verification
-    """
+    """Run Gemini 2.5 Flash LULC classification on one S2 image."""
     import json
     import os
     import time
@@ -603,61 +563,64 @@ def classify_vlm(site_id: str, year: int) -> dict:
     result_path = Path(f"{VOL_PATH}/vlm_results/{site_id}_{year}.json")
     if result_path.exists():
         with open(result_path) as f:
-            cached = json.load(f)
-        # Re-classify if cached result is an error (e.g., from rate limit)
-        if "error" not in cached:
-            return cached
+            return json.load(f)
 
     img_path = Path(f"{VOL_PATH}/s2_images/{site_id}_{year}.png")
     if not img_path.exists():
         return {"site_id": site_id, "year": year, "error": "no_image"}
 
-    from google import genai
-    from google.genai import types
+    import google.generativeai as genai
     from PIL import Image
 
-    client = genai.Client(api_key=os.environ["GOOGLE_AI_API_KEY"])
+    api_key = os.environ.get("GOOGLE_AI_API_KEY", "")
+    genai.configure(api_key=api_key)
+
+    model = genai.GenerativeModel("gemini-3-flash-preview")
+
     img = Image.open(img_path)
 
-    t0 = time.time()
+    prompt = """Analyze this satellite image and estimate the percentage of land cover for each class.
+The image shows a ~1-5km area around a potential solar energy site in South Asia.
+
+Return a JSON object with these exact keys and percentage values (must sum to 100):
+{
+  "water": <float>,
+  "trees": <float>,
+  "grass": <float>,
+  "flooded_vegetation": <float>,
+  "crops": <float>,
+  "shrub_and_scrub": <float>,
+  "built": <float>,
+  "bare": <float>,
+  "snow_and_ice": <float>,
+  "solar_panels": <float>
+}
+
+Also include:
+  "solar_visible": true/false (are solar panels clearly visible?)
+  "description": "<brief 1-sentence description of the landscape>"
+
+Return ONLY the JSON object, no other text."""
+
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=[VLM_PROMPT, img],
-            config=types.GenerateContentConfig(
+        response = model.generate_content(
+            [prompt, img],
+            generation_config=genai.GenerationConfig(
                 response_mime_type="application/json",
-                response_schema=VLM_RESPONSE_SCHEMA,
                 temperature=0.1,
-                # Thinking capped at 500 tokens — balances quality vs cost
-                # Uncapped avg was 904 tokens; 500 preserves quality, saves ~45%
-                thinking_config=types.ThinkingConfig(thinking_budget=500),
             ),
         )
-        elapsed = time.time() - t0
-
         result_data = json.loads(response.text)
         result_data["site_id"] = site_id
         result_data["year"] = year
-        result_data["model"] = "gemini-2.5-flash"
-
-        # Token tracking for cost verification
-        meta = response.usage_metadata
-        result_data["_tokens"] = {
-            "input": meta.prompt_token_count or 0,
-            "output": meta.candidates_token_count or 0,
-            "thinking": getattr(meta, "thoughts_token_count", 0) or 0,
-            "total": meta.total_token_count or 0,
-        }
-        result_data["_elapsed_s"] = round(elapsed, 2)
-
+        result_data["model"] = "gemini-3-flash-preview"
     except Exception as e:
         result_data = {
             "site_id": site_id, "year": year,
-            "error": str(e), "model": "gemini-2.5-flash",
-            "_elapsed_s": round(time.time() - t0, 2),
+            "error": str(e), "model": "gemini-3-flash-preview",
         }
 
-    # Cache result to volume
+    # Cache result
     result_path.parent.mkdir(parents=True, exist_ok=True)
     with open(result_path, "w") as f:
         json.dump(result_data, f, indent=2)
@@ -838,74 +801,39 @@ def run_vlm(max_sites: int = None, country: str = None, site_ids_file: str = Non
     sites = load_sites(max_sites=max_sites, country=country, site_ids_file=site_ids_file)
     print(f"Stage 3: VLM classification for {len(sites)} sites × {len(YEARS)} years")
 
-    # Submit ALL site-year pairs — the classify_vlm worker checks cache per-image
-    # (much faster than scanning the volume from a single orchestrator)
-    tasks = [(site["site_id"], year) for site in sites for year in YEARS]
+    # Only classify images that exist and aren't already classified
+    tasks = []
+    for site in sites:
+        for year in YEARS:
+            img_path = Path(f"{VOL_PATH}/s2_images/{site['site_id']}_{year}.png")
+            result_path = Path(f"{VOL_PATH}/vlm_results/{site['site_id']}_{year}.json")
+            if img_path.exists() and not result_path.exists():
+                tasks.append((site["site_id"], year))
 
     print(f"Images to classify: {len(tasks):,}")
-    if not tasks:
-        print("Nothing to do — all images already classified")
-        return
 
     start = time.time()
     ok = 0
     errors = 0
-    total_input_tokens = 0
-    total_output_tokens = 0
-    total_thinking_tokens = 0
-
-    # Pricing: Gemini 2.5 Flash (March 2026)
-    # Standard: $0.30/1M input, $2.50/1M output (thinking billed as output)
-    PRICE_INPUT = 0.30 / 1e6
-    PRICE_OUTPUT = 2.50 / 1e6
 
     for i, result in enumerate(classify_vlm.map(
         [t[0] for t in tasks],
         [t[1] for t in tasks],
         order_outputs=False,
-        return_exceptions=True,
-        wrap_returned_exceptions=False,
     )):
-        # return_exceptions=True means timeouts come as exceptions, not crashes
-        if isinstance(result, Exception):
-            errors += 1
-            if (errors % 50) == 1:
-                print(f"  ⚠ Error #{errors}: {type(result).__name__}: {str(result)[:80]}")
-        elif "error" not in result:
+        if "error" not in result:
             ok += 1
-            tokens = result.get("_tokens", {})
-            total_input_tokens += tokens.get("input", 0)
-            total_output_tokens += tokens.get("output", 0)
-            total_thinking_tokens += tokens.get("thinking", 0)
         else:
             errors += 1
-
-        if (i + 1) % 100 == 0:
+        if (i + 1) % 500 == 0:
             elapsed = time.time() - start
             rate = (i + 1) / elapsed
-            cost_so_far = (total_input_tokens * PRICE_INPUT +
-                           (total_output_tokens + total_thinking_tokens) * PRICE_OUTPUT)
-            cost_per_image = cost_so_far / ok if ok > 0 else 0
-            projected_total = cost_per_image * len(tasks) if ok > 0 else 0
-            print(f"  [{i+1:,}/{len(tasks):,}] {rate:.1f}/sec | "
-                  f"ok={ok} err={errors} | "
-                  f"cost=${cost_so_far:.2f} (${cost_per_image:.4f}/img) | "
-                  f"projected=${projected_total:.2f}")
+            print(f"  [{i+1:,}/{len(tasks):,}] {rate:.1f}/sec, "
+                  f"ok={ok}, errors={errors}")
 
     elapsed = time.time() - start
-    total_cost = (total_input_tokens * PRICE_INPUT +
-                  (total_output_tokens + total_thinking_tokens) * PRICE_OUTPUT)
-
-    print(f"\n{'='*70}")
-    print(f"Stage 3 COMPLETE: {elapsed/60:.1f} min")
-    print(f"  Images: {ok:,} ok, {errors:,} errors")
-    print(f"  Tokens: {total_input_tokens:,} input, {total_output_tokens:,} output, "
-          f"{total_thinking_tokens:,} thinking")
-    print(f"  COST: ${total_cost:.2f} "
-          f"(${total_cost/ok:.4f}/image)" if ok > 0 else "")
-    print(f"  Projected for 36,166 images: "
-          f"${(total_cost/ok * 36166):.2f}" if ok > 0 else "")
-    print(f"{'='*70}")
+    print(f"Stage 3 complete: {elapsed/60:.1f} min, "
+          f"ok={ok}, errors={errors}")
 
 
 @app.function(
