@@ -1395,6 +1395,54 @@ Solar detection in the balanced sample: +4.71 pp with pre-trends p=0.326 (passin
 - `docs/figures/vlm/vlm_dw_cropland_comparison.png` — VLM vs DW cropland scatter
 - `docs/figures/vlm/vlm_solar_by_capacity.png` — Detection by capacity tier
 
+### Extended Analyses (March 28, 2026)
+
+#### EO Event Study
+
+| Outcome | Pre-trends p | Post avg | Units |
+|---------|-------------|----------|-------|
+| VIIRS nighttime lights | 0.287 | +0.44 | nW/sr/cm² |
+| Population density | 0.108 | -0.07 | persons/pixel |
+| Building presence | 0.000*** | +0.007 | fraction |
+| SAR VV | 0.946 | +0.13 | dB |
+| EVI | 0.002** | -0.002 | index |
+| LST day | 0.000*** | +0.03 | °C |
+| LST night | 0.000*** | +0.02 | °C |
+
+VIIRS increase with clean pre-trends confirms infrastructure electrification. Population shows no significant change. SAR VV clean increase consistent with specular panel reflection.
+
+#### Capacity Stratification
+
+| Outcome | <10 MW | 10-50 MW | 50-200 MW | >200 MW |
+|---------|--------|----------|-----------|---------|
+| DW Cropland (pp) | -3.2 | -4.3 | -9.3 | -9.5 |
+| DW Bare ground (pp) | +0.6 | +1.3 | +4.4 | +13.1 |
+| VLM Solar (pp) | +5.2 | +16.9 | +26.9 | +20.8 |
+
+Cropland decline scales with capacity. Smaller installations cause proportionally less disruption.
+
+#### Population Density Stratification
+
+| Outcome | Low pop | Mid pop | High pop |
+|---------|---------|---------|----------|
+| DW Cropland (pp) | -2.9 | -4.9 | -2.3 |
+| DW Built-up (pp) | +1.0 | +0.8 | +0.7 |
+| VIIRS NTL | +0.36 | +0.16 | -0.03 |
+| NDVI | -0.002 | -0.000 | +0.001 |
+
+High-population areas show smallest cropland loss and stable NDVI. Low-population areas show largest VIIRS increase (new electrification). Mid-population tercile has most pre-trend violations.
+
+#### Conflict Heterogeneity
+
+Only 9 conflict sites have construction years in the event study window (2017-2025), too few for credible event study estimation. Descriptive comparison: conflict sites show 4.2 pp cropland decline vs 3.9 pp for non-conflict sites (not statistically significant).
+
+### Paper Draft (March 28, 2026)
+
+- `paper/main.tex` -- Full paper draft (~5,500 words, Science Advances format)
+- `paper/supplementary.tex` -- Supplementary information
+- `paper/figures/` -- 6 publication-quality PDF figures
+- `paper/email_draft.md` -- Email to supervisors
+
 ### Scripts and Data Files
 
 - `scripts/build_full_panel.py` — Merges DW + EO + VLM into unified panel, caches intermediate outputs
