@@ -278,11 +278,22 @@ def run_event_study(panel, outcome, site_ids=None):
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig1_study_area():
     print('  Generating Fig 1: Study area ...')
+    import geopandas as gpd
+
+    # Load only sites that appear in the event study panel
+    panel = load_panel()
+    panel_site_ids = set(panel['site_id'].unique())
+    print(f'    Panel sites: {len(panel_site_ids)}')
+
     sites = load_sites()
+    sites_lookup = {s['site_id']: s for s in sites if 'site_id' in s}
 
     lats, lons, caps, countries = [], [], [], []
     cyears = []
-    for s in sites:
+    for sid in panel_site_ids:
+        s = sites_lookup.get(sid)
+        if s is None:
+            continue
         lat = s.get('centroid_lat') or s.get('lat')
         lon = s.get('centroid_lon') or s.get('lon')
         if lat is None or lon is None:
@@ -296,30 +307,48 @@ def fig1_study_area():
             cyears.append(cy)
 
     df = pd.DataFrame({'lat': lats, 'lon': lons, 'cap': caps, 'country': countries})
+    print(f'    Sites per country: {df["country"].value_counts().to_dict()}')
+
+    # Load Natural Earth country boundaries
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', FutureWarning)
+        world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 
     fig = plt.figure(figsize=(FULL_WIDTH, FULL_WIDTH * 1.1))
     gs = fig.add_gridspec(2, 2, height_ratios=[1.4, 1], hspace=0.3, wspace=0.3)
 
     # Panel (a): Map
     ax_map = fig.add_subplot(gs[0, :])
-    for country, grp in df.groupby('country'):
+
+    # Draw ocean background (white) and land fill (light gray)
+    ax_map.set_facecolor('#f0f4f8')  # pale blue-gray for ocean
+    world.plot(ax=ax_map, color='#ededed', edgecolor='#999999', linewidth=0.4)
+
+    # Highlight South Asian countries with slightly different fill
+    sa_names = ['India', 'Pakistan', 'Bangladesh', 'Sri Lanka', 'Nepal', 'Bhutan',
+                'Myanmar (Burma)', 'Myanmar', 'Afghanistan', 'China']
+    sa = world[world['name'].isin(sa_names)]
+    sa.plot(ax=ax_map, color='#e0ddd5', edgecolor='#777777', linewidth=0.5)
+
+    # Plot site scatter on top (sorted so smaller countries render on top)
+    for country, grp in sorted(df.groupby('country'), key=lambda x: -len(x[1])):
         color = COUNTRY_COLORS.get(country, '#999999')
         sizes = np.clip(grp['cap'].values * 0.3, 3, 80)
         ax_map.scatter(grp['lon'], grp['lat'], s=sizes, c=color,
                        alpha=0.55, edgecolors='white', linewidths=0.3,
-                       label=f"{country} (n={len(grp)})")
+                       label=f"{country} (n={len(grp):,})", zorder=5)
 
     ax_map.set_xlim(60, 98)
     ax_map.set_ylim(5, 38)
     ax_map.set_xlabel('Longitude')
     ax_map.set_ylabel('Latitude')
     ax_map.set_title('(a) Solar installation sites across South Asia')
-    ax_map.legend(fontsize=7, loc='upper left', frameon=True, framealpha=0.9)
+    # Remove lat/lon gridlines
+    ax_map.grid(False)
+    # Place legend over Indian Ocean (bottom-left of map)
+    ax_map.legend(fontsize=7, loc='lower left', frameon=True, framealpha=0.9,
+                  bbox_to_anchor=(0.0, 0.0))
     ax_map.set_aspect('equal')
-
-    # Draw approximate country outlines as a simple bounding context
-    # Just add a light grey box for the region
-    ax_map.axhline(y=8, color='#cccccc', linewidth=0.3)
 
     # Panel (b): Construction year histogram
     ax_yr = fig.add_subplot(gs[1, 0])
@@ -331,14 +360,11 @@ def fig1_study_area():
     ax_yr.set_ylabel('Number of Sites')
     ax_yr.set_title('(b) Construction year distribution')
 
-    # Panel (c): Capacity histogram (log scale)
+    # Panel (c): Capacity histogram (linear scale)
     ax_cap = fig.add_subplot(gs[1, 1])
     caps_arr = np.array([c for c in caps if c > 0])
-    bins_cap = np.logspace(np.log10(max(caps_arr.min(), 0.1)),
-                           np.log10(caps_arr.max()), 30)
-    ax_cap.hist(caps_arr, bins=bins_cap, color=_TOL_MUTED['teal'], edgecolor='white',
+    ax_cap.hist(caps_arr, bins=30, color=_TOL_MUTED['teal'], edgecolor='white',
                 linewidth=0.5)
-    ax_cap.set_xscale('log')
     ax_cap.set_xlabel('Capacity (MW)')
     ax_cap.set_ylabel('Number of Sites')
     ax_cap.set_title('(c) Capacity distribution')
