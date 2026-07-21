@@ -1,0 +1,126 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f2f5f1;
+  --foreground: #17251f;
+  --surface: #ffffff;
+  --surface-muted: #e8eeea;
+  --line: #cad5ce;
+  --muted: #5b6c63;
+  --hero-bg: #173129;
+  --hero-muted: #c8d9d0;
+  --accent-red: #b54736;
+  --accent-green: #39735a;
+  --accent-blue: #2e6f8e;
+  --accent-gold: #c79a2b;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-anek-bangla), var(--font-source-sans), sans-serif;
+  letter-spacing: -0.018em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a,
+button {
+  outline-offset: 3px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent-gold);
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  z-index: 1;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(23, 37, 31, 0.18);
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.leaflet-popup-content h3 {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0 0 4px 0;
+  color: var(--foreground);
+}
+
+.leaflet-popup-content p {
+  margin: 2px 0;
+  color: var(--muted);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #9aa9a1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #798a81;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(199, 154, 43, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

@@ -1,0 +1,4554 @@
+[
+  {
+    "id": "teesta",
+    "name": "Teesta (Gaibandha/Beximco) 200 MW",
+    "capacity_mw": 200.0,
+    "lat": 25.629209,
+    "lon": 89.54487,
+    "district": "Gaibandha",
+    "upazilla": "Sundarganj",
+    "status": "Completed & Running",
+    "completion_date": "2023-01-08",
+    "has_conflict": true,
+    "conflict_reasons": "Violent and illegal land acquisition (at gunpoint), loss of farmer livelihoods, corruption from Beximco officials",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Farmer Livelihoods",
+      "Corruption"
+    ],
+    "news_links": [
+      "https://www.tbsnews.net/bangladesh/beximco-writes-ca-urging-security-countrys-largest-solar-plant-936851",
+      "https://en.orthosongbad.com/19605/beximco-urges-govt-to-shield-solar-plant-from-mob-attacks/",
+      "https://www.newagebd.net/post/country/256556/hc-removes-state-appointed-receiver-from-beximcos-teesta-solar-operations",
+      "https://energybangla.com/govt-moves-to-terminate-gaibandha-solar-power-contract/"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/Teesta+Solar+Limited+Power+Plant,+Tarapur,+Sundarganj/data=!4m2!3m1!19sChIJt8-NxCQt_TkR0ZMLD4XiaSM",
+    "gem_url": null,
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.533982,
+            25.640095
+          ],
+          [
+            89.534454,
+            25.641294
+          ],
+          [
+            89.535999,
+            25.641217
+          ],
+          [
+            89.537544,
+            25.640675
+          ],
+          [
+            89.53866,
+            25.63994
+          ],
+          [
+            89.539518,
+            25.639205
+          ],
+          [
+            89.540205,
+            25.637619
+          ],
+          [
+            89.54102,
+            25.636342
+          ],
+          [
+            89.54175,
+            25.635413
+          ],
+          [
+            89.542394,
+            25.634794
+          ],
+          [
+            89.543166,
+            25.634098
+          ],
+          [
+            89.544711,
+            25.633247
+          ],
+          [
+            89.545763,
+            25.632105
+          ],
+          [
+            89.54617,
+            25.631215
+          ],
+          [
+            89.546857,
+            25.630499
+          ],
+          [
+            89.547393,
+            25.629822
+          ],
+          [
+            89.547887,
+            25.629203
+          ],
+          [
+            89.548273,
+            25.628333
+          ],
+          [
+            89.548402,
+            25.627172
+          ],
+          [
+            89.548595,
+            25.625624
+          ],
+          [
+            89.548573,
+            25.624541
+          ],
+          [
+            89.548895,
+            25.623902
+          ],
+          [
+            89.548831,
+            25.622741
+          ],
+          [
+            89.548402,
+            25.621909
+          ],
+          [
+            89.547608,
+            25.620903
+          ],
+          [
+            89.547586,
+            25.619878
+          ],
+          [
+            89.547458,
+            25.61684
+          ],
+          [
+            89.547243,
+            25.612545
+          ],
+          [
+            89.545741,
+            25.612467
+          ],
+          [
+            89.544368,
+            25.612235
+          ],
+          [
+            89.544218,
+            25.612951
+          ],
+          [
+            89.542909,
+            25.61299
+          ],
+          [
+            89.542952,
+            25.613609
+          ],
+          [
+            89.544132,
+            25.613667
+          ],
+          [
+            89.543853,
+            25.614422
+          ],
+          [
+            89.543874,
+            25.615021
+          ],
+          [
+            89.543531,
+            25.615196
+          ],
+          [
+            89.543424,
+            25.615563
+          ],
+          [
+            89.543982,
+            25.618117
+          ],
+          [
+            89.543488,
+            25.61833
+          ],
+          [
+            89.543188,
+            25.619607
+          ],
+          [
+            89.54175,
+            25.619607
+          ],
+          [
+            89.541149,
+            25.619742
+          ],
+          [
+            89.540398,
+            25.61953
+          ],
+          [
+            89.539776,
+            25.618446
+          ],
+          [
+            89.537737,
+            25.619162
+          ],
+          [
+            89.538789,
+            25.621387
+          ],
+          [
+            89.541106,
+            25.620671
+          ],
+          [
+            89.54175,
+            25.622857
+          ],
+          [
+            89.541986,
+            25.624096
+          ],
+          [
+            89.542093,
+            25.624792
+          ],
+          [
+            89.542372,
+            25.624966
+          ],
+          [
+            89.54248,
+            25.625682
+          ],
+          [
+            89.543273,
+            25.625663
+          ],
+          [
+            89.543295,
+            25.626959
+          ],
+          [
+            89.54329,
+            25.627414
+          ],
+          [
+            89.542887,
+            25.627617
+          ],
+          [
+            89.543123,
+            25.628323
+          ],
+          [
+            89.54293,
+            25.62841
+          ],
+          [
+            89.542716,
+            25.628565
+          ],
+          [
+            89.542372,
+            25.629397
+          ],
+          [
+            89.541836,
+            25.630035
+          ],
+          [
+            89.541042,
+            25.630596
+          ],
+          [
+            89.540699,
+            25.630944
+          ],
+          [
+            89.541063,
+            25.631138
+          ],
+          [
+            89.541106,
+            25.631467
+          ],
+          [
+            89.540548,
+            25.632105
+          ],
+          [
+            89.540033,
+            25.632628
+          ],
+          [
+            89.538381,
+            25.631854
+          ],
+          [
+            89.538381,
+            25.631138
+          ],
+          [
+            89.537222,
+            25.630306
+          ],
+          [
+            89.536192,
+            25.630674
+          ],
+          [
+            89.535162,
+            25.629668
+          ],
+          [
+            89.534326,
+            25.629861
+          ],
+          [
+            89.533854,
+            25.629668
+          ],
+          [
+            89.532502,
+            25.6299
+          ],
+          [
+            89.53233,
+            25.629552
+          ],
+          [
+            89.5316,
+            25.62961
+          ],
+          [
+            89.531643,
+            25.629996
+          ],
+          [
+            89.530098,
+            25.630441
+          ],
+          [
+            89.530463,
+            25.632183
+          ],
+          [
+            89.530935,
+            25.63286
+          ],
+          [
+            89.53115,
+            25.633982
+          ],
+          [
+            89.53145,
+            25.634311
+          ],
+          [
+            89.532824,
+            25.634253
+          ],
+          [
+            89.533145,
+            25.633305
+          ],
+          [
+            89.533596,
+            25.634253
+          ],
+          [
+            89.533489,
+            25.635665
+          ],
+          [
+            89.53263,
+            25.635858
+          ],
+          [
+            89.532437,
+            25.636458
+          ],
+          [
+            89.533081,
+            25.637464
+          ],
+          [
+            89.533617,
+            25.639186
+          ],
+          [
+            89.533982,
+            25.640095
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0098",
+    "post_lulc": {
+      "water": 0.0,
+      "trees": 0.0,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 5.73,
+      "built": 8.42,
+      "bare": 78.98,
+      "snow_ice": 6.87
+    },
+    "annual_lulc": [],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/teesta_pre_post.png",
+      "image_grid": "/images/case_studies/teesta_image_grid.png",
+      "lulc_maps": "/images/case_studies/teesta_satellite_lulc_maps.png",
+      "lulc_timeseries": "/images/case_studies/teesta_lulc_timeseries.png",
+      "lulc_change_detail": "/images/case_studies/teesta_lulc_change_detail.png"
+    }
+  },
+  {
+    "id": "feni",
+    "name": "Feni/Sonagazi 75 MW",
+    "capacity_mw": 75.0,
+    "lat": 22.787567,
+    "lon": 91.367187,
+    "district": "Feni",
+    "upazilla": "Sonagazi",
+    "status": "Completed & Running",
+    "completion_date": "2024-04-01",
+    "has_conflict": true,
+    "conflict_reasons": "Illegal land acquisition on three-crop land, loss of farmer livelihoods",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Three-Crop Land",
+      "Farmer Livelihoods"
+    ],
+    "news_links": [
+      "https://www.observerbd.com/news/295460"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/EGCB+Ltd.+75MW+Solar+Power+Plant/data=!4m2!3m1!19sChIJ5ReFdIlPUzcRFeS4TotS76g",
+    "gem_url": "https://www.gem.wiki/Sonagazi_(EGCB)_solar_farm",
+    "developer": "Electricity Generation Company of Bangladesh (EGCB)",
+    "financing": "WB",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            91.363249,
+            22.793551
+          ],
+          [
+            91.363206,
+            22.791296
+          ],
+          [
+            91.363635,
+            22.79098
+          ],
+          [
+            91.363807,
+            22.788843
+          ],
+          [
+            91.363807,
+            22.787893
+          ],
+          [
+            91.363807,
+            22.78635
+          ],
+          [
+            91.363292,
+            22.785836
+          ],
+          [
+            91.363549,
+            22.783066
+          ],
+          [
+            91.364923,
+            22.780613
+          ],
+          [
+            91.365566,
+            22.778556
+          ],
+          [
+            91.367326,
+            22.778753
+          ],
+          [
+            91.368055,
+            22.77907
+          ],
+          [
+            91.368742,
+            22.77907
+          ],
+          [
+            91.368442,
+            22.784807
+          ],
+          [
+            91.370673,
+            22.784886
+          ],
+          [
+            91.370502,
+            22.786311
+          ],
+          [
+            91.370373,
+            22.787735
+          ],
+          [
+            91.370373,
+            22.789476
+          ],
+          [
+            91.370845,
+            22.790426
+          ],
+          [
+            91.370716,
+            22.792087
+          ],
+          [
+            91.369643,
+            22.792285
+          ],
+          [
+            91.369386,
+            22.793076
+          ],
+          [
+            91.363249,
+            22.793551
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0088",
+    "post_lulc": {
+      "water": 0.91,
+      "trees": 0.0,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 1.98,
+      "built": 4.6,
+      "bare": 92.45,
+      "snow_ice": 0.06
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 56.84,
+        "trees": 1.5,
+        "built": 0.0,
+        "bare": 0.95,
+        "water": 40.28,
+        "grass": 0.01,
+        "shrub": 0.07,
+        "flooded_veg": 0.34,
+        "ndvi": 0.2859
+      },
+      {
+        "year": 2017,
+        "crops": 40.17,
+        "trees": 4.01,
+        "built": 0.04,
+        "bare": 0.04,
+        "water": 37.08,
+        "grass": 0.48,
+        "shrub": 1.61,
+        "flooded_veg": 16.56,
+        "ndvi": 0.2663
+      },
+      {
+        "year": 2018,
+        "crops": 42.45,
+        "trees": 2.25,
+        "built": 0.37,
+        "bare": 2.06,
+        "water": 31.86,
+        "grass": 0.0,
+        "shrub": 12.13,
+        "flooded_veg": 8.89,
+        "ndvi": 0.2872
+      },
+      {
+        "year": 2019,
+        "crops": 30.47,
+        "trees": 1.98,
+        "built": 0.72,
+        "bare": 2.1,
+        "water": 24.34,
+        "grass": 0.66,
+        "shrub": 26.25,
+        "flooded_veg": 13.48,
+        "ndvi": 0.3262
+      },
+      {
+        "year": 2020,
+        "crops": 44.84,
+        "trees": 1.57,
+        "built": 0.38,
+        "bare": 2.1,
+        "water": 31.85,
+        "grass": 0.02,
+        "shrub": 12.88,
+        "flooded_veg": 6.36,
+        "ndvi": 0.3157
+      },
+      {
+        "year": 2021,
+        "crops": 41.17,
+        "trees": 0.96,
+        "built": 0.75,
+        "bare": 11.41,
+        "water": 30.22,
+        "grass": 0.0,
+        "shrub": 11.58,
+        "flooded_veg": 3.9,
+        "ndvi": 0.2694
+      },
+      {
+        "year": 2022,
+        "crops": 49.68,
+        "trees": 1.44,
+        "built": 0.51,
+        "bare": 8.87,
+        "water": 23.8,
+        "grass": 0.0,
+        "shrub": 8.99,
+        "flooded_veg": 6.71,
+        "ndvi": 0.2959
+      },
+      {
+        "year": 2023,
+        "crops": 27.48,
+        "trees": 1.23,
+        "built": 1.48,
+        "bare": 32.76,
+        "water": 19.39,
+        "grass": 0.0,
+        "shrub": 5.97,
+        "flooded_veg": 11.69,
+        "ndvi": 0.2623
+      },
+      {
+        "year": 2024,
+        "crops": 29.11,
+        "trees": 3.48,
+        "built": 3.34,
+        "bare": 30.57,
+        "water": 12.69,
+        "grass": 0.0,
+        "shrub": 7.98,
+        "flooded_veg": 12.82,
+        "ndvi": 0.2825
+      },
+      {
+        "year": 2025,
+        "crops": 21.48,
+        "trees": 1.99,
+        "built": 2.79,
+        "bare": 31.86,
+        "water": 21.83,
+        "grass": 0.0,
+        "shrub": 8.08,
+        "flooded_veg": 11.97,
+        "ndvi": 0.2593
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/feni_pre_post.png",
+      "image_grid": "/images/case_studies/feni_image_grid.png",
+      "lulc_maps": "/images/case_studies/feni_satellite_lulc_maps.png",
+      "lulc_timeseries": "/images/case_studies/feni_lulc_timeseries.png",
+      "lulc_change_detail": "/images/case_studies/feni_lulc_change_detail.png"
+    }
+  },
+  {
+    "id": "manikganj",
+    "name": "Manikganj (Spectra) 35 MW",
+    "capacity_mw": 35.0,
+    "lat": 23.780834,
+    "lon": 89.824775,
+    "district": "Manikganj",
+    "upazilla": "Shibalaya Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2021-03-12",
+    "has_conflict": true,
+    "conflict_reasons": "Illegal land acquisition on three-crop land, loss of farmer livelihoods, threats during land acquisition, low or no compensation, river erosion and ecological degradation",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Three-Crop Land",
+      "Farmer Livelihoods",
+      "Ecological Impact",
+      "River Erosion",
+      "Inadequate Compensation"
+    ],
+    "news_links": [
+      "https://www.observerbd.com/news/166370"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/Spectra+Solar+Park+Ltd/data=!4m2!3m1!19sChIJG4xZcqwX_jkRw7wBMJ-XT18",
+    "gem_url": "https://www.gem.wiki/Manikganj_solar_farm",
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.820635,
+            23.78132
+          ],
+          [
+            89.820796,
+            23.780652
+          ],
+          [
+            89.820303,
+            23.780387
+          ],
+          [
+            89.820625,
+            23.779906
+          ],
+          [
+            89.821537,
+            23.779366
+          ],
+          [
+            89.821891,
+            23.779395
+          ],
+          [
+            89.821998,
+            23.779042
+          ],
+          [
+            89.824347,
+            23.777373
+          ],
+          [
+            89.825249,
+            23.776538
+          ],
+          [
+            89.826086,
+            23.775959
+          ],
+          [
+            89.827116,
+            23.776116
+          ],
+          [
+            89.827448,
+            23.77592
+          ],
+          [
+            89.827716,
+            23.776087
+          ],
+          [
+            89.827588,
+            23.776253
+          ],
+          [
+            89.827545,
+            23.778001
+          ],
+          [
+            89.827727,
+            23.778021
+          ],
+          [
+            89.827706,
+            23.778296
+          ],
+          [
+            89.827813,
+            23.778423
+          ],
+          [
+            89.827867,
+            23.778944
+          ],
+          [
+            89.828081,
+            23.778993
+          ],
+          [
+            89.828081,
+            23.779621
+          ],
+          [
+            89.828231,
+            23.781064
+          ],
+          [
+            89.827309,
+            23.781123
+          ],
+          [
+            89.826772,
+            23.781221
+          ],
+          [
+            89.826794,
+            23.782458
+          ],
+          [
+            89.82615,
+            23.782498
+          ],
+          [
+            89.825613,
+            23.784697
+          ],
+          [
+            89.825399,
+            23.785855
+          ],
+          [
+            89.825056,
+            23.786268
+          ],
+          [
+            89.824562,
+            23.786346
+          ],
+          [
+            89.823983,
+            23.786346
+          ],
+          [
+            89.823403,
+            23.786228
+          ],
+          [
+            89.822717,
+            23.786091
+          ],
+          [
+            89.822867,
+            23.785247
+          ],
+          [
+            89.823081,
+            23.784815
+          ],
+          [
+            89.82306,
+            23.784442
+          ],
+          [
+            89.823275,
+            23.783931
+          ],
+          [
+            89.82336,
+            23.783676
+          ],
+          [
+            89.823446,
+            23.783381
+          ],
+          [
+            89.823532,
+            23.783067
+          ],
+          [
+            89.823232,
+            23.782714
+          ],
+          [
+            89.822953,
+            23.782537
+          ],
+          [
+            89.822674,
+            23.782282
+          ],
+          [
+            89.822245,
+            23.782026
+          ],
+          [
+            89.821687,
+            23.781791
+          ],
+          [
+            89.820635,
+            23.78132
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0048",
+    "post_lulc": {
+      "water": 0.03,
+      "trees": 0.0,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 9.02,
+      "shrub": 30.6,
+      "built": 14.53,
+      "bare": 45.82,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 0.0,
+        "trees": 69.57,
+        "built": 0.0,
+        "bare": 2.88,
+        "water": 21.34,
+        "grass": 0.0,
+        "shrub": 1.25,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4489
+      },
+      {
+        "year": 2017,
+        "crops": 24.02,
+        "trees": 42.2,
+        "built": 0.01,
+        "bare": 1.52,
+        "water": 28.31,
+        "grass": 0.03,
+        "shrub": 2.01,
+        "flooded_veg": 1.91,
+        "ndvi": 0.4709
+      },
+      {
+        "year": 2018,
+        "crops": 33.46,
+        "trees": 39.05,
+        "built": 3.04,
+        "bare": 4.34,
+        "water": 20.06,
+        "grass": 0.0,
+        "shrub": 0.03,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4594
+      },
+      {
+        "year": 2019,
+        "crops": 29.09,
+        "trees": 23.01,
+        "built": 2.7,
+        "bare": 22.73,
+        "water": 22.43,
+        "grass": 0.0,
+        "shrub": 0.0,
+        "flooded_veg": 0.04,
+        "ndvi": 0.3309
+      },
+      {
+        "year": 2020,
+        "crops": 19.62,
+        "trees": 31.16,
+        "built": 1.05,
+        "bare": 23.88,
+        "water": 24.17,
+        "grass": 0.0,
+        "shrub": 0.0,
+        "flooded_veg": 0.05,
+        "ndvi": 0.3579
+      },
+      {
+        "year": 2021,
+        "crops": 23.79,
+        "trees": 25.36,
+        "built": 7.12,
+        "bare": 33.08,
+        "water": 10.37,
+        "grass": 0.0,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.3727
+      },
+      {
+        "year": 2022,
+        "crops": 24.01,
+        "trees": 29.94,
+        "built": 10.06,
+        "bare": 12.43,
+        "water": 21.41,
+        "grass": 0.01,
+        "shrub": 2.1,
+        "flooded_veg": 0.0,
+        "ndvi": 0.3955
+      },
+      {
+        "year": 2023,
+        "crops": 21.38,
+        "trees": 30.81,
+        "built": 7.87,
+        "bare": 14.05,
+        "water": 22.86,
+        "grass": 0.01,
+        "shrub": 2.84,
+        "flooded_veg": 0.13,
+        "ndvi": 0.373
+      },
+      {
+        "year": 2024,
+        "crops": 21.2,
+        "trees": 33.0,
+        "built": 8.75,
+        "bare": 3.44,
+        "water": 21.18,
+        "grass": 0.13,
+        "shrub": 12.16,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4274
+      },
+      {
+        "year": 2025,
+        "crops": 21.11,
+        "trees": 34.01,
+        "built": 6.88,
+        "bare": 10.71,
+        "water": 20.78,
+        "grass": 0.0,
+        "shrub": 6.52,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4164
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/manikganj_pre_post.png",
+      "image_grid": "/images/case_studies/manikganj_image_grid.png",
+      "lulc_maps": "/images/case_studies/manikganj_satellite_lulc_maps.png",
+      "lulc_timeseries": "/images/case_studies/manikganj_lulc_timeseries.png",
+      "lulc_change_detail": "/images/case_studies/manikganj_lulc_change_detail.png"
+    }
+  },
+  {
+    "id": "moulvibazar",
+    "name": "Moulvibazar 10 MW",
+    "capacity_mw": 10.0,
+    "lat": 24.493896,
+    "lon": 91.633043,
+    "district": "",
+    "upazilla": "",
+    "status": "Completed & Running, more projects proposed",
+    "completion_date": null,
+    "has_conflict": true,
+    "conflict_reasons": "Illegal and forced land acquisition, loss of farmer livelihoods, ecological impacts to sensitive haor (wetland) ecosystems, lack of consultation, possible expansion of project and new projects in other haor nearby",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Farmer Livelihoods",
+      "Ecological Impact"
+    ],
+    "news_links": [
+      "https://sylhetmirror.com/2025/10/20/farmers-fury-flares-in-moulvibazar-to-save-haor-from-solar-project/",
+      "https://www.dailycountrytodaybd.com/story/human-chain-protesting-solar-power-plant-in-kawadighi-haor",
+      "https://www.eyenews.news/english/sylhet/moulvibazar/3196",
+      "https://www.youtube.com/watch?v=Q_Zx7LM1N_M",
+      "https://www.youtube.com/watch?v=BaoHuelnwlE",
+      "https://www.youtube.com/watch?v=Q62aqTeiR7o",
+      "https://www.sylhettoday24.news/news/details/Sylhet/164663"
+    ],
+    "google_maps_link": "https://maps.app.goo.gl/G4cEbCBqWGJw24AN7",
+    "gem_url": null,
+    "developer": "",
+    "financing": "",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            91.631892,
+            24.495198
+          ],
+          [
+            91.632462,
+            24.495276
+          ],
+          [
+            91.632876,
+            24.49525
+          ],
+          [
+            91.633006,
+            24.494807
+          ],
+          [
+            91.633213,
+            24.494807
+          ],
+          [
+            91.63355,
+            24.494494
+          ],
+          [
+            91.633886,
+            24.49426
+          ],
+          [
+            91.634223,
+            24.493895
+          ],
+          [
+            91.634223,
+            24.493139
+          ],
+          [
+            91.633886,
+            24.493009
+          ],
+          [
+            91.633912,
+            24.490898
+          ],
+          [
+            91.633524,
+            24.49082
+          ],
+          [
+            91.632876,
+            24.490976
+          ],
+          [
+            91.632203,
+            24.49121
+          ],
+          [
+            91.63153,
+            24.491497
+          ],
+          [
+            91.631685,
+            24.494598
+          ],
+          [
+            91.631815,
+            24.495067
+          ],
+          [
+            91.631892,
+            24.495198
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": null,
+    "post_lulc": {
+      "water": 8.2,
+      "trees": 3.1,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 86.58,
+      "shrub": 2.11,
+      "built": 0.0,
+      "bare": 0.0,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/moulvibazar_pre_post.png",
+      "image_grid": "/images/case_studies/moulvibazar_image_grid.png",
+      "lulc_maps": "/images/case_studies/moulvibazar_satellite_lulc_maps.png",
+      "lulc_timeseries": "/images/case_studies/moulvibazar_lulc_timeseries.png",
+      "lulc_change_detail": "/images/case_studies/moulvibazar_lulc_change_detail.png"
+    }
+  },
+  {
+    "id": "taltali",
+    "name": "Taltali/Bargunia (proposed)",
+    "capacity_mw": 200.0,
+    "lat": null,
+    "lon": null,
+    "district": "",
+    "upazilla": "",
+    "status": "Proposed",
+    "completion_date": null,
+    "has_conflict": true,
+    "conflict_reasons": "Forced acquisition of three-crop land, loss of livelihoods, local corruption",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Three-Crop Land",
+      "Farmer Livelihoods",
+      "Corruption"
+    ],
+    "news_links": [
+      "https://www.amadershomoy.com/country/article/110189/%E0%A6%B8%E0%A7%8C%E0%A6%B0-%E0%A6%AC%E0%A6%BF%E0%A6%A6%E0%A7%8D%E0%A6%AF%E0%A7%81%E0%A7%8E-%E0%A6%95%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%A6%E0%A7%8D%E0%A6%B0%E0%A6%B0-%E0%A7%AC%E2%80%99%E0%A6%B6p#gsc.tab=0"
+    ],
+    "google_maps_link": "https://maps.app.goo.gl/WVNzfnBH3NpbB8TA8",
+    "gem_url": null,
+    "developer": "",
+    "financing": "",
+    "polygon": null,
+    "matched_site_id": null,
+    "post_lulc": null,
+    "annual_lulc": [],
+    "images": null
+  },
+  {
+    "id": "korotuya",
+    "name": "Korotuya 100 MW (proposed) in Panchagarh",
+    "capacity_mw": 100.0,
+    "lat": null,
+    "lon": null,
+    "district": "",
+    "upazilla": "",
+    "status": "Proposed",
+    "completion_date": null,
+    "has_conflict": true,
+    "conflict_reasons": "Forced and misleading land acquisition, loss of livelihoods, protests",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Farmer Livelihoods",
+      "Community Protests"
+    ],
+    "news_links": [
+      "https://www.youtube.com/watch?v=-YqZ2REEEKQ",
+      "https://www.cleanbd.org/publication/conflict-between-landco-and-villagers-over-firm-land-in-tetulia%2C-panchagarh",
+      "https://www.observerbd.com/news/283037",
+      "https://www.somoynews.tv/news/2024-02-10/uP1tIHxY",
+      "https://www.facebook.com/groups/1582012278540307/permalink/24695859126728962/?mibextid=UVffzb"
+    ],
+    "google_maps_link": "https://maps.app.goo.gl/cLyiz7HQztLcHTEB7",
+    "gem_url": null,
+    "developer": "",
+    "financing": "",
+    "polygon": null,
+    "matched_site_id": null,
+    "post_lulc": null,
+    "annual_lulc": [],
+    "images": null
+  },
+  {
+    "id": "barapukuria",
+    "name": "Barapukuria Dinajpur 50 MW (Summit), proposed",
+    "capacity_mw": null,
+    "lat": null,
+    "lon": null,
+    "district": "",
+    "upazilla": "",
+    "status": "Proposed",
+    "completion_date": null,
+    "has_conflict": true,
+    "conflict_reasons": "Lack of compensation from previous harms from coal plant, protests against solar project, loss of livelihoods, ecological impacts",
+    "conflict_tags": [
+      "Farmer Livelihoods",
+      "Ecological Impact",
+      "Inadequate Compensation",
+      "Community Protests"
+    ],
+    "news_links": [
+      "https://www.energytransitionbd.org/infrastructure/barapukuria-50-mw-summit-solar-power-plant",
+      "https://dailycountrytodaybd.com/story/residents-protest-construction-of-solar-plant-adjacent-to-barapukuria-coal-mine",
+      "https://www.dhakatribune.com/bangladesh/nation/347567/barapukuria-residents-issue-ultimatum-for",
+      "https://en.prothomalo.com/bangladesh/bangladesh-in-world-media/a6o65tdtmw#",
+      "https://www.bahannonews.com/details/article/10111316/%E0%A6%95%E0%A7%83%E0%A6%B7%E0%A6%BF-%E0%A6%96%E0%A6%BE%E0%A6%AE%E0%A6%BE%E0%A6%B0%E0%A7%87%E0%A6%B0-%E0%A6%86%E0%A7%9C%E0%A6%BE%E0%A6%B2%E0%A7%87-%E0%A6%AB%E0%A6%B8%E0%A6%B2%E0%A7%80-%E0%A6%9C%E0%A6%AE%E0%A6%BF%E0%A6%A4%E0%A7%87-%E0%A6%B8%E0%A7%8B%E0%A6%B2%E0%A6%BE%E0%A6%B0-%E0%A6%AA%E0%A6%BE%E0%A6%93%E0%A7%9F%E0%A6%BE%E0%A6%B0-%E0%A6%AA%E0%A7%8D%E0%A6%B2%E0%A6%BE%E0%A6%A8%E0%A7%8D%E0%A6%9F/"
+    ],
+    "google_maps_link": "https://maps.app.goo.gl/98z1AbJRpJ51Efwr8",
+    "gem_url": null,
+    "developer": "",
+    "financing": "",
+    "polygon": null,
+    "matched_site_id": null,
+    "post_lulc": null,
+    "annual_lulc": [],
+    "images": null
+  },
+  {
+    "id": "pabna",
+    "name": "Pabna 100MW",
+    "capacity_mw": 140.0,
+    "lat": 23.826372,
+    "lon": 89.606831,
+    "district": "Pabna",
+    "upazilla": "Pabna Sadar Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2024-10-23",
+    "has_conflict": true,
+    "conflict_reasons": "Land dispute and contested char land ownership between government and community, loss of farmer livelihoods, physical obstruction to project (tearing off project sign)",
+    "conflict_tags": [
+      "Farmer Livelihoods"
+    ],
+    "news_links": [
+      "https://www.thedailystar.net/backpage/news/land-dispute-threatens-solar-plant-1837234"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/Pabna+64MW+Solar+Park/data=!4m2!3m1!19sChIJU5buLQBp_jkRZ7DTpSAEJFM",
+    "gem_url": "https://www.gem.wiki/Pabna_(BCRECL)_solar_farm",
+    "developer": "Dynamic Sun Energy Private Limited",
+    "financing": "UCB",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.151607,
+            23.968019
+          ],
+          [
+            89.151778,
+            23.966607
+          ],
+          [
+            89.152293,
+            23.964646
+          ],
+          [
+            89.152422,
+            23.963039
+          ],
+          [
+            89.153538,
+            23.960607
+          ],
+          [
+            89.154611,
+            23.958803
+          ],
+          [
+            89.157228,
+            23.957078
+          ],
+          [
+            89.160962,
+            23.956058
+          ],
+          [
+            89.16431,
+            23.956254
+          ],
+          [
+            89.167657,
+            23.956921
+          ],
+          [
+            89.168515,
+            23.957234
+          ],
+          [
+            89.168601,
+            23.958372
+          ],
+          [
+            89.167099,
+            23.959078
+          ],
+          [
+            89.167356,
+            23.961039
+          ],
+          [
+            89.166584,
+            23.961588
+          ],
+          [
+            89.166627,
+            23.962725
+          ],
+          [
+            89.164181,
+            23.962999
+          ],
+          [
+            89.162378,
+            23.963156
+          ],
+          [
+            89.16225,
+            23.965117
+          ],
+          [
+            89.160318,
+            23.965509
+          ],
+          [
+            89.160104,
+            23.964843
+          ],
+          [
+            89.157701,
+            23.964999
+          ],
+          [
+            89.157786,
+            23.966097
+          ],
+          [
+            89.15534,
+            23.966686
+          ],
+          [
+            89.154611,
+            23.966882
+          ],
+          [
+            89.154696,
+            23.96798
+          ],
+          [
+            89.151607,
+            23.968019
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0063",
+    "post_lulc": {
+      "water": 0.09,
+      "trees": 1.08,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.67,
+      "shrub": 4.57,
+      "built": 11.29,
+      "bare": 74.36,
+      "snow_ice": 7.94
+    },
+    "annual_lulc": [],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/pabna_pre_post.png"
+    }
+  },
+  {
+    "id": "mymensingh",
+    "name": "Mymensingh (HDFC) 50 MW",
+    "capacity_mw": 50.0,
+    "lat": 24.702233,
+    "lon": 90.46173,
+    "district": "Mymensingh",
+    "upazilla": "Gauripur",
+    "status": "Completed & Running",
+    "completion_date": "2020-11-04",
+    "has_conflict": true,
+    "conflict_reasons": "River erosion, local opposition (reasons unnamed), ecological impacts from river landfill",
+    "conflict_tags": [
+      "Ecological Impact",
+      "River Erosion"
+    ],
+    "news_links": [
+      "https://www.energytransitionbd.org/infrastructure/sutiakhali-50-mw-hdfc-solar-power-plant",
+      "https://today.thefinancialexpress.com.bd/country/work-on-sutiakhali-50-mw-solar-power-plant-completes-1604417915",
+      "https://www.thedailystar.net/backpage/news/msingh-solar-power-plant-ready-roll-1966381",
+      "https://www.dhakatribune.com/bangladesh/nation/205451/power-from-mymensingh-solar-plant-to-national-grid"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/HDFC+SinPower+Limited+-+50+MWac+Solar+Photovoltaic+Power+Plant/data=!4m2!3m1!19sChIJs-qFX5hbVjcR3k1vNKkIMww",
+    "gem_url": "https://www.gem.wiki/Sutiakhali_solar_farm",
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            90.455203,
+            24.706428
+          ],
+          [
+            90.457199,
+            24.706818
+          ],
+          [
+            90.459087,
+            24.705492
+          ],
+          [
+            90.460095,
+            24.704985
+          ],
+          [
+            90.46164,
+            24.704401
+          ],
+          [
+            90.463529,
+            24.703991
+          ],
+          [
+            90.464752,
+            24.703387
+          ],
+          [
+            90.465138,
+            24.702529
+          ],
+          [
+            90.46561,
+            24.701437
+          ],
+          [
+            90.465739,
+            24.700599
+          ],
+          [
+            90.465932,
+            24.700326
+          ],
+          [
+            90.466146,
+            24.699995
+          ],
+          [
+            90.466125,
+            24.699586
+          ],
+          [
+            90.464752,
+            24.699332
+          ],
+          [
+            90.464151,
+            24.698123
+          ],
+          [
+            90.462456,
+            24.69631
+          ],
+          [
+            90.460031,
+            24.698006
+          ],
+          [
+            90.460546,
+            24.698669
+          ],
+          [
+            90.460246,
+            24.699176
+          ],
+          [
+            90.459387,
+            24.699683
+          ],
+          [
+            90.459023,
+            24.699469
+          ],
+          [
+            90.458014,
+            24.699897
+          ],
+          [
+            90.457842,
+            24.70056
+          ],
+          [
+            90.457907,
+            24.70171
+          ],
+          [
+            90.457864,
+            24.702412
+          ],
+          [
+            90.457499,
+            24.703153
+          ],
+          [
+            90.457048,
+            24.703933
+          ],
+          [
+            90.456319,
+            24.704518
+          ],
+          [
+            90.455911,
+            24.704751
+          ],
+          [
+            90.456104,
+            24.705024
+          ],
+          [
+            90.455804,
+            24.705414
+          ],
+          [
+            90.455267,
+            24.705629
+          ],
+          [
+            90.455203,
+            24.706428
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0091",
+    "post_lulc": {
+      "water": 0.0,
+      "trees": 0.77,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.14,
+      "shrub": 32.64,
+      "built": 5.33,
+      "bare": 60.79,
+      "snow_ice": 0.32
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 24.28,
+        "trees": 55.98,
+        "built": 0.23,
+        "bare": 1.75,
+        "water": 10.57,
+        "grass": 0.29,
+        "shrub": 6.7,
+        "flooded_veg": 0.02,
+        "ndvi": 0.5312
+      },
+      {
+        "year": 2017,
+        "crops": 17.29,
+        "trees": 53.51,
+        "built": 1.99,
+        "bare": 1.11,
+        "water": 13.56,
+        "grass": 1.13,
+        "shrub": 11.01,
+        "flooded_veg": 0.41,
+        "ndvi": 0.5106
+      },
+      {
+        "year": 2018,
+        "crops": 33.14,
+        "trees": 34.13,
+        "built": 2.87,
+        "bare": 2.65,
+        "water": 14.19,
+        "grass": 0.28,
+        "shrub": 11.96,
+        "flooded_veg": 0.74,
+        "ndvi": 0.5566
+      },
+      {
+        "year": 2019,
+        "crops": 41.38,
+        "trees": 25.09,
+        "built": 2.98,
+        "bare": 1.8,
+        "water": 10.97,
+        "grass": 5.19,
+        "shrub": 12.59,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5359
+      },
+      {
+        "year": 2020,
+        "crops": 26.43,
+        "trees": 20.7,
+        "built": 4.44,
+        "bare": 21.27,
+        "water": 14.29,
+        "grass": 0.67,
+        "shrub": 11.95,
+        "flooded_veg": 0.27,
+        "ndvi": 0.4031
+      },
+      {
+        "year": 2021,
+        "crops": 25.53,
+        "trees": 19.68,
+        "built": 7.46,
+        "bare": 26.08,
+        "water": 14.48,
+        "grass": 0.01,
+        "shrub": 6.66,
+        "flooded_veg": 0.0,
+        "ndvi": 0.3907
+      },
+      {
+        "year": 2022,
+        "crops": 25.41,
+        "trees": 24.92,
+        "built": 6.34,
+        "bare": 16.34,
+        "water": 11.75,
+        "grass": 0.13,
+        "shrub": 15.11,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4457
+      },
+      {
+        "year": 2023,
+        "crops": 25.23,
+        "trees": 23.4,
+        "built": 5.4,
+        "bare": 19.52,
+        "water": 11.8,
+        "grass": 0.26,
+        "shrub": 14.0,
+        "flooded_veg": 0.16,
+        "ndvi": 0.4402
+      },
+      {
+        "year": 2024,
+        "crops": 20.33,
+        "trees": 29.87,
+        "built": 7.51,
+        "bare": 15.06,
+        "water": 9.28,
+        "grass": 0.52,
+        "shrub": 17.07,
+        "flooded_veg": 0.1,
+        "ndvi": 0.4543
+      },
+      {
+        "year": 2025,
+        "crops": 22.44,
+        "trees": 29.41,
+        "built": 6.13,
+        "bare": 18.3,
+        "water": 9.29,
+        "grass": 0.01,
+        "shrub": 12.8,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4193
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/mymensingh_pre_post.png"
+    }
+  },
+  {
+    "id": "tetulia",
+    "name": "Tetulia/Panchagarh (Sympa) 8 MW",
+    "capacity_mw": 8.0,
+    "lat": 26.482817,
+    "lon": 88.410139,
+    "district": "Panchagarh",
+    "upazilla": "Panchagarh Sadar",
+    "status": "Completed & Running",
+    "completion_date": "2019-05-13",
+    "has_conflict": true,
+    "conflict_reasons": "Coerced land acquisition, local corruption, loss of farmer livelihoods, no local benefits from project",
+    "conflict_tags": [
+      "Forced Acquisition",
+      "Farmer Livelihoods",
+      "Corruption"
+    ],
+    "news_links": [
+      "http://libstaff.bpatc.org.bd/index.php/bjpa/article/view/387"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/Sympa+solar+power+ltd/data=!4m2!3m1!19sChIJ24bSCL5f5DkRWQudKBwY7mI",
+    "gem_url": "https://www.gem.wiki/Tetulia_solar_project",
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            88.406811,
+            26.48204
+          ],
+          [
+            88.406982,
+            26.48373
+          ],
+          [
+            88.410287,
+            26.483519
+          ],
+          [
+            88.410544,
+            26.485382
+          ],
+          [
+            88.41151,
+            26.485324
+          ],
+          [
+            88.411317,
+            26.483211
+          ],
+          [
+            88.413463,
+            26.483019
+          ],
+          [
+            88.413441,
+            26.483288
+          ],
+          [
+            88.413699,
+            26.482635
+          ],
+          [
+            88.413956,
+            26.483019
+          ],
+          [
+            88.414299,
+            26.482923
+          ],
+          [
+            88.414128,
+            26.482251
+          ],
+          [
+            88.412282,
+            26.482328
+          ],
+          [
+            88.412068,
+            26.481828
+          ],
+          [
+            88.411188,
+            26.481963
+          ],
+          [
+            88.411081,
+            26.481694
+          ],
+          [
+            88.408914,
+            26.481713
+          ],
+          [
+            88.406811,
+            26.48204
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0095",
+    "post_lulc": {
+      "water": 1.75,
+      "trees": 22.75,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 36.88,
+      "shrub": 8.67,
+      "built": 29.95,
+      "bare": 0.0,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 33.25,
+        "trees": 28.74,
+        "built": 10.93,
+        "bare": 0.0,
+        "water": 10.55,
+        "grass": 3.47,
+        "shrub": 13.06,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4967
+      },
+      {
+        "year": 2017,
+        "crops": 29.64,
+        "trees": 49.79,
+        "built": 15.53,
+        "bare": 0.0,
+        "water": 0.0,
+        "grass": 1.74,
+        "shrub": 3.3,
+        "flooded_veg": 0.0,
+        "ndvi": 0.574
+      },
+      {
+        "year": 2018,
+        "crops": 13.48,
+        "trees": 57.06,
+        "built": 15.56,
+        "bare": 0.02,
+        "water": 0.0,
+        "grass": 0.2,
+        "shrub": 13.69,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5526
+      },
+      {
+        "year": 2019,
+        "crops": 28.06,
+        "trees": 50.24,
+        "built": 18.58,
+        "bare": 0.0,
+        "water": 0.0,
+        "grass": 0.18,
+        "shrub": 2.94,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5444
+      },
+      {
+        "year": 2020,
+        "crops": 20.71,
+        "trees": 51.91,
+        "built": 19.51,
+        "bare": 0.0,
+        "water": 0.0,
+        "grass": 0.01,
+        "shrub": 7.86,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5707
+      },
+      {
+        "year": 2021,
+        "crops": 20.05,
+        "trees": 52.04,
+        "built": 19.65,
+        "bare": 0.0,
+        "water": 0.17,
+        "grass": 2.09,
+        "shrub": 5.99,
+        "flooded_veg": 0.0,
+        "ndvi": 0.538
+      },
+      {
+        "year": 2022,
+        "crops": 19.17,
+        "trees": 50.06,
+        "built": 21.93,
+        "bare": 0.0,
+        "water": 0.0,
+        "grass": 1.42,
+        "shrub": 7.43,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5981
+      },
+      {
+        "year": 2023,
+        "crops": 25.31,
+        "trees": 48.0,
+        "built": 17.71,
+        "bare": 0.01,
+        "water": 0.43,
+        "grass": 0.0,
+        "shrub": 8.55,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5899
+      },
+      {
+        "year": 2024,
+        "crops": 18.47,
+        "trees": 45.7,
+        "built": 20.43,
+        "bare": 0.0,
+        "water": 0.09,
+        "grass": 6.31,
+        "shrub": 9.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.577
+      },
+      {
+        "year": 2025,
+        "crops": 17.8,
+        "trees": 54.96,
+        "built": 13.57,
+        "bare": 0.0,
+        "water": 0.14,
+        "grass": 5.69,
+        "shrub": 7.84,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5815
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/tetulia_pre_post.png"
+    }
+  },
+  {
+    "id": "lalmonirhat",
+    "name": "Lalmonirhat Rangpur (Intraco) 30 MW",
+    "capacity_mw": 30.0,
+    "lat": 25.998885,
+    "lon": 89.15475,
+    "district": "Rangpur",
+    "upazilla": "Gangachara",
+    "status": "Completed & Running",
+    "completion_date": "2022-08-28",
+    "has_conflict": true,
+    "conflict_reasons": "Occupation of 200 acres char land, unclear if fair compensation offered, local community affected",
+    "conflict_tags": [
+      "Inadequate Compensation"
+    ],
+    "news_links": [
+      "https://www.jugantor.com/tp-firstpage/454636"
+    ],
+    "google_maps_link": "https://www.google.com/maps/place/Intraco+Solar+Power+Limited/data=!4m2!3m1!19sChIJdTl0vPM_4zkRd2SYagsuVf0",
+    "gem_url": null,
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.151609,
+            25.997279
+          ],
+          [
+            89.151526,
+            25.997399
+          ],
+          [
+            89.151498,
+            25.997464
+          ],
+          [
+            89.151482,
+            25.997512
+          ],
+          [
+            89.151481,
+            25.997541
+          ],
+          [
+            89.151488,
+            25.997677
+          ],
+          [
+            89.151517,
+            25.997975
+          ],
+          [
+            89.151526,
+            25.998166
+          ],
+          [
+            89.151553,
+            25.998283
+          ],
+          [
+            89.151608,
+            25.998474
+          ],
+          [
+            89.151654,
+            25.998667
+          ],
+          [
+            89.151753,
+            25.998842
+          ],
+          [
+            89.151772,
+            25.998872
+          ],
+          [
+            89.151969,
+            25.999264
+          ],
+          [
+            89.15213,
+            25.999673
+          ],
+          [
+            89.152251,
+            26.000095
+          ],
+          [
+            89.152333,
+            26.000526
+          ],
+          [
+            89.152374,
+            26.000963
+          ],
+          [
+            89.152374,
+            26.001402
+          ],
+          [
+            89.152333,
+            26.00184
+          ],
+          [
+            89.152257,
+            26.002242
+          ],
+          [
+            89.152255,
+            26.002256
+          ],
+          [
+            89.152253,
+            26.002314
+          ],
+          [
+            89.152255,
+            26.002369
+          ],
+          [
+            89.152289,
+            26.002402
+          ],
+          [
+            89.15234,
+            26.002443
+          ],
+          [
+            89.152392,
+            26.00247
+          ],
+          [
+            89.152423,
+            26.002483
+          ],
+          [
+            89.15253,
+            26.002495
+          ],
+          [
+            89.152875,
+            26.002547
+          ],
+          [
+            89.153051,
+            26.002587
+          ],
+          [
+            89.153109,
+            26.002596
+          ],
+          [
+            89.153232,
+            26.002603
+          ],
+          [
+            89.153398,
+            26.002603
+          ],
+          [
+            89.153745,
+            26.002616
+          ],
+          [
+            89.153893,
+            26.002632
+          ],
+          [
+            89.154082,
+            26.002641
+          ],
+          [
+            89.154152,
+            26.002641
+          ],
+          [
+            89.154267,
+            26.002636
+          ],
+          [
+            89.154273,
+            26.002635
+          ],
+          [
+            89.154456,
+            26.002591
+          ],
+          [
+            89.154465,
+            26.002588
+          ],
+          [
+            89.154497,
+            26.002571
+          ],
+          [
+            89.154521,
+            26.002559
+          ],
+          [
+            89.154614,
+            26.002484
+          ],
+          [
+            89.154654,
+            26.002448
+          ],
+          [
+            89.154696,
+            26.00241
+          ],
+          [
+            89.154739,
+            26.002371
+          ],
+          [
+            89.154783,
+            26.002332
+          ],
+          [
+            89.154825,
+            26.002295
+          ],
+          [
+            89.154867,
+            26.002257
+          ],
+          [
+            89.154871,
+            26.002253
+          ],
+          [
+            89.155111,
+            26.002015
+          ],
+          [
+            89.155117,
+            26.00202
+          ],
+          [
+            89.155309,
+            26.00182
+          ],
+          [
+            89.15537,
+            26.001766
+          ],
+          [
+            89.155562,
+            26.001574
+          ],
+          [
+            89.155935,
+            26.001238
+          ],
+          [
+            89.156103,
+            26.001102
+          ],
+          [
+            89.156504,
+            26.000812
+          ],
+          [
+            89.156509,
+            26.000808
+          ],
+          [
+            89.156623,
+            26.000716
+          ],
+          [
+            89.156708,
+            26.000631
+          ],
+          [
+            89.156748,
+            26.000567
+          ],
+          [
+            89.156753,
+            26.000557
+          ],
+          [
+            89.156787,
+            26.000475
+          ],
+          [
+            89.1568,
+            26.000441
+          ],
+          [
+            89.156808,
+            26.000419
+          ],
+          [
+            89.156814,
+            26.000401
+          ],
+          [
+            89.156944,
+            26.000049
+          ],
+          [
+            89.156959,
+            26.000012
+          ],
+          [
+            89.15697,
+            25.999981
+          ],
+          [
+            89.157014,
+            25.999864
+          ],
+          [
+            89.157022,
+            25.999843
+          ],
+          [
+            89.157039,
+            25.999788
+          ],
+          [
+            89.157296,
+            25.999156
+          ],
+          [
+            89.157308,
+            25.99913
+          ],
+          [
+            89.157314,
+            25.999012
+          ],
+          [
+            89.157314,
+            25.9989
+          ],
+          [
+            89.157309,
+            25.998785
+          ],
+          [
+            89.157261,
+            25.998596
+          ],
+          [
+            89.15718,
+            25.998313
+          ],
+          [
+            89.157099,
+            25.997886
+          ],
+          [
+            89.157058,
+            25.997454
+          ],
+          [
+            89.15704,
+            25.997088
+          ],
+          [
+            89.157041,
+            25.997088
+          ],
+          [
+            89.157014,
+            25.996721
+          ],
+          [
+            89.157014,
+            25.996553
+          ],
+          [
+            89.157013,
+            25.996301
+          ],
+          [
+            89.157009,
+            25.996202
+          ],
+          [
+            89.156956,
+            25.996125
+          ],
+          [
+            89.156924,
+            25.996088
+          ],
+          [
+            89.156889,
+            25.996053
+          ],
+          [
+            89.15676,
+            25.995949
+          ],
+          [
+            89.156732,
+            25.995928
+          ],
+          [
+            89.156624,
+            25.995858
+          ],
+          [
+            89.156516,
+            25.995803
+          ],
+          [
+            89.15651,
+            25.9958
+          ],
+          [
+            89.156508,
+            25.995799
+          ],
+          [
+            89.156069,
+            25.99561
+          ],
+          [
+            89.155653,
+            25.995378
+          ],
+          [
+            89.155262,
+            25.995104
+          ],
+          [
+            89.1549,
+            25.994793
+          ],
+          [
+            89.154572,
+            25.994446
+          ],
+          [
+            89.154281,
+            25.994068
+          ],
+          [
+            89.154263,
+            25.994043
+          ],
+          [
+            89.154233,
+            25.994013
+          ],
+          [
+            89.154178,
+            25.993969
+          ],
+          [
+            89.154086,
+            25.993936
+          ],
+          [
+            89.15398,
+            25.993908
+          ],
+          [
+            89.153773,
+            25.993872
+          ],
+          [
+            89.15373,
+            25.993866
+          ],
+          [
+            89.153471,
+            25.993849
+          ],
+          [
+            89.153336,
+            25.993856
+          ],
+          [
+            89.153186,
+            25.993873
+          ],
+          [
+            89.152839,
+            25.993885
+          ],
+          [
+            89.152803,
+            25.993885
+          ],
+          [
+            89.152682,
+            25.993892
+          ],
+          [
+            89.152652,
+            25.993916
+          ],
+          [
+            89.152642,
+            25.993926
+          ],
+          [
+            89.152641,
+            25.993941
+          ],
+          [
+            89.152642,
+            25.993982
+          ],
+          [
+            89.152641,
+            25.994388
+          ],
+          [
+            89.152604,
+            25.994793
+          ],
+          [
+            89.152533,
+            25.995193
+          ],
+          [
+            89.152427,
+            25.995585
+          ],
+          [
+            89.152374,
+            25.995752
+          ],
+          [
+            89.152341,
+            25.995876
+          ],
+          [
+            89.152176,
+            25.996318
+          ],
+          [
+            89.151967,
+            25.996741
+          ],
+          [
+            89.151717,
+            25.99714
+          ],
+          [
+            89.151609,
+            25.997279
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0100",
+    "post_lulc": {
+      "water": 0.01,
+      "trees": 9.14,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.29,
+      "shrub": 29.12,
+      "built": 16.33,
+      "bare": 44.77,
+      "snow_ice": 0.34
+    },
+    "annual_lulc": [],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/lalmonirhat_pre_post.png"
+    }
+  },
+  {
+    "id": "mongla",
+    "name": "Mongla 100MW",
+    "capacity_mw": 100.0,
+    "lat": 22.574239,
+    "lon": 89.570388,
+    "district": "Bagerhat",
+    "upazilla": "Mongla Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2021-12-29",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence of direct conflict around solar, lots of conflict to coal plant",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Mongla+Solar+PV+Park+(+%E0%A6%AE%E0%A6%82%E0%A6%B2%E0%A6%BE+%E0%A6%B8%E0%A7%8B%E0%A6%B2%E0%A6%BE%E0%A6%B0+PV+%E0%A6%AA%E0%A6%BE%E0%A6%B0%E0%A7%8D%E0%A6%95)/data=!4m2!3m1!19sChIJq2Z_WgAnADoRy5BEJQVfmaU",
+    "gem_url": "https://www.gem.wiki/Moidhara_solar_farm",
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              89.562435,
+              22.572368
+            ],
+            [
+              89.564667,
+              22.572249
+            ],
+            [
+              89.564795,
+              22.572923
+            ],
+            [
+              89.565268,
+              22.573399
+            ],
+            [
+              89.565053,
+              22.574667
+            ],
+            [
+              89.567027,
+              22.574944
+            ],
+            [
+              89.566984,
+              22.576965
+            ],
+            [
+              89.568658,
+              22.576846
+            ],
+            [
+              89.568701,
+              22.574904
+            ],
+            [
+              89.56913,
+              22.573161
+            ],
+            [
+              89.569817,
+              22.571972
+            ],
+            [
+              89.570932,
+              22.571338
+            ],
+            [
+              89.571619,
+              22.570704
+            ],
+            [
+              89.572477,
+              22.570427
+            ],
+            [
+              89.572263,
+              22.568921
+            ],
+            [
+              89.571233,
+              22.568445
+            ],
+            [
+              89.570675,
+              22.56797
+            ],
+            [
+              89.568915,
+              22.56789
+            ],
+            [
+              89.569173,
+              22.567375
+            ],
+            [
+              89.567757,
+              22.56682
+            ],
+            [
+              89.562435,
+              22.572368
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              89.569945,
+              22.580967
+            ],
+            [
+              89.574666,
+              22.580769
+            ],
+            [
+              89.574409,
+              22.579699
+            ],
+            [
+              89.57458,
+              22.57859
+            ],
+            [
+              89.574451,
+              22.577282
+            ],
+            [
+              89.573851,
+              22.575737
+            ],
+            [
+              89.573293,
+              22.575063
+            ],
+            [
+              89.573121,
+              22.572883
+            ],
+            [
+              89.571705,
+              22.572329
+            ],
+            [
+              89.571512,
+              22.572725
+            ],
+            [
+              89.570739,
+              22.572725
+            ],
+            [
+              89.570761,
+              22.573042
+            ],
+            [
+              89.570417,
+              22.573042
+            ],
+            [
+              89.569817,
+              22.575321
+            ],
+            [
+              89.569731,
+              22.575856
+            ],
+            [
+              89.569688,
+              22.576628
+            ],
+            [
+              89.570289,
+              22.576826
+            ],
+            [
+              89.570546,
+              22.577242
+            ],
+            [
+              89.570868,
+              22.577659
+            ],
+            [
+              89.571018,
+              22.578075
+            ],
+            [
+              89.571083,
+              22.578887
+            ],
+            [
+              89.570739,
+              22.579164
+            ],
+            [
+              89.57046,
+              22.579481
+            ],
+            [
+              89.570353,
+              22.579977
+            ],
+            [
+              89.569924,
+              22.580353
+            ],
+            [
+              89.569945,
+              22.580967
+            ]
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0052",
+    "post_lulc": {
+      "water": 0.47,
+      "trees": 0.1,
+      "grass": 0.0,
+      "flooded_veg": 1.38,
+      "crops": 0.08,
+      "shrub": 12.8,
+      "built": 4.64,
+      "bare": 71.41,
+      "snow_ice": 9.12
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 0.0,
+        "trees": 0.0,
+        "built": 0.0,
+        "bare": 10.05,
+        "water": 89.58,
+        "grass": 0.0,
+        "shrub": 0.0,
+        "flooded_veg": 0.11,
+        "ndvi": 0.1504
+      },
+      {
+        "year": 2017,
+        "crops": 6.54,
+        "trees": 1.07,
+        "built": 0.62,
+        "bare": 14.07,
+        "water": 73.48,
+        "grass": 0.0,
+        "shrub": 0.04,
+        "flooded_veg": 4.18,
+        "ndvi": 0.1546
+      },
+      {
+        "year": 2018,
+        "crops": 10.32,
+        "trees": 1.61,
+        "built": 0.14,
+        "bare": 14.41,
+        "water": 65.49,
+        "grass": 0.0,
+        "shrub": 0.24,
+        "flooded_veg": 7.79,
+        "ndvi": 0.1738
+      },
+      {
+        "year": 2019,
+        "crops": 8.85,
+        "trees": 1.77,
+        "built": 0.86,
+        "bare": 13.48,
+        "water": 65.87,
+        "grass": 0.0,
+        "shrub": 2.19,
+        "flooded_veg": 6.97,
+        "ndvi": 0.1926
+      },
+      {
+        "year": 2020,
+        "crops": 1.44,
+        "trees": 1.31,
+        "built": 0.06,
+        "bare": 12.64,
+        "water": 71.74,
+        "grass": 0.0,
+        "shrub": 3.8,
+        "flooded_veg": 8.98,
+        "ndvi": 0.2292
+      },
+      {
+        "year": 2021,
+        "crops": 1.47,
+        "trees": 3.66,
+        "built": 0.62,
+        "bare": 15.38,
+        "water": 70.41,
+        "grass": 0.0,
+        "shrub": 3.41,
+        "flooded_veg": 4.98,
+        "ndvi": 0.1717
+      },
+      {
+        "year": 2022,
+        "crops": 0.77,
+        "trees": 5.37,
+        "built": 5.75,
+        "bare": 25.42,
+        "water": 49.69,
+        "grass": 0.0,
+        "shrub": 6.52,
+        "flooded_veg": 1.53,
+        "ndvi": 0.2024
+      },
+      {
+        "year": 2023,
+        "crops": 3.18,
+        "trees": 6.43,
+        "built": 2.92,
+        "bare": 22.41,
+        "water": 45.6,
+        "grass": 0.12,
+        "shrub": 9.78,
+        "flooded_veg": 3.9,
+        "ndvi": 0.2359
+      },
+      {
+        "year": 2024,
+        "crops": 1.62,
+        "trees": 8.56,
+        "built": 2.15,
+        "bare": 20.58,
+        "water": 46.77,
+        "grass": 0.01,
+        "shrub": 13.26,
+        "flooded_veg": 1.18,
+        "ndvi": 0.2397
+      },
+      {
+        "year": 2025,
+        "crops": 2.14,
+        "trees": 8.99,
+        "built": 1.63,
+        "bare": 18.87,
+        "water": 46.17,
+        "grass": 2.28,
+        "shrub": 12.91,
+        "flooded_veg": 2.02,
+        "ndvi": 0.2352
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/mongla_pre_post.png"
+    }
+  },
+  {
+    "id": "sirajganj68",
+    "name": "Sirajganj 68 MW",
+    "capacity_mw": 68.0,
+    "lat": 24.403976,
+    "lon": 89.738849,
+    "district": "Sirajgonj",
+    "upazilla": "Sirajganj Sadar Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2024-07-14",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Sirajganj+68+MW+Solar+Park/data=!4m2!3m1!19sChIJ8YFX2d7p_TkRisA9wPYlP8c",
+    "gem_url": "https://www.gem.wiki/Sirajganji_solar_farm",
+    "developer": "North-West Power Generation Company Limited (NWPGCL)",
+    "financing": "N/A",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.734182,
+            24.402526
+          ],
+          [
+            89.737744,
+            24.402722
+          ],
+          [
+            89.738002,
+            24.409326
+          ],
+          [
+            89.740877,
+            24.409209
+          ],
+          [
+            89.742465,
+            24.407372
+          ],
+          [
+            89.742465,
+            24.405653
+          ],
+          [
+            89.74328,
+            24.404285
+          ],
+          [
+            89.74195,
+            24.403269
+          ],
+          [
+            89.741693,
+            24.402057
+          ],
+          [
+            89.739976,
+            24.401628
+          ],
+          [
+            89.739418,
+            24.400924
+          ],
+          [
+            89.738688,
+            24.399986
+          ],
+          [
+            89.738002,
+            24.398384
+          ],
+          [
+            89.735126,
+            24.397289
+          ],
+          [
+            89.732594,
+            24.398735
+          ],
+          [
+            89.732895,
+            24.399791
+          ],
+          [
+            89.734182,
+            24.402526
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0085",
+    "post_lulc": {
+      "water": 0.44,
+      "trees": 0.45,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 12.05,
+      "built": 7.01,
+      "bare": 74.85,
+      "snow_ice": 5.2
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 6.9,
+        "trees": 27.41,
+        "built": 4.87,
+        "bare": 39.25,
+        "water": 1.41,
+        "grass": 0.0,
+        "shrub": 7.4,
+        "flooded_veg": 0.0,
+        "ndvi": 0.3173
+      },
+      {
+        "year": 2017,
+        "crops": 9.95,
+        "trees": 40.09,
+        "built": 11.31,
+        "bare": 30.57,
+        "water": 2.72,
+        "grass": 0.16,
+        "shrub": 5.13,
+        "flooded_veg": 0.02,
+        "ndvi": 0.3079
+      },
+      {
+        "year": 2018,
+        "crops": 0.85,
+        "trees": 25.05,
+        "built": 8.0,
+        "bare": 54.58,
+        "water": 4.42,
+        "grass": 0.0,
+        "shrub": 3.62,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2971
+      },
+      {
+        "year": 2019,
+        "crops": 2.79,
+        "trees": 25.12,
+        "built": 15.97,
+        "bare": 42.58,
+        "water": 10.13,
+        "grass": 0.19,
+        "shrub": 3.22,
+        "flooded_veg": 0.01,
+        "ndvi": 0.3066
+      },
+      {
+        "year": 2020,
+        "crops": 0.0,
+        "trees": 22.34,
+        "built": 13.1,
+        "bare": 57.3,
+        "water": 4.51,
+        "grass": 0.0,
+        "shrub": 1.26,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2467
+      },
+      {
+        "year": 2021,
+        "crops": 0.06,
+        "trees": 21.17,
+        "built": 8.73,
+        "bare": 56.57,
+        "water": 11.4,
+        "grass": 0.0,
+        "shrub": 2.06,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2231
+      },
+      {
+        "year": 2022,
+        "crops": 0.0,
+        "trees": 22.45,
+        "built": 15.6,
+        "bare": 45.57,
+        "water": 15.16,
+        "grass": 0.17,
+        "shrub": 1.05,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2491
+      },
+      {
+        "year": 2023,
+        "crops": 0.02,
+        "trees": 22.32,
+        "built": 10.06,
+        "bare": 54.88,
+        "water": 11.27,
+        "grass": 0.0,
+        "shrub": 1.43,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2284
+      },
+      {
+        "year": 2024,
+        "crops": 0.0,
+        "trees": 19.12,
+        "built": 15.28,
+        "bare": 52.88,
+        "water": 12.56,
+        "grass": 0.0,
+        "shrub": 0.12,
+        "flooded_veg": 0.0,
+        "ndvi": 0.243
+      },
+      {
+        "year": 2025,
+        "crops": 0.0,
+        "trees": 19.18,
+        "built": 15.75,
+        "bare": 50.71,
+        "water": 13.94,
+        "grass": 0.0,
+        "shrub": 0.2,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2195
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/sirajganj68_pre_post.png"
+    }
+  },
+  {
+    "id": "teknaf",
+    "name": "Teknaf (Joules)",
+    "capacity_mw": 20.0,
+    "lat": 20.981669,
+    "lon": 92.256021,
+    "district": "Cox's Bazar",
+    "upazilla": "Teknaf Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2018-09-15",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Technaf+Solartech+Energy+Limited/data=!4m2!3m1!19sChIJj8LtMIwPrjAR6UtzgVhvJjI",
+    "gem_url": "https://www.gem.wiki/Teknaf_(Tsel)_solar_farm",
+    "developer": "",
+    "financing": "IPP (Unsolicited)",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            92.25415,
+            20.984461
+          ],
+          [
+            92.254107,
+            20.985403
+          ],
+          [
+            92.255867,
+            20.985623
+          ],
+          [
+            92.255995,
+            20.984261
+          ],
+          [
+            92.257326,
+            20.984261
+          ],
+          [
+            92.257755,
+            20.98358
+          ],
+          [
+            92.258592,
+            20.983499
+          ],
+          [
+            92.258656,
+            20.982838
+          ],
+          [
+            92.258978,
+            20.982878
+          ],
+          [
+            92.258935,
+            20.982377
+          ],
+          [
+            92.258527,
+            20.982398
+          ],
+          [
+            92.258484,
+            20.980594
+          ],
+          [
+            92.258506,
+            20.979392
+          ],
+          [
+            92.258377,
+            20.97821
+          ],
+          [
+            92.257347,
+            20.97797
+          ],
+          [
+            92.255974,
+            20.97793
+          ],
+          [
+            92.255609,
+            20.97805
+          ],
+          [
+            92.255502,
+            20.978531
+          ],
+          [
+            92.25445,
+            20.978791
+          ],
+          [
+            92.253914,
+            20.978571
+          ],
+          [
+            92.253292,
+            20.978891
+          ],
+          [
+            92.253377,
+            20.979993
+          ],
+          [
+            92.252455,
+            20.980093
+          ],
+          [
+            92.252433,
+            20.981816
+          ],
+          [
+            92.252884,
+            20.981957
+          ],
+          [
+            92.252862,
+            20.982738
+          ],
+          [
+            92.253335,
+            20.982898
+          ],
+          [
+            92.253399,
+            20.984281
+          ],
+          [
+            92.25415,
+            20.984461
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0094",
+    "post_lulc": {
+      "water": 0.97,
+      "trees": 3.66,
+      "grass": 0.0,
+      "flooded_veg": 1.77,
+      "crops": 0.14,
+      "shrub": 80.2,
+      "built": 12.25,
+      "bare": 1.01,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 19.46,
+        "trees": 0.84,
+        "built": 3.78,
+        "bare": 28.93,
+        "water": 38.11,
+        "grass": 0.0,
+        "shrub": 1.13,
+        "flooded_veg": 7.74,
+        "ndvi": 0.2533
+      },
+      {
+        "year": 2017,
+        "crops": 19.37,
+        "trees": 1.03,
+        "built": 4.69,
+        "bare": 4.1,
+        "water": 59.92,
+        "grass": 0.0,
+        "shrub": 1.65,
+        "flooded_veg": 9.24,
+        "ndvi": 0.2328
+      },
+      {
+        "year": 2018,
+        "crops": 13.42,
+        "trees": 0.61,
+        "built": 5.62,
+        "bare": 22.73,
+        "water": 54.9,
+        "grass": 0.0,
+        "shrub": 0.0,
+        "flooded_veg": 2.71,
+        "ndvi": 0.2588
+      },
+      {
+        "year": 2019,
+        "crops": 14.55,
+        "trees": 0.22,
+        "built": 10.09,
+        "bare": 14.52,
+        "water": 49.88,
+        "grass": 0.0,
+        "shrub": 4.69,
+        "flooded_veg": 6.06,
+        "ndvi": 0.2715
+      },
+      {
+        "year": 2020,
+        "crops": 13.08,
+        "trees": 0.44,
+        "built": 10.47,
+        "bare": 11.96,
+        "water": 50.5,
+        "grass": 0.0,
+        "shrub": 6.62,
+        "flooded_veg": 6.94,
+        "ndvi": 0.2745
+      },
+      {
+        "year": 2021,
+        "crops": 16.65,
+        "trees": 0.46,
+        "built": 11.92,
+        "bare": 3.29,
+        "water": 51.61,
+        "grass": 0.0,
+        "shrub": 8.95,
+        "flooded_veg": 7.03,
+        "ndvi": 0.282
+      },
+      {
+        "year": 2022,
+        "crops": 14.26,
+        "trees": 0.23,
+        "built": 10.8,
+        "bare": 5.41,
+        "water": 48.76,
+        "grass": 0.0,
+        "shrub": 13.49,
+        "flooded_veg": 6.99,
+        "ndvi": 0.2755
+      },
+      {
+        "year": 2023,
+        "crops": 12.19,
+        "trees": 0.45,
+        "built": 10.64,
+        "bare": 4.91,
+        "water": 53.59,
+        "grass": 0.01,
+        "shrub": 15.19,
+        "flooded_veg": 3.03,
+        "ndvi": 0.2806
+      },
+      {
+        "year": 2024,
+        "crops": 9.47,
+        "trees": 1.01,
+        "built": 10.07,
+        "bare": 6.59,
+        "water": 53.63,
+        "grass": 0.0,
+        "shrub": 14.76,
+        "flooded_veg": 4.47,
+        "ndvi": 0.3139
+      },
+      {
+        "year": 2025,
+        "crops": 4.57,
+        "trees": 1.0,
+        "built": 12.49,
+        "bare": 4.48,
+        "water": 60.98,
+        "grass": 0.0,
+        "shrub": 14.67,
+        "flooded_veg": 1.82,
+        "ndvi": 0.2549
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/teknaf_pre_post.png"
+    }
+  },
+  {
+    "id": "sirajganj6",
+    "name": "Sirajganj 6 MW",
+    "capacity_mw": 7.6,
+    "lat": 24.386137,
+    "lon": 89.74897,
+    "district": "Sirajgonj",
+    "upazilla": "Sirajganj Sadar Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2021-03-30",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Sirajganj+7.6+MWp+Grid+Connected+Solar+Photovoltaic+Power+Plant,+NWPGCL/data=!4m2!3m1!19sChIJxVKWSdTp_TkR8rt5SGNnvQk",
+    "gem_url": "https://www.gem.wiki/Syedabad_solar_project",
+    "developer": "North-West Power Generation Company Limited (NWPGCL)",
+    "financing": "Own Investment",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.747767,
+            24.387359
+          ],
+          [
+            89.747791,
+            24.387397
+          ],
+          [
+            89.747812,
+            24.387417
+          ],
+          [
+            89.747933,
+            24.387517
+          ],
+          [
+            89.748059,
+            24.387609
+          ],
+          [
+            89.74809,
+            24.38763
+          ],
+          [
+            89.748179,
+            24.387676
+          ],
+          [
+            89.74826,
+            24.387708
+          ],
+          [
+            89.748369,
+            24.387719
+          ],
+          [
+            89.748845,
+            24.387743
+          ],
+          [
+            89.749215,
+            24.387777
+          ],
+          [
+            89.749262,
+            24.387783
+          ],
+          [
+            89.749401,
+            24.387797
+          ],
+          [
+            89.749659,
+            24.387815
+          ],
+          [
+            89.749964,
+            24.387846
+          ],
+          [
+            89.749983,
+            24.387849
+          ],
+          [
+            89.750092,
+            24.38787
+          ],
+          [
+            89.750319,
+            24.387903
+          ],
+          [
+            89.750409,
+            24.387908
+          ],
+          [
+            89.750488,
+            24.387904
+          ],
+          [
+            89.750524,
+            24.387875
+          ],
+          [
+            89.75057,
+            24.387828
+          ],
+          [
+            89.750576,
+            24.387708
+          ],
+          [
+            89.750576,
+            24.387634
+          ],
+          [
+            89.75057,
+            24.387519
+          ],
+          [
+            89.750533,
+            24.387413
+          ],
+          [
+            89.750399,
+            24.386973
+          ],
+          [
+            89.750399,
+            24.386973
+          ],
+          [
+            89.75036,
+            24.386864
+          ],
+          [
+            89.750317,
+            24.386773
+          ],
+          [
+            89.75014,
+            24.386346
+          ],
+          [
+            89.750026,
+            24.386027
+          ],
+          [
+            89.750014,
+            24.385997
+          ],
+          [
+            89.74999,
+            24.385948
+          ],
+          [
+            89.749971,
+            24.385913
+          ],
+          [
+            89.749929,
+            24.385836
+          ],
+          [
+            89.749922,
+            24.385823
+          ],
+          [
+            89.749882,
+            24.38575
+          ],
+          [
+            89.749761,
+            24.385512
+          ],
+          [
+            89.749668,
+            24.385315
+          ],
+          [
+            89.74949,
+            24.384884
+          ],
+          [
+            89.749411,
+            24.384665
+          ],
+          [
+            89.749396,
+            24.384634
+          ],
+          [
+            89.749376,
+            24.384598
+          ],
+          [
+            89.749348,
+            24.384546
+          ],
+          [
+            89.749326,
+            24.384513
+          ],
+          [
+            89.749241,
+            24.384426
+          ],
+          [
+            89.749208,
+            24.384396
+          ],
+          [
+            89.749114,
+            24.384319
+          ],
+          [
+            89.749037,
+            24.384297
+          ],
+          [
+            89.748944,
+            24.384281
+          ],
+          [
+            89.748813,
+            24.384274
+          ],
+          [
+            89.748074,
+            24.384274
+          ],
+          [
+            89.747959,
+            24.38428
+          ],
+          [
+            89.747954,
+            24.384281
+          ],
+          [
+            89.74789,
+            24.384311
+          ],
+          [
+            89.747875,
+            24.384317
+          ],
+          [
+            89.747867,
+            24.384324
+          ],
+          [
+            89.747835,
+            24.384357
+          ],
+          [
+            89.747807,
+            24.384401
+          ],
+          [
+            89.747792,
+            24.384432
+          ],
+          [
+            89.747786,
+            24.384549
+          ],
+          [
+            89.747786,
+            24.384743
+          ],
+          [
+            89.747781,
+            24.384743
+          ],
+          [
+            89.747781,
+            24.385006
+          ],
+          [
+            89.747747,
+            24.385659
+          ],
+          [
+            89.747745,
+            24.385743
+          ],
+          [
+            89.747756,
+            24.38598
+          ],
+          [
+            89.747756,
+            24.386446
+          ],
+          [
+            89.747747,
+            24.386639
+          ],
+          [
+            89.747744,
+            24.386756
+          ],
+          [
+            89.747744,
+            24.387207
+          ],
+          [
+            89.747749,
+            24.387321
+          ],
+          [
+            89.747767,
+            24.387359
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0092",
+    "post_lulc": {
+      "water": 84.0,
+      "trees": 3.88,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 0.0,
+      "built": 7.59,
+      "bare": 4.33,
+      "snow_ice": 0.21
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 6.9,
+        "trees": 27.41,
+        "built": 4.87,
+        "bare": 39.25,
+        "water": 1.41,
+        "grass": 0.0,
+        "shrub": 7.4,
+        "flooded_veg": 0.0,
+        "ndvi": 0.3173
+      },
+      {
+        "year": 2017,
+        "crops": 9.95,
+        "trees": 40.09,
+        "built": 11.31,
+        "bare": 30.57,
+        "water": 2.72,
+        "grass": 0.16,
+        "shrub": 5.13,
+        "flooded_veg": 0.02,
+        "ndvi": 0.3079
+      },
+      {
+        "year": 2018,
+        "crops": 0.85,
+        "trees": 25.05,
+        "built": 8.0,
+        "bare": 54.58,
+        "water": 4.42,
+        "grass": 0.0,
+        "shrub": 3.62,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2971
+      },
+      {
+        "year": 2019,
+        "crops": 2.79,
+        "trees": 25.12,
+        "built": 15.97,
+        "bare": 42.58,
+        "water": 10.13,
+        "grass": 0.19,
+        "shrub": 3.22,
+        "flooded_veg": 0.01,
+        "ndvi": 0.3066
+      },
+      {
+        "year": 2020,
+        "crops": 0.0,
+        "trees": 22.34,
+        "built": 13.1,
+        "bare": 57.3,
+        "water": 4.51,
+        "grass": 0.0,
+        "shrub": 1.26,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2467
+      },
+      {
+        "year": 2021,
+        "crops": 0.06,
+        "trees": 21.17,
+        "built": 8.73,
+        "bare": 56.57,
+        "water": 11.4,
+        "grass": 0.0,
+        "shrub": 2.06,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2231
+      },
+      {
+        "year": 2022,
+        "crops": 0.0,
+        "trees": 22.45,
+        "built": 15.6,
+        "bare": 45.57,
+        "water": 15.16,
+        "grass": 0.17,
+        "shrub": 1.05,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2491
+      },
+      {
+        "year": 2023,
+        "crops": 0.02,
+        "trees": 22.32,
+        "built": 10.06,
+        "bare": 54.88,
+        "water": 11.27,
+        "grass": 0.0,
+        "shrub": 1.43,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2284
+      },
+      {
+        "year": 2024,
+        "crops": 0.0,
+        "trees": 19.12,
+        "built": 15.28,
+        "bare": 52.88,
+        "water": 12.56,
+        "grass": 0.0,
+        "shrub": 0.12,
+        "flooded_veg": 0.0,
+        "ndvi": 0.243
+      },
+      {
+        "year": 2025,
+        "crops": 0.0,
+        "trees": 19.18,
+        "built": 15.75,
+        "bare": 50.71,
+        "water": 13.94,
+        "grass": 0.0,
+        "shrub": 0.2,
+        "flooded_veg": 0.0,
+        "ndvi": 0.2195
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/sirajganj6_pre_post.png"
+    }
+  },
+  {
+    "id": "kaptai",
+    "name": "Kaptai 7.4 MW",
+    "capacity_mw": 7.4,
+    "lat": 22.491471,
+    "lon": 92.226588,
+    "district": "Rangamati",
+    "upazilla": "Kaptai Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2019-05-06",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Kaptai+7.4MW+Solar+Power+Plant+(BPDB)/data=!4m2!3m1!19sChIJQXrPX2VPrTARBt7_9aHA_E4",
+    "gem_url": "https://www.gem.wiki/Kaptai_Upazila_solar_project",
+    "developer": "Bangladesh Power Development Board (BPDB)",
+    "financing": "ADB",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            92.225783,
+            22.492931
+          ],
+          [
+            92.226126,
+            22.492951
+          ],
+          [
+            92.226233,
+            22.492862
+          ],
+          [
+            92.226577,
+            22.492862
+          ],
+          [
+            92.226813,
+            22.49305
+          ],
+          [
+            92.227489,
+            22.49303
+          ],
+          [
+            92.227703,
+            22.492911
+          ],
+          [
+            92.227703,
+            22.492317
+          ],
+          [
+            92.227596,
+            22.492049
+          ],
+          [
+            92.227618,
+            22.491712
+          ],
+          [
+            92.228143,
+            22.491702
+          ],
+          [
+            92.228143,
+            22.491355
+          ],
+          [
+            92.227532,
+            22.491335
+          ],
+          [
+            92.227349,
+            22.491197
+          ],
+          [
+            92.227371,
+            22.4908
+          ],
+          [
+            92.227081,
+            22.490622
+          ],
+          [
+            92.226899,
+            22.490205
+          ],
+          [
+            92.226802,
+            22.489541
+          ],
+          [
+            92.22618,
+            22.489531
+          ],
+          [
+            92.225708,
+            22.489858
+          ],
+          [
+            92.225718,
+            22.490622
+          ],
+          [
+            92.225697,
+            22.491553
+          ],
+          [
+            92.225472,
+            22.491573
+          ],
+          [
+            92.225482,
+            22.492138
+          ],
+          [
+            92.225686,
+            22.492465
+          ],
+          [
+            92.225783,
+            22.492931
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0040",
+    "post_lulc": {
+      "water": 1.47,
+      "trees": 3.87,
+      "grass": 7.46,
+      "flooded_veg": 0.0,
+      "crops": 83.08,
+      "shrub": 1.66,
+      "built": 2.47,
+      "bare": 0.0,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 1.21,
+        "trees": 54.08,
+        "built": 10.87,
+        "bare": 0.0,
+        "water": 29.09,
+        "grass": 1.0,
+        "shrub": 3.75,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5905
+      },
+      {
+        "year": 2017,
+        "crops": 0.55,
+        "trees": 51.69,
+        "built": 11.12,
+        "bare": 0.0,
+        "water": 32.09,
+        "grass": 3.6,
+        "shrub": 0.96,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5927
+      },
+      {
+        "year": 2018,
+        "crops": 0.32,
+        "trees": 49.09,
+        "built": 10.17,
+        "bare": 0.0,
+        "water": 34.0,
+        "grass": 4.78,
+        "shrub": 1.64,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5717
+      },
+      {
+        "year": 2019,
+        "crops": 0.25,
+        "trees": 40.88,
+        "built": 18.97,
+        "bare": 1.0,
+        "water": 34.55,
+        "grass": 2.96,
+        "shrub": 1.39,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5431
+      },
+      {
+        "year": 2020,
+        "crops": 4.11,
+        "trees": 38.46,
+        "built": 16.32,
+        "bare": 0.32,
+        "water": 34.13,
+        "grass": 5.33,
+        "shrub": 1.31,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5697
+      },
+      {
+        "year": 2021,
+        "crops": 4.57,
+        "trees": 41.54,
+        "built": 12.6,
+        "bare": 0.0,
+        "water": 35.1,
+        "grass": 4.72,
+        "shrub": 1.47,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5317
+      },
+      {
+        "year": 2022,
+        "crops": 5.3,
+        "trees": 46.25,
+        "built": 11.55,
+        "bare": 0.03,
+        "water": 29.91,
+        "grass": 4.87,
+        "shrub": 2.08,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5918
+      },
+      {
+        "year": 2023,
+        "crops": 4.92,
+        "trees": 51.58,
+        "built": 10.07,
+        "bare": 0.02,
+        "water": 27.17,
+        "grass": 3.1,
+        "shrub": 3.15,
+        "flooded_veg": 0.0,
+        "ndvi": 0.6082
+      },
+      {
+        "year": 2024,
+        "crops": 4.97,
+        "trees": 44.69,
+        "built": 10.66,
+        "bare": 0.0,
+        "water": 32.49,
+        "grass": 6.1,
+        "shrub": 1.09,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5959
+      },
+      {
+        "year": 2025,
+        "crops": 5.69,
+        "trees": 45.44,
+        "built": 11.25,
+        "bare": 0.03,
+        "water": 30.7,
+        "grass": 2.41,
+        "shrub": 4.49,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5464
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/kaptai_pre_post.png"
+    }
+  },
+  {
+    "id": "sharishabari",
+    "name": "Sharishabari 3MW",
+    "capacity_mw": 3.0,
+    "lat": 24.772287,
+    "lon": 89.842629,
+    "district": "Jamalpur",
+    "upazilla": "Sarishabari Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2017-07-14",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://www.google.com/maps/place/Engreen+Sharishabari+Solar+Power+Plant+LTD./data=!4m2!3m1!19sChIJD988ZwCb_TkRrGLK_OhPjXQ",
+    "gem_url": "https://www.gem.wiki/Mymensingh_Division_solar_project",
+    "developer": "",
+    "financing": "IPP",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            89.841653,
+            24.772401
+          ],
+          [
+            89.841632,
+            24.773165
+          ],
+          [
+            89.841803,
+            24.77318
+          ],
+          [
+            89.842195,
+            24.773238
+          ],
+          [
+            89.842436,
+            24.773165
+          ],
+          [
+            89.842678,
+            24.773097
+          ],
+          [
+            89.842656,
+            24.772829
+          ],
+          [
+            89.84323,
+            24.772698
+          ],
+          [
+            89.843568,
+            24.772634
+          ],
+          [
+            89.843735,
+            24.772522
+          ],
+          [
+            89.843751,
+            24.77186
+          ],
+          [
+            89.843686,
+            24.771475
+          ],
+          [
+            89.843466,
+            24.77147
+          ],
+          [
+            89.843257,
+            24.771568
+          ],
+          [
+            89.843037,
+            24.771553
+          ],
+          [
+            89.842726,
+            24.771568
+          ],
+          [
+            89.842345,
+            24.771602
+          ],
+          [
+            89.841921,
+            24.771665
+          ],
+          [
+            89.841551,
+            24.772289
+          ],
+          [
+            89.841653,
+            24.772401
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0059",
+    "post_lulc": {
+      "water": 0.0,
+      "trees": 0.0,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 0.0,
+      "built": 100.0,
+      "bare": 0.0,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [
+      {
+        "year": 2016,
+        "crops": 15.68,
+        "trees": 36.14,
+        "built": 29.48,
+        "bare": 1.23,
+        "water": 14.66,
+        "grass": 0.41,
+        "shrub": 2.41,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5333
+      },
+      {
+        "year": 2017,
+        "crops": 17.23,
+        "trees": 22.84,
+        "built": 44.82,
+        "bare": 0.27,
+        "water": 13.41,
+        "grass": 0.57,
+        "shrub": 0.87,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5227
+      },
+      {
+        "year": 2018,
+        "crops": 17.33,
+        "trees": 11.2,
+        "built": 54.69,
+        "bare": 0.0,
+        "water": 16.57,
+        "grass": 0.11,
+        "shrub": 0.1,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5379
+      },
+      {
+        "year": 2019,
+        "crops": 18.48,
+        "trees": 7.3,
+        "built": 61.24,
+        "bare": 0.0,
+        "water": 12.41,
+        "grass": 0.57,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5353
+      },
+      {
+        "year": 2020,
+        "crops": 15.52,
+        "trees": 12.23,
+        "built": 54.35,
+        "bare": 0.1,
+        "water": 16.66,
+        "grass": 1.12,
+        "shrub": 0.02,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5491
+      },
+      {
+        "year": 2021,
+        "crops": 14.04,
+        "trees": 5.52,
+        "built": 65.72,
+        "bare": 0.0,
+        "water": 14.43,
+        "grass": 0.29,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.4801
+      },
+      {
+        "year": 2022,
+        "crops": 15.15,
+        "trees": 5.8,
+        "built": 67.18,
+        "bare": 0.0,
+        "water": 11.14,
+        "grass": 0.73,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.536
+      },
+      {
+        "year": 2023,
+        "crops": 10.23,
+        "trees": 9.78,
+        "built": 65.35,
+        "bare": 0.0,
+        "water": 13.38,
+        "grass": 1.25,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5287
+      },
+      {
+        "year": 2024,
+        "crops": 10.63,
+        "trees": 11.14,
+        "built": 66.21,
+        "bare": 0.0,
+        "water": 11.47,
+        "grass": 0.55,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.5443
+      },
+      {
+        "year": 2025,
+        "crops": 10.78,
+        "trees": 9.2,
+        "built": 68.28,
+        "bare": 0.0,
+        "water": 10.14,
+        "grass": 1.59,
+        "shrub": 0.0,
+        "flooded_veg": 0.0,
+        "ndvi": 0.529
+      }
+    ],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/sharishabari_pre_post.png"
+    }
+  },
+  {
+    "id": "barishal",
+    "name": "Barishal 1 MW",
+    "capacity_mw": 1.25,
+    "lat": 22.657015,
+    "lon": 90.339194,
+    "district": "Barisal",
+    "upazilla": "Barisal Sadar Upazila",
+    "status": "Completed & Running",
+    "completion_date": "2024-06-08",
+    "has_conflict": false,
+    "conflict_reasons": "No evidence found online of opposition to project",
+    "conflict_tags": [],
+    "news_links": [],
+    "google_maps_link": "https://maps.app.goo.gl/2rTjV7YAqmqJdPsW9",
+    "gem_url": null,
+    "developer": "Bangladesh Power Development Board (BPDB)",
+    "financing": "Own Investment",
+    "polygon": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            90.338546,
+            22.657559
+          ],
+          [
+            90.338565,
+            22.657257
+          ],
+          [
+            90.338782,
+            22.65726
+          ],
+          [
+            90.338803,
+            22.656975
+          ],
+          [
+            90.338911,
+            22.65698
+          ],
+          [
+            90.338927,
+            22.656888
+          ],
+          [
+            90.339042,
+            22.656901
+          ],
+          [
+            90.339039,
+            22.656784
+          ],
+          [
+            90.339149,
+            22.656799
+          ],
+          [
+            90.33916,
+            22.656646
+          ],
+          [
+            90.339259,
+            22.656648
+          ],
+          [
+            90.339281,
+            22.656539
+          ],
+          [
+            90.339361,
+            22.656542
+          ],
+          [
+            90.339401,
+            22.6565
+          ],
+          [
+            90.339479,
+            22.656502
+          ],
+          [
+            90.339549,
+            22.656527
+          ],
+          [
+            90.339611,
+            22.656557
+          ],
+          [
+            90.339597,
+            22.65719
+          ],
+          [
+            90.339495,
+            22.657188
+          ],
+          [
+            90.339487,
+            22.65725
+          ],
+          [
+            90.339399,
+            22.657252
+          ],
+          [
+            90.339366,
+            22.657307
+          ],
+          [
+            90.339283,
+            22.657299
+          ],
+          [
+            90.33916,
+            22.657304
+          ],
+          [
+            90.339152,
+            22.657359
+          ],
+          [
+            90.339047,
+            22.657359
+          ],
+          [
+            90.339034,
+            22.657465
+          ],
+          [
+            90.338932,
+            22.657475
+          ],
+          [
+            90.338911,
+            22.657562
+          ],
+          [
+            90.338546,
+            22.657559
+          ]
+        ]
+      ]
+    },
+    "matched_site_id": "BA_0124",
+    "post_lulc": {
+      "water": 0.0,
+      "trees": 0.0,
+      "grass": 0.0,
+      "flooded_veg": 0.0,
+      "crops": 0.0,
+      "shrub": 3.57,
+      "built": 96.43,
+      "bare": 0.0,
+      "snow_ice": 0.0
+    },
+    "annual_lulc": [],
+    "images": {
+      "pre_post": "/images/bangladesh_sites/barishal_pre_post.png"
+    }
+  }
+]
